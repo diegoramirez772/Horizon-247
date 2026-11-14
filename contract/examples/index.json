@@ -1,0 +1,28 @@
+[
+  {
+    "id": "power_PRECTOTCORR_monthly_2001-2024",
+    "profile": "earth",
+    "title": {
+      "es": "Precipitación corregida · Durango (caja aproximada)",
+      "en": "Corrected precipitation · Durango (approximate box)"
+    },
+    "variable": "PRECTOTCORR",
+    "window": "2001-2024",
+    "path": "power_prectotcorr_dgo_2001-2024",
+    "data_real": true,
+    "delta_per_decade": 0.2
+  },
+  {
+    "id": "power_T2M_monthly_2001-2024",
+    "profile": "earth",
+    "title": {
+      "es": "Temperatura del aire a 2 m · Durango (caja aproximada)",
+      "en": "Air temperature at 2 m · Durango (approximate box)"
+    },
+    "variable": "T2M",
+    "window": "2001-2024",
+    "path": "power_t2m_dgo_2001-2024",
+    "data_real": true,
+    "delta_per_decade": 0.3
+  }
+]

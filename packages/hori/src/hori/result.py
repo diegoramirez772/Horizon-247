@@ -1,6 +1,8 @@
 """Output interface: what HORI computes per layer (maps 1:1 to the bundle arrays in contract/SPEC.md)."""
 from __future__ import annotations
+
 from dataclasses import dataclass, field
+
 import numpy as np
 
 
@@ -15,10 +17,11 @@ class LayerResult:
     q_cons: np.ndarray
     mde: np.ndarray
     years_more: np.ndarray
-    verdict: np.ndarray         # uint8 codes (contract/SPEC.md section 3)
-    flags: np.ndarray           # uint8 bitmask
+    verdict: np.ndarray         # uint8 codes (verdict.CODES)
+    flags: np.ndarray           # uint8 bitmask (verdict.FLAG_BITS)
     nvalid: np.ndarray
     nsig_methods: np.ndarray
     naive_sig: np.ndarray
-    series: np.ndarray          # [cells, n]
+    series: np.ndarray          # [cells, n] annual anomaly series used for the tests
+    years: list = field(default_factory=list)
     manifest: dict = field(default_factory=dict)
