@@ -1,0 +1,6 @@
+id: ndvi_modis_2001-2024
+profile: earth
+variable: {name: ndvi, unit: "1"}
+source: ndvi             # MOD13C2 v061 — TODO verify Earthdata access
+window: {start: 2001, end: 2024, step: annual}
+grid: {native_resolution_deg: 0.05, analysis_resolution_deg: 1.0}

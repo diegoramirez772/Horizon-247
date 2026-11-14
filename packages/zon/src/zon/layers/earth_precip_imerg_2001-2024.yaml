@@ -1,0 +1,6 @@
+id: precip_imerg_2001-2024
+profile: earth
+variable: {name: precipitation, unit: "mm/month"}
+source: imerg            # TODO verify Earthdata access and concept id
+window: {start: 2001, end: 2024, step: annual}
+grid: {native_resolution_deg: 0.1, analysis_resolution_deg: 1.0}

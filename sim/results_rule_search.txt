@@ -1,0 +1,60 @@
+Q1 · tasa de falsas alarmas (efecto 0) y potencia (1 y 2 σ/década) por regla y umbral α
+
+n=23 φ=0.3
+regla                          α |  falsas  pot 1σ  pot 2σ
+MK-VC                       0.05 |    6.7%   55.9%   94.6%
+MK-VC                      0.025 |    4.1%   44.3%   89.2%
+MK-VC                       0.01 |    2.2%   31.5%   80.2%
+TFPW-WS                     0.05 |    8.1%   54.2%   93.7%
+TFPW-WS                    0.025 |    4.8%   43.6%   90.2%
+TFPW-WS                     0.01 |    2.5%   32.0%   83.7%
+PWd                         0.05 |    8.3%   55.3%   95.2%
+PWd                        0.025 |    4.9%   44.5%   91.9%
+PWd                         0.01 |    2.5%   32.7%   85.3%
+consenso(VC,WS,OLS)         0.05 |    5.2%   49.0%   92.0%
+consenso(VC,WS,OLS)        0.025 |    3.1%   38.1%   86.7%
+consenso(VC,WS,OLS)         0.01 |    1.6%   26.8%   77.4%
+
+n=23 φ=0.5
+regla                          α |  falsas  pot 1σ  pot 2σ
+MK-VC                       0.05 |    8.7%   42.2%   82.5%
+MK-VC                      0.025 |    5.6%   32.7%   72.6%
+MK-VC                       0.01 |    3.1%   22.9%   60.2%
+TFPW-WS                     0.05 |   10.8%   43.7%   82.9%
+TFPW-WS                    0.025 |    6.9%   35.4%   77.2%
+TFPW-WS                     0.01 |    4.0%   26.1%   68.8%
+PWd                         0.05 |   11.3%   45.8%   86.5%
+PWd                        0.025 |    7.3%   37.3%   80.9%
+PWd                         0.01 |    4.1%   27.7%   72.3%
+consenso(VC,WS,OLS)         0.05 |    6.8%   37.0%   78.2%
+consenso(VC,WS,OLS)        0.025 |    4.5%   28.6%   69.4%
+consenso(VC,WS,OLS)         0.01 |    2.4%   20.3%   57.9%
+
+n=40 φ=0.5
+regla                          α |  falsas  pot 1σ  pot 2σ
+MK-VC                       0.05 |    7.1%   93.6%   99.8%
+MK-VC                      0.025 |    4.2%   87.7%   99.5%
+MK-VC                       0.01 |    2.1%   77.1%   98.1%
+TFPW-WS                     0.05 |    8.3%   93.4%   99.7%
+TFPW-WS                    0.025 |    5.2%   89.6%   99.6%
+TFPW-WS                     0.01 |    2.8%   83.0%   99.4%
+PWd                         0.05 |    8.5%   94.3%  100.0%
+PWd                        0.025 |    5.4%   90.6%   99.9%
+PWd                         0.01 |    2.9%   84.2%   99.8%
+consenso(VC,WS,OLS)         0.05 |    5.6%   91.3%   99.6%
+consenso(VC,WS,OLS)        0.025 |    3.3%   85.5%   99.3%
+consenso(VC,WS,OLS)         0.01 |    1.7%   75.3%   97.9%
+
+Q2 · FDR en el mapa (60×60, n=23, φ=0.3): proporción de falsas entre lo marcado y zona real detectada
+señal escasa (4 % del mapa, 1.2 σ/déc)
+   p(MK-VC)       q=0.1   mapa vacío marcado  0.17% | falsas entre marcadas  23.2% | zona real  20.8%
+   p(MK-VC)       q=0.05  mapa vacío marcado  0.03% | falsas entre marcadas  10.9% | zona real  11.4%
+   p(consenso)    q=0.1   mapa vacío marcado  0.04% | falsas entre marcadas  12.6% | zona real  21.1%
+   p(consenso)    q=0.05  mapa vacío marcado  0.01% | falsas entre marcadas   4.8% | zona real   5.5%
+señal abundante (16 % del mapa, 1.2 σ/déc)
+   p(MK-VC)       q=0.1   mapa vacío marcado  0.25% | falsas entre marcadas  15.4% | zona real  39.0%
+   p(MK-VC)       q=0.05  mapa vacío marcado  0.02% | falsas entre marcadas  12.8% | zona real  29.3%
+   p(consenso)    q=0.1   mapa vacío marcado  0.04% | falsas entre marcadas  10.8% | zona real  29.3%
+   p(consenso)    q=0.05  mapa vacío marcado  0.03% | falsas entre marcadas   6.0% | zona real  22.2%
+
+[exited with code 0]

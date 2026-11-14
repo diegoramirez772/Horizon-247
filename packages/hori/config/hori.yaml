@@ -1,0 +1,12 @@
+alpha: 0.05
+fdr_q: 0.10
+delta_sigma_per_decade: 2.0
+min_years: 10
+windows_expanding: {enabled: true, min_n: 10}
+regions_fdr: BH
+min_valid_fraction: 0.80
+max_interior_gap_years: 2
+tfpw_ws_iterations: 6
+r1_clip: [0.0, 0.95]
+mde_power: 0.80
+seed: 247

@@ -1,0 +1,7 @@
+id: mars_dust_mcd_v2
+profile: mars
+variable: {name: cdod_absorption_9p3um, unit: "1"}
+source: mars_dust        # verified: 364 MB all-years archive, NetCDF, no login, CC BY-SA 3.0
+products: [gridded_observed, kriged_reconstruction]   # label reconstruction clearly
+window: {start_my: 24, end_my: 36, step: seasonal_Ls}
+notes: ["dataset versions change across years: v2.0 (MY24-32), v2.1 (MY33), v2.5 (MY34-36) -> flag cambio_de_version"]
