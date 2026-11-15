@@ -36,7 +36,7 @@ export type Intent =
   | { t: "evolution" }
   | { t: "variable"; v: "T2M" | "PRECTOTCORR" }
   | { t: "report"; text: string; where: Where | null }
-  | { t: "scene"; where: Where | null; timeline: boolean; preset?: "marte" | "luna" | null }
+  | { t: "scene"; where: Where | null; timeline: boolean; preset?: "marte" | "luna" | null; /** The real place (relief + satellite), not the generated diorama. */ real?: boolean }
   | { t: "unknown" };
 
 /** What the answer is about when it brings its own components (clima, ganado, astronauta, Marte, planetas, eventos). */
@@ -125,7 +125,7 @@ export function parse(raw: string, regions: Region[]): Command {
     : P.plain.test(text) ? { t: "register", r: "sencillo" }
     : P.dark.test(text) ? { t: "theme", th: "dark" }
     : P.light.test(text) ? { t: "theme", th: "light" }
-    : P.scene.test(text) ? { t: "scene", where: whereOf(raw, place), timeline: P.timeline.test(text) || P.evolution.test(text), preset: P.mars.test(text) ? "marte" : /\b(luna|moon)\b/.test(text) ? "luna" : null }
+    : P.scene.test(text) ? { t: "scene", where: whereOf(raw, place), timeline: P.timeline.test(text) || P.evolution.test(text), preset: P.mars.test(text) ? "marte" : /\b(luna|moon)\b/.test(text) ? "luna" : null, real: !/(escena|diorama|maqueta|paisaje|generad|scene|linea de(l)? tiempo|timeline|evolucion|marte|mars|luna|moon)/.test(text) }
     : P.evolution.test(text) || P.timeline.test(text) ? { t: "evolution" }
     : P.infrared.test(text) && !P.events.test(text) ? { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }
     : P.livestock.test(text) ? { t: "topic", topic: "ganado", where: whereOf(raw, place) }

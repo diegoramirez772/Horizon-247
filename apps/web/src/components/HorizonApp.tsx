@@ -65,7 +65,7 @@ export function HorizonApp() {
   }, []);
   // The installed app's «En vivo» shortcut opens straight on that tab (manifest.webmanifest).
   useEffect(() => {
-    { const p = new URLSearchParams(boot).get("panel"); if (p === "live" || p === "map" || p === "evidence" || p === "scene") setPanel(p); }
+    { const p = new URLSearchParams(boot).get("panel"); if (p === "live" || p === "map" || p === "evidence" || p === "scene" || p === "zone") setPanel(p); }
   }, []);
   const [wide, setWide] = useState(false);
   const [home, setHome] = useState(true);
@@ -128,7 +128,7 @@ export function HorizonApp() {
     const cmd = followUp(lastCmd.current, raw, label);
     if (cmd.intent.t !== "undo" && cmd.intent.t !== "unknown") lastCmd.current = cmd;
     run(cmd, via, label, deps);
-    if (cmd.intent.t === "scene") setPanel("scene");
+    if (cmd.intent.t === "scene") setPanel(cmd.intent.real ? "zone" : "scene");
     else if (!STAYS_IN_CHAT.includes(cmd.intent.t)) setPanel((p) => p ?? "map");
   }, [deps]);
 
@@ -177,6 +177,7 @@ export function HorizonApp() {
     look: (lat: number, lon: number) => actions.look(lat, lon),
     evolutionDone: () => { store.set({ evolution: false }); },
     scene: (t: SceneTarget) => { store.set({ scene: t }); setPanel("scene"); },
+    zone: (z: { name: string; lat: number; lon: number }) => { store.set({ zone: z }); setPanel("zone"); },
     window: (id: string) => {
       store.set({ layerId: id, timeMode: "completa", year: null, windowEnd: null });
       conv.wait({ kind: store.get().selection ? "area" : "summary", source: "controls", correctable: false, waitLayer: id });
@@ -196,7 +197,7 @@ export function HorizonApp() {
   }), [store, conv, deps, actions]);
 
   // The sidebar's «Escena 3D» follows what is selected now (not an older scene).
-  const openPanel = (p: PanelTab | null) => { if (p === "scene") store.set({ scene: null }); setPanel(p); };
+  const openPanel = (p: PanelTab | null) => { if (p === "scene") store.set({ scene: null }); if (p === "zone") store.set({ zone: null }); setPanel(p); };
   const goHome = () => { setHome(true); setPanel(null); setFull(false); };
 
   // Camera: commands bump `camera`; the map flies to whatever the answer is about. Map taps do not move it.

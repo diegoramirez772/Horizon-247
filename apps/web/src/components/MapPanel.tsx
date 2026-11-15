@@ -12,17 +12,18 @@ import { shownLimits } from "@/core/honesty/limits";
 import { allowedMetrics, type Metric, type SceneTarget, type TimeMode } from "@/core/state/store";
 import { EvidenceDetails } from "./Evidence";
 import { LivePanel } from "./LivePanel";
+import { ZoneView } from "./ZoneView";
 import { LAYERS } from "@/core/map/imagery";
 import { LegendBar } from "./Legend";
 import { MapCanvas, type HoverInfo, type MapFocus, type Projection } from "./MapCanvas";
 import { SeriesChart } from "./SeriesChart";
 import { Segmented } from "./ui";
 
-export type PanelTab = "map" | "live" | "evidence" | "scene";
+export type PanelTab = "map" | "live" | "evidence" | "scene" | "zone";
 
 const C = {
   es: {
-    map: "Monitoreo", live: "En vivo", evidence: "Evidencia", scene: "Escena 3D", see3d: "Ver esta zona en 3D", close: "Cerrar panel", expand: "Ampliar panel", shrink: "Reducir panel",
+    map: "Monitoreo", live: "En vivo", evidence: "Evidencia", scene: "Escena 3D", zone: "Zona en 3D real", see3d: "Ver esta zona en 3D real", genScene: "Escena generada", close: "Cerrar panel", expand: "Ampliar panel", shrink: "Reducir panel",
     full: "Pantalla completa", exitFull: "Salir de pantalla completa (Esc)", view: "Vista", globe: "Globo 3D", flat: "Plano",
     years: "Datos", mode: { completa: "Tendencia", anual: "Año a año", acumulada: "Cómo crece la evidencia" },
     hint: "Pasa el cursor o toca una zona", simulated: "Simulado", viewMenu: "Vista del mapa",
@@ -39,7 +40,7 @@ const C = {
     notYet: "Aún no se sabe",
   },
   en: {
-    map: "Monitoring", live: "Live", evidence: "Evidence", scene: "3D scene", see3d: "See this area in 3D", close: "Close panel", expand: "Widen panel", shrink: "Narrow panel",
+    map: "Monitoring", live: "Live", evidence: "Evidence", scene: "3D scene", zone: "Real 3D zone", see3d: "See this area in real 3D", genScene: "Generated scene", close: "Close panel", expand: "Widen panel", shrink: "Narrow panel",
     full: "Full screen", exitFull: "Exit full screen (Esc)", view: "View", globe: "3D globe", flat: "Flat",
     years: "Data", mode: { completa: "Trend", anual: "Year by year", acumulada: "How evidence grows" },
     hint: "Hover or tap an area", simulated: "Simulated", viewMenu: "Map view",
@@ -73,6 +74,8 @@ export interface PanelControls {
   look: (lat: number, lon: number) => void;
   /** Open the generated 3D scene of a place (from a zone on the map or the assistant). */
   scene: (t: SceneTarget) => void;
+  /** Open the real place in 3D (relief + satellite). */
+  zone: (z: { name: string; lat: number; lon: number }) => void;
 }
 
 /**
@@ -144,16 +147,17 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
               </div>
             ) : null}
             {sel && m && m.profile === "earth" ? (
-              <button type="button" onClick={() => {
-                const p = sel.kind === "cell" ? cellLatLon(m, sel.index) : null;
-                const r = sel.kind === "region" ? ctx.regions.find((x) => x.id === sel.id) as (typeof ctx.regions[number] & { bbox?: BBox }) | undefined : undefined;
-                const pt = p ?? (r?.bbox ? { lat: (r.bbox[1] + r.bbox[3]) / 2, lon: (r.bbox[0] + r.bbox[2]) / 2 } : null);
-                if (pt) controls.scene({ name: r ? r.name[s.lang] : `${pt.lat.toFixed(1)}°, ${pt.lon.toFixed(1)}°`, lat: pt.lat, lon: pt.lon, timeline: true });
-              }}
-                className="absolute bottom-3 right-3 z-10 inline-flex h-10 items-center gap-2 rounded-full bg-accent px-4 text-sm font-semibold text-on-accent shadow-[0_8px_24px_rgba(16,24,40,0.22)] transition-transform hover:scale-[1.03]">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true"><path d="M8 1.5l5.5 3v7L8 14.5l-5.5-3v-7zM8 8l5.5-3.5M8 8v6.5M8 8L2.5 4.5" /></svg>
-                {c.see3d}
-              </button>
+              <div className="absolute bottom-3 right-3 z-10 flex flex-col items-end gap-2">
+                <button type="button" onClick={() => controls.zone(zoneOf(ctx))}
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-accent px-4 text-sm font-semibold text-on-accent shadow-[0_8px_24px_rgba(16,24,40,0.22)] transition-transform hover:scale-[1.03]">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true"><path d="M1.5 12.5l4-6 3 4 2-2.5 4 4.5z" /><circle cx="11.5" cy="4" r="1.5" /></svg>
+                  {c.see3d}
+                </button>
+                <button type="button" onClick={() => controls.scene({ ...zoneOf(ctx), timeline: true })}
+                  className="glass inline-flex h-9 items-center rounded-full px-3.5 text-xs font-semibold">
+                  {c.genScene}
+                </button>
+              </div>
             ) : null}
             {m ? (
               <ViewMenu label={c.viewMenu} summary={[projection === "flat" ? c.flat : c.globe, s.imagery ? imageryShort(s.imagery) : null, c.mode[s.timeMode], siblings.length > 1 && entry ? T.years(entryWindow(entry)!.n) : null].filter(Boolean).join(" · ")}>
@@ -204,6 +208,9 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
         </>
       ) : tab === "scene" ? (
         <SceneFrame ctx={ctx} />
+      ) : tab === "zone" ? (
+        <ZoneView zone={zoneOf(ctx)} lang={s.lang} reading={zoneReading(ctx)}
+          onScene={() => { const z = zoneOf(ctx); controls.scene({ ...z, timeline: true }); }} />
       ) : tab === "live" ? (
         <LivePanel lang={s.lang} imagery={s.imagery} onImagery={(id) => { controls.imagery(id); setTab("map"); }}
           onLook={(lat, lon) => { controls.look(lat, lon); setTab("map"); }} />
@@ -281,6 +288,27 @@ function SceneFrame({ ctx }: { ctx: Ctx }) {
     if (vals.some(Number.isFinite)) { q.set("serie", vals.map((v) => (Number.isFinite(v) ? v.toFixed(2) : "")).join(",")); q.set("y0", String(m.series.years[0])); }
   }
   return <iframe key={q.toString()} title={sc.name} src={`escena?${q}`} className="min-h-0 w-full flex-1 border-0 bg-bg" allow="camera; microphone" />;
+}
+
+/** The place to show in 3D: the zone selected on the map (cell centre or region centre), else the last one opened. */
+function zoneOf(ctx: Ctx): { name: string; lat: number; lon: number } {
+  const m = ctx.layer?.manifest, sel = ctx.state.selection;
+  if (m && sel?.kind === "cell") { const p = cellLatLon(m, sel.index); return { name: `${p.lat.toFixed(2)}°, ${p.lon.toFixed(2)}°`, ...p }; }
+  if (sel?.kind === "region") {
+    const r = ctx.regions.find((x) => x.id === sel.id) as (typeof ctx.regions[number] & { bbox?: BBox }) | undefined;
+    if (r?.bbox) return { name: r.name[ctx.state.lang], lat: (r.bbox[1] + r.bbox[3]) / 2, lon: (r.bbox[0] + r.bbox[2]) / 2 };
+  }
+  return ctx.state.zone ?? { name: "Durango", lat: 24.02, lon: -104.67 };
+}
+
+/** HORI's reading of the selected zone, one line, for the corner of the 3D view. */
+function zoneReading(ctx: Ctx): { title: string; line: string } | null {
+  const r = ctx.state.selection && ctx.layer ? readSelection(ctx) : null;
+  const m = ctx.layer?.manifest;
+  if (!r || !m) return null;
+  const lang = ctx.state.lang, f = r.finding;
+  const eff = Number.isFinite(f.effect) ? `${f.effect > 0 ? "+" : ""}${num(f.effect, lang, 2)} ${m.variable.unit_per_decade ?? ""}` : "";
+  return { title: `HORI · ${m.title[lang]}`, line: `${verdictName(f.verdict, lang, ctx.state.register)}${eff ? ` · ${eff}` : ""}` };
 }
 
 function IconButton({ label, onClick, children, pressed }: { label: string; onClick: () => void; children: React.ReactNode; pressed?: boolean }) {

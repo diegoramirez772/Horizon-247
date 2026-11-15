@@ -9,7 +9,7 @@
 import { type MapTheme, effectStep, hexToRgb, seqStep, stepColor } from "./palette";
 import { pattern } from "./textures";
 import { landPath } from "./world";
-import { type LayerDef, type Mosaic, baseLayer, degPerPx, layer as layerById, levelFor, loadMosaic } from "./imagery";
+import { DETAIL_EARTH, type LayerDef, type Mosaic, baseLayer, degPerPx, layer as layerById, levelFor, loadMosaic } from "./imagery";
 
 /** NASA imagery on the flat map: same plate carrée (EPSG:4326) as the GIBS tiles, so a mosaic is drawn as is. */
 export interface FlatImagery { layer: string; date?: string }
@@ -140,8 +140,9 @@ export class MapView {
   }
 
   private async loadPatch(): Promise<void> {
-    const l: LayerDef = this.imagery ? layerById(this.imagery.layer) : baseLayer("earth");
     const box = this.visibleBox();
+    // Without a chosen layer, close views read Sentinel-2 (10 m) instead of Blue Marble: a map you can recognise.
+    const l: LayerDef = this.imagery ? layerById(this.imagery.layer) : box[2] - box[0] <= 60 ? DETAIL_EARTH : baseLayer("earth");
     if (box[2] - box[0] > 200 || document.hidden) { if (this.patch) { this.patch = null; this.requestDraw(); } return; }
     const want = 1 / (this.k * this.dpr); // degrees per screen pixel
     let z = levelFor(l, want);
@@ -381,8 +382,7 @@ export class MapView {
     g.imageSmoothingEnabled = true;
     if (this.base) this.drawMosaic(g, this.base); else { g.fillStyle = th.land; g.fill(landPath()); }
     if (this.img) this.drawMosaic(g, this.img);
-    const patchLayer = this.imagery ? this.imagery.layer : baseLayer("earth").id;
-    if (this.patch && this.patch.layer.id === patchLayer) this.drawMosaic(g, this.patch);
+    if (this.patch && (this.imagery ? this.patch.layer.id === this.imagery.layer : this.patch.layer.role !== "live")) this.drawMosaic(g, this.patch);
     this.drawGraticule(g);
     const live = this.imagery ? layerById(this.imagery.layer).live : false;
 

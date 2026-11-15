@@ -212,6 +212,7 @@ export function run(cmd: Command, via: Via, label: string | null, d: Deps): void
       const sel = patch.selection ?? before.selection;
       const fromSel = sel?.kind === "cell" && m ? { ...cellLatLon(m, sel.index), name: "" } : null;
       const w = i.where ?? (fromSel ? { name: fromSel.name || `${fromSel.lat.toFixed(1)}°, ${fromSel.lon.toFixed(1)}°`, lat: fromSel.lat, lon: fromSel.lon } : { name: "Durango", lat: 24.02, lon: -104.67 });
+      if (i.real) { store.set({ ...patch, zone: { name: w.name, lat: w.lat, lon: w.lon } }); answerWhenReady(d, "zone", source, correctable, null); return; }
       store.set({ ...patch, scene: { name: w.name, lat: w.lat, lon: w.lon, timeline: i.timeline, preset: i.preset ?? undefined } });
       answerWhenReady(d, "scene", source, correctable, null);
       return;

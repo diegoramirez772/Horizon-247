@@ -12,12 +12,12 @@ import { Logo } from "./ui";
 
 const T = {
   es: {
-    home: "Asistente", map: "Mapa y globo", assistant: "Asistente", monitoring: "Monitoreo", prefs: "Preferencias", live: "En vivo", evidence: "Evidencia", scene: "Escena 3D",
+    home: "Asistente", map: "Mapa y globo", assistant: "Asistente", monitoring: "Monitoreo", prefs: "Preferencias", live: "En vivo", evidence: "Evidencia", scene: "Escena generada", zone: "Vista 3D real",
     theme: "Tema", dark: "Oscuro", light: "Claro", lang: "Idioma", collapse: "Contraer menú", expand: "Expandir menú",
     open: "Abrir menú", close: "Cerrar menú", sections: "Secciones",
   },
   en: {
-    home: "Assistant", map: "Map and globe", assistant: "Assistant", monitoring: "Monitoring", prefs: "Preferences", live: "Live", evidence: "Evidence", scene: "3D scene",
+    home: "Assistant", map: "Map and globe", assistant: "Assistant", monitoring: "Monitoring", prefs: "Preferences", live: "Live", evidence: "Evidence", scene: "Generated scene", zone: "Real 3D view",
     theme: "Theme", dark: "Dark", light: "Light", lang: "Language", collapse: "Collapse menu", expand: "Expand menu",
     open: "Open menu", close: "Close menu", sections: "Sections",
   },
@@ -61,6 +61,7 @@ export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, dark, to
     { key: "home", label: t.home, icon: <path d="M8 1.8l1.5 3.9 3.9 1.5-3.9 1.5L8 12.6 6.5 8.7 2.6 7.2l3.9-1.5zM12.5 11l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" />, on: home && !panel, run: go(onHome) },
     { key: "map", label: t.map, icon: <><path d="M1.5 3.5l4-1.5 5 2 4-1.5v10l-4 1.5-5-2-4 1.5z" /><path d="M5.5 2v10M10.5 4v10" /></>, on: panel === "map", run: tab("map") },
     { key: "live", label: t.live, icon: <><circle cx="8" cy="8" r="2" /><path d="M4.5 4.5a5 5 0 0 0 0 7M11.5 4.5a5 5 0 0 1 0 7M2.5 2.5a8 8 0 0 0 0 11M13.5 2.5a8 8 0 0 1 0 11" /></>, on: panel === "live", run: tab("live") },
+    { key: "zone", label: t.zone, icon: <><path d="M1.5 12.5l4-6 3 4 2-2.5 4 4.5z" /><circle cx="11.5" cy="4" r="1.5" /></>, on: panel === "zone", run: tab("zone") },
     { key: "scene", label: t.scene, icon: <path d="M8 1.5l5.5 3v7L8 14.5l-5.5-3v-7zM8 8l5.5-3.5M8 8v6.5M8 8L2.5 4.5" />, on: panel === "scene", run: tab("scene") },
     { key: "evidence", label: t.evidence, icon: <path d="M2 13.5h12M3 10l3-3 3 2 4-5" />, on: panel === "evidence", run: tab("evidence") },
   ];

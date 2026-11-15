@@ -78,7 +78,7 @@ export interface Ctx {
 export type CardKind =
   | "greet" | "area" | "summary" | "detect" | "compare" | "contrast" | "legend" | "provenance" | "help"
   | "advice" | "cause" | "unknown1" | "unknown2" | "unknown3" | "noSelection" | "year" | "accumulated"
-  | "undo" | "profile" | "noWindow" | "loading" | "done" | "filter" | "world" | "level" | "certainty" | "imagery" | "evolution" | "scene";
+  | "undo" | "profile" | "noWindow" | "loading" | "done" | "filter" | "world" | "level" | "certainty" | "imagery" | "evolution" | "scene" | "zone";
 
 const LANGS: Lang[] = ["es", "en"];
 const REGS: Register[] = REGISTERS;
@@ -468,6 +468,16 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
           ...others.slice(0, 2).map((x) => chip(L(x.title.replace("Infrarrojo en vivo · ", "Infrarrojo · "), x.title), { t: "imagery", layer: x.id })),
           chip(L("¿Qué está pasando en el mundo?", "What is happening in the world?"), { t: "topic", topic: "eventos", where: null }),
         ],
+      };
+    }
+    case "zone": {
+      const z = ctx.state.zone ?? { name: "Durango", lat: 24.02, lon: -104.67 };
+      return {
+        ...base, origin: "zon", evidence: null, action: L("Monitoreo · zona en 3D real", "Monitoring · real 3D zone"),
+        text: allRegs(L(
+          `Abrí ${z.name} en 3D real: el relieve medido y la imagen de satélite Sentinel-2 (10 m), 12 × 12 km. No es generado. Gíralo arrastrando; si quieres ver cómo se vería con sus datos de clima, abre la escena generada.`,
+          `I opened ${z.name} in real 3D: measured relief and Sentinel-2 satellite imagery (10 m), 12 × 12 km. Nothing is generated. Drag to turn it; to see it with its climate data, open the generated scene.`)),
+        chips: [chip(L("Escena generada con línea de tiempo", "Generated scene with timeline"), { t: "scene", where: { name: z.name, lat: z.lat, lon: z.lon }, timeline: true })],
       };
     }
     case "scene": {

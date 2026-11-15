@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
+import { InlineScript } from "@/components/InlineScript";
 
 export const metadata: Metadata = {
   title: "HORIZON 247",
@@ -29,8 +30,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="es" className={`${GeistSans.variable} h-full`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: BOOT }} />
-        <script dangerouslySetInnerHTML={{ __html: SW }} />
+        <InlineScript html={BOOT} />
+        <InlineScript html={SW} />
       </head>
       <body className="min-h-full bg-bg text-text">{children}</body>
     </html>

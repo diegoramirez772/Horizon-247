@@ -54,6 +54,8 @@ export interface AppState {
   evolution: boolean;
   /** The generated 3D scene open in the panel (place + whether its timeline starts playing); null = none. */
   scene: SceneTarget | null;
+  /** The real place open in 3D (relief + satellite); null = none. */
+  zone: { name: string; lat: number; lon: number } | null;
 }
 
 export interface SceneTarget { name: string; lat: number; lon: number; timeline: boolean; /** A ready-made scene instead of a place (Marte, Luna). */ preset?: string }
@@ -77,6 +79,7 @@ export const DEFAULT_STATE: AppState = {
   imagery: null,
   evolution: false,
   scene: null,
+  zone: null,
 };
 
 type Listener = () => void;

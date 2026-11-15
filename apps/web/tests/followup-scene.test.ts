@@ -51,3 +51,10 @@ describe("swarm", () => {
     expect(parse("¿qué reporta la gente?", []).intent).toMatchObject({ t: "topic", topic: "red" });
   });
 });
+
+describe("real 3D zone", () => {
+  it("«muéstrame Chihuahua en 3D» opens the real place, not the generated scene", () => {
+    expect(parse("muéstrame Chihuahua en 3D", []).intent).toMatchObject({ t: "scene", real: true, where: { name: "Chihuahua" } });
+    expect(parse("escena generada de Chihuahua", []).intent).toMatchObject({ t: "scene", real: false });
+  });
+});

@@ -9,8 +9,8 @@
 // Zooming past `maxLevel` never invents detail.
 
 export type Body = "earth" | "mars" | "moon";
-export type Provider = "gibs" | "trek";
-export type LayerRole = "base" | "evidence" | "variable" | "night" | "live";
+export type Provider = "gibs" | "trek" | "eox";
+export type LayerRole = "base" | "evidence" | "variable" | "night" | "live" | "detail";
 
 export interface LayerDef {
   id: string;
@@ -67,6 +67,16 @@ export const LAYERS: LayerDef[] = [
 ];
 
 /**
+ * Sharp Earth for close views (flat map patches, real 3D zones): Sentinel-2 cloudless 2020, ~10 m, by EOX
+ * (CC BY-NC-SA 4.0 — non-commercial, like this project; contains modified Copernicus Sentinel data 2020).
+ * Same plate carrée grid as Trek (180° / 2^z per 256 px tile).
+ */
+export const DETAIL_EARTH: LayerDef = {
+  id: "s2cloudless-2020", body: "earth", provider: "eox", role: "detail", title: "Sentinel-2 sin nubes 2020 (EOX)", kind: "compuesto",
+  tms: "", ext: "jpg", maxLevel: 13, resolution_m: 10, daily: false, attribution: "Sentinel-2 cloudless by EOX IT Services GmbH (Copernicus Sentinel data 2020)",
+};
+
+/**
  * Latest 10-minute slot GIBS already has for a geostationary layer, as the time GIBS expects in the tile URL
  * (e.g. "2026-11-15T07:40:00Z"). 30 minutes of margin: GIBS publishes each image ~20 min after it is taken.
  */
@@ -116,6 +126,7 @@ export function tileUrl(l: LayerDef, z: number, row: number, col: number, date?:
     const d = l.daily || l.start ? `${date ?? "default"}/` : "";
     return `https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/${l.id}/default/${d}${l.tms}/${z}/${row}/${col}.${l.ext}`;
   }
+  if (l.provider === "eox") return `https://tiles.maps.eox.at/wmts/1.0.0/${l.id}/default/WGS84/${z}/${row}/${col}.${l.ext}`;
   return `https://trek.nasa.gov/tiles/${l.tms}/${l.id}/1.0.0/default/default028mm/${z}/${row}/${col}.${l.ext}`;
 }
 

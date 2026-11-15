@@ -15,6 +15,9 @@ Software
 Data and services (fetched at run time or shipped as derived bundles)
   - NASA POWER (MERRA-2 based), NASA Langley Research Center — NASA open-data policy; cite POWER.
   - NASA GIBS imagery (GOES-East/West ABI, Himawari AHI, MODIS, VIIRS, Blue Marble) — NASA open data.
+  - Sentinel-2 cloudless 2020 by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2020)
+      — CC BY-NC-SA 4.0 (non-commercial; used for close-up imagery and the real 3D zone).
+  - AWS Terrain Tiles (Terrarium; Mapzen, SRTM/NASA, USGS, and other open sources) — open data, attribution required.
   - NASA EONET natural events — NASA open data; each event keeps its original source link.
   - NASA NSSDC planetary fact sheets — public domain (US Government work).
   - Mars Climate Database dust climatology, Montabone et al. (2015, 2020) — CC BY-SA 3.0.
