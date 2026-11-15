@@ -6,7 +6,11 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { askLogin, currentUser, subscribe } from "@/core/live/auth";
 import type { Widget } from "@/core/genui/topic";
-import { findPlace, type Where } from "@/core/genui/places";
+import { HOME_PLACE, findPlace, type Where } from "@/core/genui/places";
+import { type FaunaGroup, type FaunaSignal, type TopSpecies, GROUPS, boxAround, topSpecies, watchFauna } from "@/core/live/fauna";
+import { type LiveDetection, distanceKm, subscribeWeather } from "@/core/map/weather";
+import { FaunaGroupCard, faunaLine } from "../FaunaPanel";
+import { IssCam, JointMap, SkyCam } from "./LiveViews";
 import type { Lang } from "@/core/i18n/texts";
 import { CAT_LABEL, CAT_PLURAL, fetchEvents, km, type NaturalEvent } from "@/core/live/eonet";
 import { fetchPowerPoint, thiDays, type PowerPoint, type ThiLevel } from "@/core/live/power";
@@ -41,6 +45,12 @@ export function Widgets({ widgets, lang, actions }: { widgets: Widget[]; lang: L
             : w.w === "astronaut" ? <AstronautWidget lang={lang} />
             : w.w === "mars" ? <MarsWidget lang={lang} />
             : w.w === "swarm" ? <SwarmWidget where={w.where} draft={w.draft} lang={lang} actions={actions} />
+            : w.w === "alerts" ? <AlertsWidget where={w.where} lang={lang} actions={actions} />
+            : w.w === "fauna" ? <FaunaWidget where={w.where} group={w.group} lang={lang} />
+            : w.w === "storms" ? <StormsWidget near={w.near} lang={lang} actions={actions} />
+            : w.w === "iss" ? <IssCam lang={lang} />
+            : w.w === "sky" ? <SkyCam lang={lang} near={w.near} />
+            : w.w === "joint" ? <Frame title={lang === "es" ? "Cambio conjunto · HORI" : "Joint change · HORI"} badge={{ text: "HORI", kind: "hori" }}><JointMap lang={lang} hint={w.hint} onLook={actions.look} /></Frame>
             : <PlanetsWidget lang={lang} />}
         </div>
       ))}
@@ -471,4 +481,218 @@ function placeFrom(text: string, fallback: Where | null): Where | null {
   if (!m) return null;
   const lat = Number(m[1].replace(",", ".")), lon = Number(m[2].replace(",", "."));
   return Math.abs(lat) <= 90 && Math.abs(lon) <= 180 ? { name: `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`, lat, lon } : null;
+}
+
+// ---------------------------------------------------------------- alerts, fauna, live storms (key components on demand)
+
+const PLACES_STORE = "h247-places-v1";
+const FAUNA_ALL = Object.keys(GROUPS) as FaunaGroup[];
+const STORM_KM = 600;
+const EVENT_KM = 400;
+
+/** «Mi casa»: the place said, else the first of «Tus lugares» (this browser), else the default; the device location on request. */
+function useMyPlace(where: Where | null): [Where, (w: Where) => void] {
+  const [p, setP] = useState<Where>(where ?? HOME_PLACE);
+  useEffect(() => {
+    if (where) { setP(where); return; }
+    try {
+      const v = JSON.parse(localStorage.getItem(PLACES_STORE) ?? "null");
+      if (Array.isArray(v) && typeof v[0]?.name === "string" && Number.isFinite(v[0]?.lat) && Number.isFinite(v[0]?.lon)) setP(v[0]);
+    } catch { /* storage blocked: default place */ }
+  }, [where]);
+  return [p, setP];
+}
+
+function HereButton({ lang, onPlace }: { lang: Lang; onPlace: (w: Where) => void }) {
+  const es = lang === "es";
+  const [busy, setBusy] = useState(false);
+  if (typeof navigator === "undefined" || !navigator.geolocation) return null;
+  return (
+    <button type="button" disabled={busy} className="text-xs font-medium underline underline-offset-2 disabled:opacity-60"
+      onClick={() => {
+        setBusy(true);
+        navigator.geolocation.getCurrentPosition(
+          (g) => { setBusy(false); onPlace({ name: es ? "Tu ubicación" : "Your location", lat: Math.round(g.coords.latitude * 100) / 100, lon: Math.round(g.coords.longitude * 100) / 100 }); },
+          () => setBusy(false), { maximumAge: 600e3, timeout: 10e3 });
+      }}>
+      {es ? "Usar mi ubicación (~1 km)" : "Use my location (~1 km)"}
+    </button>
+  );
+}
+
+/** The six groups around a place, one at a time (2 small requests each, cached 6 h in fauna.ts). */
+function useFaunaScan(p: Where, groups: FaunaGroup[]): { sig: Partial<Record<FaunaGroup, FaunaSignal>>; done: boolean; err: boolean } {
+  const [st, setSt] = useState<{ key: string; sig: Partial<Record<FaunaGroup, FaunaSignal>>; done: boolean; err: boolean }>({ key: "", sig: {}, done: false, err: false });
+  const key = `${p.lat},${p.lon}|${groups.join(",")}`;
+  useEffect(() => {
+    const ctrl = new AbortController();
+    const box = boxAround(p.lat, p.lon, 0.5);
+    setSt({ key, sig: {}, done: false, err: false });
+    (async () => {
+      let err = false;
+      for (const g of groups) {
+        try {
+          const s = await watchFauna(g, box, { signal: ctrl.signal });
+          if (ctrl.signal.aborted) return;
+          setSt((o) => ({ ...o, sig: { ...o.sig, [g]: s } }));
+        } catch { if (ctrl.signal.aborted) return; err = true; }
+      }
+      if (!ctrl.signal.aborted) setSt((o) => ({ ...o, done: true, err }));
+    })();
+    return () => ctrl.abort();
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps -- the key holds the place and the groups
+  return st.key === key ? st : { sig: {}, done: false, err: false };
+}
+
+function useSpecies(p: Where, groups: FaunaGroup[], lang: Lang): Partial<Record<FaunaGroup, TopSpecies[]>> {
+  const [sp, setSp] = useState<Partial<Record<FaunaGroup, TopSpecies[]>>>({});
+  const key = `${p.lat},${p.lon}|${groups.join(",")}|${lang}`;
+  useEffect(() => {
+    let live = true;
+    const box = boxAround(p.lat, p.lon, 0.5);
+    for (const g of groups) topSpecies(g, box, lang).then((t) => live && setSp((o) => ({ ...o, [g]: t }))).catch(() => {});
+    return () => { live = false; };
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  return sp;
+}
+
+function useLiveStorms(): { list: LiveDetection[]; at: string | null; ready: boolean } {
+  const [st, setSt] = useState<{ list: LiveDetection[]; at: string | null; ready: boolean }>({ list: [], at: null, ready: false });
+  useEffect(() => subscribeWeather((f) => setSt({ list: f.detections, at: f.irTime, ready: true })), []);
+  return st;
+}
+
+const STORM_KIND = {
+  es: { tormenta: "Tormenta (topes muy fríos)", lluvia_intensa: "Lluvia intensa", nieve: "Nieve o lluvia helada" },
+  en: { tormenta: "Storm (very cold tops)", lluvia_intensa: "Heavy rain", nieve: "Snow or freezing rain" },
+};
+const STORM_TREND = {
+  es: { nuevo: "nuevo", crece: "crece", se_debilita: "se debilita", sigue: "sigue" },
+  en: { nuevo: "new", crece: "growing", se_debilita: "weakening", sigue: "ongoing" },
+};
+
+function StormRow({ d, km: dist, lang, actions }: { d: LiveDetection; km: number | null; lang: Lang; actions: WidgetActions }) {
+  const es = lang === "es";
+  return (
+    <button type="button" onClick={() => actions.look(d.lat, d.lon)} className="flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-left text-sm hover:border-accent">
+      <span aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${d.kind === "tormenta" ? "bg-[#ff5a3c]" : d.kind === "nieve" ? "bg-[#7fd8ff]" : "bg-[#3cb4ff]"}`} />
+      <span className="min-w-0 flex-1">
+        <span className="block font-medium">{STORM_KIND[lang][d.kind]}</span>
+        <span className="block text-xs text-text-3">
+          {dist !== null ? `${es ? "a" : ""} ${Math.round(dist).toLocaleString(lang)} km · ` : ""}≈{Math.round(d.areaKm2 / 1000).toLocaleString(lang)} {es ? "mil km²" : "k km²"}{d.movedKm ? ` · ${es ? "se movió" : "moved"} ${d.movedKm} km` : ""}
+        </span>
+      </span>
+      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${d.trend === "nuevo" || d.trend === "crece" ? "bg-accent text-on-accent" : "bg-surface-2 text-text-2"}`}>{STORM_TREND[lang][d.trend]}</span>
+    </button>
+  );
+}
+
+/** Live storms and heavy rain (core/map/weather.ts), nearest first when there is a place. */
+function StormsWidget({ near, lang, actions }: { near: Where | null; lang: Lang; actions: WidgetActions }) {
+  const es = lang === "es";
+  const { list, at, ready } = useLiveStorms();
+  const rows = list.map((d) => ({ d, km: near ? distanceKm(near.lat, near.lon, d.lat, d.lon) : null }))
+    .sort((a, b) => (a.km ?? 0) - (b.km ?? 0) || b.d.areaKm2 - a.d.areaKm2).slice(0, 5);
+  return (
+    <Frame title={es ? "Tormentas detectadas en vivo" : "Storms detected live"} badge={{ text: es ? "NASA en vivo" : "NASA live", kind: "live" }}
+      foot={es ? `Infrarrojo GOES/Himawari${at ? ` ${at.slice(11, 16)} UTC` : ""} + lluvia IMERG. Es lo que se ve en la imagen, no un pronóstico.` : `GOES/Himawari infrared${at ? ` ${at.slice(11, 16)} UTC` : ""} + IMERG rain. What the picture shows, not a forecast.`}>
+      {!ready ? <Loading lang={lang} /> : rows.length ? (
+        <div className="space-y-1.5">{rows.map(({ d, km: k }) => <StormRow key={d.id} d={d} km={k} lang={lang} actions={actions} />)}</div>
+      ) : <p className="text-sm text-text-2">{es ? "Ninguna tormenta ni lluvia fuerte detectada ahora." : "No storm or heavy rain detected now."}</p>}
+    </Frame>
+  );
+}
+
+/** Animal signals in the conversation: one group, or the six (changed first). Same card as the panel. */
+function FaunaWidget({ where, group, lang }: { where: Where | null; group: FaunaGroup | null; lang: Lang }) {
+  const es = lang === "es";
+  const [p, setP] = useMyPlace(where);
+  const groups = useMemo(() => (group ? [group] : FAUNA_ALL), [group]);
+  const { sig, done, err } = useFaunaScan(p, groups);
+  const sp = useSpecies(p, groups, lang);
+  const RANK = { alta: 3, media: 2, leve: 1 } as const;
+  const shown = groups.filter((g) => sig[g]).sort((a, b) => {
+    const la = faunaLine(sig[a]!, lang).level, lb = faunaLine(sig[b]!, lang).level;
+    return (lb ? RANK[lb] : 0) - (la ? RANK[la] : 0);
+  });
+  return (
+    <Frame title={`${group ? GROUPS[group][lang] : es ? "Señales de fauna" : "Animal signals"} · ${p.name}`} badge={{ text: "HORI", kind: "hori" }}
+      foot={es ? "iNaturalist (ciencia ciudadana), tasa de reporte normalizada por esfuerzo; detector de anomalías de HORI." : "iNaturalist (citizen science), effort-normalised reporting rate; HORI anomaly detector."}>
+      <div className="mb-2"><HereButton lang={lang} onPlace={setP} /></div>
+      {err && !shown.length ? <Offline lang={lang} what="iNaturalist" /> : null}
+      <div className="space-y-2">{shown.map((g) => <FaunaGroupCard key={g} g={g} s={sig[g]!} species={sp[g]} lang={lang} />)}</div>
+      {!done ? <Loading lang={lang} /> : null}
+    </Frame>
+  );
+}
+
+/**
+ * «¿Hay alertas por mi casa?»: everything watched around the place — live storms, NASA events, the six animal groups —
+ * and, for each anomaly found, the same component the Monitoreo shows (a fauna card, a storm, an event). Nothing found:
+ * says so, source by source, and offers the six fauna cards anyway.
+ */
+function AlertsWidget({ where, lang, actions }: { where: Where | null; lang: Lang; actions: WidgetActions }) {
+  const es = lang === "es";
+  const [p, setP] = useMyPlace(where);
+  const fauna = useFaunaScan(p, FAUNA_ALL);
+  const storms = useLiveStorms();
+  const [events, setEvents] = useState<NaturalEvent[] | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  useEffect(() => { let live = true; fetchEvents(30).then((e) => live && setEvents(e)).catch(() => live && setEvents([])); return () => { live = false; }; }, []);
+
+  const odd = FAUNA_ALL.filter((g) => { const s = fauna.sig[g]; const l = s ? faunaLine(s, lang).level : null; return l === "media" || l === "alta"; });
+  const mild = FAUNA_ALL.filter((g) => { const s = fauna.sig[g]; return s ? faunaLine(s, lang).level === "leve" : false; });
+  const near = storms.list.map((d) => ({ d, km: distanceKm(p.lat, p.lon, d.lat, d.lon) })).filter((x) => x.km <= STORM_KM).sort((a, b) => a.km - b.km);
+  const evNear = (events ?? []).map((e) => ({ e, k: km(p, e) })).filter((x) => x.k <= EVENT_KM).sort((a, b) => a.k - b.k);
+  const cardsFor = showAll ? FAUNA_ALL.filter((g) => fauna.sig[g]) : [...odd, ...mild];
+  const sp = useSpecies(p, cardsFor, lang);
+  const total = odd.length + near.length + evNear.length;
+  // The verdict does not wait for the clouds (the heaviest source on a slow network); the storm row keeps loading.
+  const ready = fauna.done && events !== null;
+  const [slow, setSlow] = useState(false);
+  useEffect(() => { const t = window.setTimeout(() => setSlow(true), 15e3); return () => window.clearTimeout(t); }, []);
+
+  const Row = ({ ok, text }: { ok: boolean | null; text: string }) => (
+    <li className="flex items-center gap-2 text-sm">
+      <span aria-hidden="true" className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${ok === null ? "animate-pulse bg-surface-2 text-text-3" : ok ? "bg-surface-2 text-text-2" : "bg-accent text-on-accent"}`}>{ok === null ? "…" : ok ? "✓" : "!"}</span>
+      <span className={ok === false ? "font-medium" : "text-text-2"}>{text}</span>
+    </li>
+  );
+
+  return (
+    <Frame title={`${es ? "Alertas cerca de" : "Alerts near"} ${p.name}`} badge={{ text: es ? "NASA en vivo + HORI" : "NASA live + HORI", kind: "live" }}
+      foot={es ? `Radio: tormentas ${STORM_KM} km, eventos ${EVENT_KM} km, fauna ~110 km. Una anomalía es una desviación frente al pasado del mismo lugar: no dice por qué.` : `Radius: storms ${STORM_KM} km, events ${EVENT_KM} km, fauna ~110 km. An anomaly is a departure from the same place's past: it does not say the cause.`}>
+      <div className="mb-3 flex items-center gap-3">
+        <p className={`text-2xl font-semibold leading-none ${ready && total ? "" : "text-text-2"}`}>
+          {!ready ? (es ? "Revisando…" : "Checking…") : total ? (es ? `${total} ${total === 1 ? "alerta" : "alertas"}` : `${total} alert${total === 1 ? "" : "s"}`) : storms.ready ? (es ? "Sin alertas" : "No alerts") : (es ? "Sin alertas por ahora" : "No alerts so far")}
+        </p>
+        <span className="ml-auto"><HereButton lang={lang} onPlace={setP} /></span>
+      </div>
+      <ul className="space-y-1.5">
+        <Row ok={storms.ready ? near.length === 0 : null} text={!storms.ready ? (slow ? (es ? "Tormentas en vivo: la red va lenta, sigue cargando…" : "Live storms: slow network, still loading…") : (es ? "Tormentas en vivo…" : "Live storms…")) : near.length ? (es ? `${near.length} tormenta(s) o lluvia fuerte a menos de ${STORM_KM} km` : `${near.length} storm(s) or heavy rain within ${STORM_KM} km`) : (es ? `Sin tormentas a ${STORM_KM} km` : `No storms within ${STORM_KM} km`)} />
+        <Row ok={events === null ? null : evNear.length === 0} text={events === null ? (es ? "Eventos de la NASA…" : "NASA events…") : evNear.length ? (es ? `${evNear.length} evento(s) de la NASA a menos de ${EVENT_KM} km` : `${evNear.length} NASA event(s) within ${EVENT_KM} km`) : (es ? `Sin eventos de la NASA a ${EVENT_KM} km` : `No NASA events within ${EVENT_KM} km`)} />
+        <Row ok={!fauna.done ? null : odd.length === 0} text={!fauna.done ? (es ? `Fauna: ${Object.keys(fauna.sig).length} de 6 grupos…` : `Wildlife: ${Object.keys(fauna.sig).length} of 6 groups…`) : odd.length ? (es ? `Fauna: ${odd.map((g) => GROUPS[g].es).join(", ")} fuera de lo común` : `Wildlife: ${odd.map((g) => GROUPS[g].en).join(", ")} unusual`) : (es ? `Fauna: 6 grupos sin anomalía${mild.length ? ` (${mild.length} leve)` : ""}` : `Wildlife: 6 groups without anomaly${mild.length ? ` (${mild.length} mild)` : ""}`)} />
+      </ul>
+
+      {near.length ? <div className="mt-3 space-y-1.5">{near.slice(0, 4).map(({ d, km: k }) => <StormRow key={d.id} d={d} km={k} lang={lang} actions={actions} />)}</div> : null}
+      {evNear.length ? (
+        <ul className="mt-3 space-y-1.5">
+          {evNear.slice(0, 4).map(({ e, k }) => (
+            <li key={e.id}>
+              <button type="button" onClick={() => actions.look(e.lat, e.lon)} className="flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-left text-sm hover:border-accent">
+                <span aria-hidden="true" className="text-base">{CAT_LABEL[e.cat].icon}</span>
+                <span className="min-w-0 flex-1"><span className="block truncate font-medium">{e.title}</span><span className="block text-xs text-text-3">{CAT_LABEL[e.cat][lang]} · {Math.round(k).toLocaleString(lang)} km · {e.date.slice(0, 10)}</span></span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {cardsFor.length ? <div className="mt-3 space-y-2">{cardsFor.map((g) => <FaunaGroupCard key={g} g={g} s={fauna.sig[g]!} species={sp[g]} lang={lang} />)}</div> : null}
+      {fauna.done && Object.keys(fauna.sig).length ? (
+        <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-3 text-xs font-medium underline underline-offset-2">
+          {showAll ? (es ? "Mostrar solo lo anómalo" : "Show only anomalies") : (es ? "Ver las 6 tarjetas de fauna" : "See the 6 wildlife cards")}
+        </button>
+      ) : null}
+    </Frame>
+  );
 }

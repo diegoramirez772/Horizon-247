@@ -3,7 +3,10 @@
 // fire radiative power → flames and smoke…). Every generated thing keeps the reading that drove it (H4), and the scene
 // as a whole is always labelled as generated, never as a photo (H5).
 
-export type Body = "earth" | "mars" | "moon";
+import type { WorldId } from "./worlds";
+
+/** Any world of the modeler (worlds.ts): Earth, Mars, the Moon, Mercury, Venus, Titan, Europa, Io, Pluto. */
+export type Body = WorldId;
 
 export type Biome =
   | "semiarido" // Durango plains: grass, mesquite, nopal, agave

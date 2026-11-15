@@ -40,6 +40,118 @@
   }
  },
  {
+  "path": "earth/aod_1deg_1981-2025",
+  "kind": "layer",
+  "id": "earthdata_aod_1981-2025",
+  "profile": "earth",
+  "title": {
+   "es": "Aerosoles (MERRA-2)",
+   "en": "Aerosols (MERRA-2)"
+  },
+  "variable": {
+   "name": "AOD",
+   "unit": "1",
+   "unit_per_decade": "1/década"
+  },
+  "unit": "1",
+  "window": {
+   "start": 1981,
+   "end": 2025,
+   "n": 45
+  },
+  "cells": 64800,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 15236283,
+  "files": {
+   "break_year.f32": {
+    "bytes": 259200,
+    "sha256": "bb22ba79086a8b935b8be3ccc555d55c8d9825f20e376fe988e2b25263d343db"
+   },
+   "ci_hi.f32": {
+    "bytes": 259200,
+    "sha256": "d645d31ea0c62f5cc119021745c9314196ecdbde7f3002f4c2f8d95a9e417e62"
+   },
+   "ci_lo.f32": {
+    "bytes": 259200,
+    "sha256": "48831237f437a311268fab11b8a1d61c4e14f6bcc16c6bfbf17d224d2381b21f"
+   },
+   "delta.f32": {
+    "bytes": 259200,
+    "sha256": "765a446ecee81a858cc4d1e362cda06f0c482f7b5a4f0f42a99760f6c3fd0339"
+   },
+   "e_cons.f32": {
+    "bytes": 259200,
+    "sha256": "ddf4e13be13355a8465cec3681dcd8a9459efa4cb8983298f70aedd2f3479c5c"
+   },
+   "ebh_sig.u8": {
+    "bytes": 64800,
+    "sha256": "49616bc8c9c87163bf88be52ab97a35aed8001aa2315d0ea8f16526b646308b5"
+   },
+   "effect.f32": {
+    "bytes": 259200,
+    "sha256": "f40e8c38dd6230bde6ccecfa757eb90981babcdd1023e249c5fca9a0b1b4329e"
+   },
+   "flags.u8": {
+    "bytes": 64800,
+    "sha256": "f392cf2522fff3b0884f9452c0a340f4c410191f80cbc12fbd98be539c6e35af"
+   },
+   "manifest.json": {
+    "bytes": 8283,
+    "sha256": "a0ebeb46a7f4f843e7eb57601a77c6fcaed5c18da07f84aceabdf6f8575055e5"
+   },
+   "mde.f32": {
+    "bytes": 259200,
+    "sha256": "2dcfe533f08cf026b41a9732981f8144d9f1a5949b741fae7d42fe64efea972a"
+   },
+   "naive_sig.u8": {
+    "bytes": 64800,
+    "sha256": "e24551418be1d56807d901c03be96ca5a67055c6c54fa21b690f35519877f073"
+   },
+   "nsig_methods.u8": {
+    "bytes": 64800,
+    "sha256": "dbae178a613bd9d4b5a547766c526af6c87a270965d782f5507fdeb723f2769a"
+   },
+   "nvalid.u8": {
+    "bytes": 64800,
+    "sha256": "f3de3735f5ee28c6642eb13a9973ee2e02c99338edd5d4220b4b50124eeba963"
+   },
+   "p_cons.f32": {
+    "bytes": 259200,
+    "sha256": "abf7a8a378acdd1bbee048f05bd4e50974c1d0c601db4cac062cd91979e5d37e"
+   },
+   "q_cons.f32": {
+    "bytes": 259200,
+    "sha256": "31c994f75fd92338bdd891442af722c402884d6eb293f5205ecd38e2e55f4915"
+   },
+   "r1.f32": {
+    "bytes": 259200,
+    "sha256": "b1976af33b4b2534888c75b17e07ef365147d1ae37181c274882cf092d4f0c94"
+   },
+   "robust_mem.u8": {
+    "bytes": 64800,
+    "sha256": "94543a458a6eedd62a5a07de59d38c7eab139bc7be90e21271c8345a16cec18b"
+   },
+   "series.f32": {
+    "bytes": 11664000,
+    "sha256": "d55a0f8c8f10200d03b0bb3293bbb0e9bf376a01ee9fee77d468853f5e96af6a"
+   },
+   "sigma.f32": {
+    "bytes": 259200,
+    "sha256": "7d829d82d133811f367bda374ebbf08848b54e23d3e1e80e1fc7c6ec9e741662"
+   },
+   "verdict.u8": {
+    "bytes": 64800,
+    "sha256": "9e2f5097f01a6e864784f36f2dff39ef7bc51a462d256e3eb3def7525cb6a594"
+   },
+   "years_more.f32": {
+    "bytes": 259200,
+    "sha256": "5366cd996355e96a715beea07241b5f0a2f2b73cc25c98e0ffbc8053a61df827"
+   }
+  }
+ },
+ {
   "path": "earth/global_prectotcorr_1981-2025",
   "kind": "layer",
   "id": "powerzarr_PRECTOTCORR_global_1981-2025",
@@ -388,6 +500,251 @@
   }
  },
  {
+  "path": "earth/joint_t2m-aod_1981-2025",
+  "kind": "joint",
+  "id": "joint_t2m-aod_1981-2025",
+  "profile": "earth",
+  "title": {
+   "es": "Cambio conjunto T2M + AOD, 1981–2025",
+   "en": "Joint change T2M + AOD, 1981–2025"
+  },
+  "variable": {
+   "name": "JOINT",
+   "unit": ""
+  },
+  "unit": "",
+  "window": {
+   "start": 1981,
+   "end": 2025,
+   "n": 45
+  },
+  "cells": 64800,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 332635,
+  "files": {
+   "level_J7.u8": {
+    "bytes": 64800,
+    "sha256": "20097e926cd639851cc3b2646145abcfe984d22aea9639fc6d0c1d6d92da9c8a"
+   },
+   "manifest.json": {
+    "bytes": 8635,
+    "sha256": "70f4b3f9a643bd52a60cd2ce1f87cc48e290c5adbcc092d62c288171e790f634"
+   },
+   "q_J7.f32": {
+    "bytes": 259200,
+    "sha256": "f9b5768fee9c5c83c58164baffdc0f442ece812574ae5a734179fb13e57b78aa"
+   }
+  }
+ },
+ {
+  "path": "earth/joint_t2m-prectotcorr-ndvi_2001-2025",
+  "kind": "joint",
+  "id": "joint_t2m-prectotcorr-ndvi_2001-2025",
+  "profile": "earth",
+  "title": {
+   "es": "Cambio conjunto T2M + PRECTOTCORR + NDVI, 2001–2025",
+   "en": "Joint change T2M + PRECTOTCORR + NDVI, 2001–2025"
+  },
+  "variable": {
+   "name": "JOINT",
+   "unit": ""
+  },
+  "unit": "",
+  "window": {
+   "start": 2001,
+   "end": 2025,
+   "n": 25
+  },
+  "cells": 64800,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 1045489,
+  "files": {
+   "level_J1.u8": {
+    "bytes": 64800,
+    "sha256": "3544e13a70e58d29ba435e9919434e3799dc0a8d215461fc6cb3cad69040009f"
+   },
+   "level_J4.u8": {
+    "bytes": 64800,
+    "sha256": "26c024d9660a469907b8ab68464ea3178aaef7cd541c5996a10bb6579548c2f1"
+   },
+   "level_J6.u8": {
+    "bytes": 64800,
+    "sha256": "98c1aada3ce04286143e686c1ef5b95a645a0b8f5734f868d7b25ca9352cd1a2"
+   },
+   "manifest.json": {
+    "bytes": 73489,
+    "sha256": "b3e3d3fc7aadf86a9dbf77784480f1ca45e8be2b5fdc537f3e9dfeb249497d82"
+   },
+   "q_J1.f32": {
+    "bytes": 259200,
+    "sha256": "436b3e1a5fa596d88a86f8ca4b5d44222fe4739d36daa3a76b35df13b6eacb5b"
+   },
+   "q_J4.f32": {
+    "bytes": 259200,
+    "sha256": "436b3e1a5fa596d88a86f8ca4b5d44222fe4739d36daa3a76b35df13b6eacb5b"
+   },
+   "q_J6.f32": {
+    "bytes": 259200,
+    "sha256": "38d5c9b08aea1d32b4092825c2dec6d39077d132ac2b9a28610487db7fe38d11"
+   }
+  }
+ },
+ {
+  "path": "earth/joint_t2m-snow_cover_1981-2025",
+  "kind": "joint",
+  "id": "joint_t2m-snow_cover_1981-2025",
+  "profile": "earth",
+  "title": {
+   "es": "Cambio conjunto T2M + SNOW_COVER, 1981–2025",
+   "en": "Joint change T2M + SNOW_COVER, 1981–2025"
+  },
+  "variable": {
+   "name": "JOINT",
+   "unit": ""
+  },
+  "unit": "",
+  "window": {
+   "start": 1981,
+   "end": 2025,
+   "n": 45
+  },
+  "cells": 64800,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 355133,
+  "files": {
+   "level_J3.u8": {
+    "bytes": 64800,
+    "sha256": "15d377bf9c91abf4c141f5479f9fa34f001d84ce1be398d943bd992dce317222"
+   },
+   "manifest.json": {
+    "bytes": 31133,
+    "sha256": "a185e2b9bd74254845f942418b1790baa6fdf44c0bf68dcd586435946ffaad61"
+   },
+   "q_J3.f32": {
+    "bytes": 259200,
+    "sha256": "0e9eb070c83e1bf558e1c06e929c54d00a966e7a9184f08ce8cdc71933d25262"
+   }
+  }
+ },
+ {
+  "path": "earth/ndvi_1deg_2001-2025",
+  "kind": "layer",
+  "id": "earthdata_ndvi_2001-2025",
+  "profile": "earth",
+  "title": {
+   "es": "Vegetación (NDVI, MODIS)",
+   "en": "Vegetation (NDVI, MODIS)"
+  },
+  "variable": {
+   "name": "NDVI",
+   "unit": "1",
+   "unit_per_decade": "1/década"
+  },
+  "unit": "1",
+  "window": {
+   "start": 2001,
+   "end": 2025,
+   "n": 25
+  },
+  "cells": 64800,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 10051736,
+  "files": {
+   "break_year.f32": {
+    "bytes": 259200,
+    "sha256": "4da45d8e5f848df3ad9212462be0ac5ba023d87b78c8bb5c0dafc7f7a6bbf38a"
+   },
+   "ci_hi.f32": {
+    "bytes": 259200,
+    "sha256": "e035bd3ea64cdd1c3c609d2c536369b5e6ce16c1205f418117688cb8e2b84bb8"
+   },
+   "ci_lo.f32": {
+    "bytes": 259200,
+    "sha256": "ffdb2ad3669066906a0e8c3a1a9e533a43285bb40a609ff2ba67e47fecb08a78"
+   },
+   "delta.f32": {
+    "bytes": 259200,
+    "sha256": "0a7ebdd00b718e63e54a0b7dc6a70fc2d00d021d6883442a5da7f1f523159388"
+   },
+   "e_cons.f32": {
+    "bytes": 259200,
+    "sha256": "96777afe266db49e1655f1a6e1ad25f307c5d31473ad7c894a8532bac91965db"
+   },
+   "ebh_sig.u8": {
+    "bytes": 64800,
+    "sha256": "b5b1ee366fa0c7779996a017db46532e4bc9be1500ac8d73eb3e3e205d2925bc"
+   },
+   "effect.f32": {
+    "bytes": 259200,
+    "sha256": "b1850cab4db7094a3f3659b65037417f9f5faabf4752fc5780fb9fe24ec57b7d"
+   },
+   "flags.u8": {
+    "bytes": 64800,
+    "sha256": "1834e647144a5991367c6446dd52b91c24dcad58ee943325d817b0972e22b8c2"
+   },
+   "manifest.json": {
+    "bytes": 7736,
+    "sha256": "c573b16afd68361be270f7a05a7b540e3695b290e7420f339840075583b3fa9f"
+   },
+   "mde.f32": {
+    "bytes": 259200,
+    "sha256": "d9551c42cd5f19ced8226c2492bef3975ff7080175ac59c161defbd7abdb8b92"
+   },
+   "naive_sig.u8": {
+    "bytes": 64800,
+    "sha256": "f0e7a68581239c3f186c7e5adcee0f64540e35268323f5a98062521cb5a6f3b1"
+   },
+   "nsig_methods.u8": {
+    "bytes": 64800,
+    "sha256": "e08bd3973d50f61d3e1971a7c168d69ebca38230f69a1b9bbed9b447d9397515"
+   },
+   "nvalid.u8": {
+    "bytes": 64800,
+    "sha256": "e4a296c76c48d38874c5854b06b33c8ae9eb01bc34ee94e5f4e00f6d0be149df"
+   },
+   "p_cons.f32": {
+    "bytes": 259200,
+    "sha256": "2e3e8bf6c10a2e4594532265b9ba6f98bd19f781c0cf30e881dd65f37c87f609"
+   },
+   "q_cons.f32": {
+    "bytes": 259200,
+    "sha256": "bc8644c9ac3c00515ea77be4db4945115d7af52abf8eb41b1ec355c0501f88b8"
+   },
+   "r1.f32": {
+    "bytes": 259200,
+    "sha256": "a2a72c41e93d5c4b16d682d6d48f54b7743a8f845d97eff25f9c7d9e26474b03"
+   },
+   "robust_mem.u8": {
+    "bytes": 64800,
+    "sha256": "0376d4bebc55d0efed35acd41259dd08fdb9b6a116edf7d272d90f409731d722"
+   },
+   "series.f32": {
+    "bytes": 6480000,
+    "sha256": "dbed8fee4c85d65ce5cebc1692061334f5c2f462c248d5a1ada3b634b0beffaa"
+   },
+   "sigma.f32": {
+    "bytes": 259200,
+    "sha256": "c375d638bbd56de73f55c80a3f4d99d7a926eafc0cc674c7eb13645e86023980"
+   },
+   "verdict.u8": {
+    "bytes": 64800,
+    "sha256": "5a081bea9372369a6e99367d362a82a6015799210c22040267624063c9712151"
+   },
+   "years_more.f32": {
+    "bytes": 259200,
+    "sha256": "4bed9559b7f873059e3ad93651ee54ac492cca0a81ac31f6d3d48f7a916da640"
+   }
+  }
+ },
+ {
   "path": "earth/power_prectotcorr_dgo_2001-2024",
   "kind": "layer",
   "id": "power_PRECTOTCORR_monthly_2001-2024",
@@ -568,6 +925,230 @@
    "years_more.f32": {
     "bytes": 288,
     "sha256": "edc49999abde7eff6e90c81a9f450bc86a2d3a46a951395d784eb61925104220"
+   }
+  }
+ },
+ {
+  "path": "earth/sea_ice_1deg_1979-2025",
+  "kind": "layer",
+  "id": "earthdata_sea_ice_1979-2025",
+  "profile": "earth",
+  "title": {
+   "es": "Hielo marino (NSIDC-0051)",
+   "en": "Sea ice (NSIDC-0051)"
+  },
+  "variable": {
+   "name": "SEA_ICE",
+   "unit": "1",
+   "unit_per_decade": "1/década"
+  },
+  "unit": "1",
+  "window": {
+   "start": 1979,
+   "end": 2025,
+   "n": 47
+  },
+  "cells": 64800,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 15754172,
+  "files": {
+   "break_year.f32": {
+    "bytes": 259200,
+    "sha256": "42d85e25fc6455d5615e6bb40ae89f2ba4da70aaf5e1ed5b1c5f5f2658ba9bad"
+   },
+   "ci_hi.f32": {
+    "bytes": 259200,
+    "sha256": "9901b48b6cd0a89dcd83a2f83a70b57e77c7b87f67ad348e26f7f361aa6938ee"
+   },
+   "ci_lo.f32": {
+    "bytes": 259200,
+    "sha256": "56a62a1b2aa0db44f27c6e1425dbccf6ca37ef306fdf4e69a8fd333e914a9662"
+   },
+   "delta.f32": {
+    "bytes": 259200,
+    "sha256": "b57aefc9e79391059ab5f5689eff030c165b148824360525197ae80905241960"
+   },
+   "e_cons.f32": {
+    "bytes": 259200,
+    "sha256": "a00ae1610b4e3a6bcd75d346d10ad46e4a4e6071df3b7e627de956f0cbac8be9"
+   },
+   "ebh_sig.u8": {
+    "bytes": 64800,
+    "sha256": "5c6fc581150586da315ad6e4e6eac89aa5e6c1c20b2364f73e49e8bfef957572"
+   },
+   "effect.f32": {
+    "bytes": 259200,
+    "sha256": "300f9819ec713c088ca7a1b9ade39705d9e43f0e6be0318aa00644835bef7056"
+   },
+   "flags.u8": {
+    "bytes": 64800,
+    "sha256": "b4004e655ca7ef041d4893f93e44075bce940c31d2084acf763c3650f89cd9af"
+   },
+   "manifest.json": {
+    "bytes": 7772,
+    "sha256": "de4653603d6512a452510a6c016e0e2399512f308cc52405f2ecdf5070e45ba0"
+   },
+   "mde.f32": {
+    "bytes": 259200,
+    "sha256": "7b7f7503a51a9e3c3e0a7b7679a97df53a2b77c2b98cf52cb30be818ac792120"
+   },
+   "naive_sig.u8": {
+    "bytes": 64800,
+    "sha256": "9e1aa93be6faaec02952ba9d18d3dc4aa8e815506d1459eac75e63394d143e4b"
+   },
+   "nsig_methods.u8": {
+    "bytes": 64800,
+    "sha256": "187b936226d58aac701973f2f385ab787f3576e4923004478893f9bff67dd477"
+   },
+   "nvalid.u8": {
+    "bytes": 64800,
+    "sha256": "c3fce3a5e5eb62ed213312044094e717d974a7fd9e5da6554d2a3e58d97b0b85"
+   },
+   "p_cons.f32": {
+    "bytes": 259200,
+    "sha256": "1303a432ffb97096f26f01fdf16c6d6526c9912f1bdfcf9e7ffc9be6aef2766e"
+   },
+   "q_cons.f32": {
+    "bytes": 259200,
+    "sha256": "32ef99698586363b63c0fbd55afa5914b2ec83b4b7a36f202d3a1bb53b7cdf68"
+   },
+   "r1.f32": {
+    "bytes": 259200,
+    "sha256": "869facaa7ec67ffde899d2c1a126107013871ceda9c5cecb519b1266059a3426"
+   },
+   "robust_mem.u8": {
+    "bytes": 64800,
+    "sha256": "22cc1fee08f7c2c7b4207c1c3ce6fecf129ac64e56f4b8b450187a005a4d3894"
+   },
+   "series.f32": {
+    "bytes": 12182400,
+    "sha256": "1619a83dd88c97881f4bab57c1608e7040a16affc1ea3f579ae4b12eebe0f137"
+   },
+   "sigma.f32": {
+    "bytes": 259200,
+    "sha256": "e05ff81ed67a8068f6b677353c735fc0b3a0354e4da151c9a698b7f63df70fdc"
+   },
+   "verdict.u8": {
+    "bytes": 64800,
+    "sha256": "705d704ae3896f8153b91387c334294eafca46d020be243d45b12555cf0f4776"
+   },
+   "years_more.f32": {
+    "bytes": 259200,
+    "sha256": "8c2bf8b71c5b3324f328379add13c9d710a1c6742e8fee3c930cb44e59172c83"
+   }
+  }
+ },
+ {
+  "path": "earth/snow_cover_1deg_1981-2025",
+  "kind": "layer",
+  "id": "earthdata_snow_cover_1981-2025",
+  "profile": "earth",
+  "title": {
+   "es": "Cobertura de nieve (MERRA-2)",
+   "en": "Snow cover (MERRA-2)"
+  },
+  "variable": {
+   "name": "SNOW_COVER",
+   "unit": "1",
+   "unit_per_decade": "1/década"
+  },
+  "unit": "1",
+  "window": {
+   "start": 1981,
+   "end": 2025,
+   "n": 45
+  },
+  "cells": 64800,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 15236176,
+  "files": {
+   "break_year.f32": {
+    "bytes": 259200,
+    "sha256": "5c65a13d14c4927d3c1b8f2837b1d28fab5d58d9373237b999d3cef7f6002518"
+   },
+   "ci_hi.f32": {
+    "bytes": 259200,
+    "sha256": "7c4e6c55ba240d670b25353894b5f1b0fce2f407f1400f4f00e91caeef97a5c5"
+   },
+   "ci_lo.f32": {
+    "bytes": 259200,
+    "sha256": "e20e553b9b50a7e2aba318fef13f6d06dc76135a6ac972c3a1c968efff0321ac"
+   },
+   "delta.f32": {
+    "bytes": 259200,
+    "sha256": "8bb6930039d8e252d6eced6b5ff36f82cbd25419db6231cade2ee346f1a01b21"
+   },
+   "e_cons.f32": {
+    "bytes": 259200,
+    "sha256": "2c2aec0cc3d835de702e18fa4105c1786b10959641ce64930b205a8d10723b02"
+   },
+   "ebh_sig.u8": {
+    "bytes": 64800,
+    "sha256": "8525067ffb71d2a7133337ad1ec486d14e0f8dc7bb1590ee5cbef93f6e3c7cf1"
+   },
+   "effect.f32": {
+    "bytes": 259200,
+    "sha256": "9268fe3271ef5dd1b52bbd443c4196cb0d0628526ebab988e264fc75e460d1b7"
+   },
+   "flags.u8": {
+    "bytes": 64800,
+    "sha256": "9790f43b30a4c29d1ac0a4512a8571e7cb4116b2188547694a85a04b21cac82a"
+   },
+   "manifest.json": {
+    "bytes": 8176,
+    "sha256": "a539f67d34a048867fdf7f52b67f396c6c4b909abea6cb9158aee4bbef426b19"
+   },
+   "mde.f32": {
+    "bytes": 259200,
+    "sha256": "9c22660d19779086d438ec477a22f600be9fa6c735fe004fd6b039c1d7d92f22"
+   },
+   "naive_sig.u8": {
+    "bytes": 64800,
+    "sha256": "71ccc337a94e4dc3acedc8039775e4cdf2b3cf0edb099d0a95a84c59b9ed2bdc"
+   },
+   "nsig_methods.u8": {
+    "bytes": 64800,
+    "sha256": "bf1eda538efdf2ebb7ca15700a568c919157d4770f7af66f332562530598fb79"
+   },
+   "nvalid.u8": {
+    "bytes": 64800,
+    "sha256": "b019e7ff1480ee6404c0f8603fdafee4c4ff2bcbde4227453e347b1076bef8b2"
+   },
+   "p_cons.f32": {
+    "bytes": 259200,
+    "sha256": "9f6dde248887364fb20c113f06afbad6a9904f54f325c0c6f7cbe140aeee6d6d"
+   },
+   "q_cons.f32": {
+    "bytes": 259200,
+    "sha256": "c05088561c4c9d4e685aa70fdbe42bd6bdabf45a7fa9034146297d08940ed4a2"
+   },
+   "r1.f32": {
+    "bytes": 259200,
+    "sha256": "97d55bbed04742d1ca660e9e09f834a6346bbc652d4236fdd3b4c6ca0ce31fda"
+   },
+   "robust_mem.u8": {
+    "bytes": 64800,
+    "sha256": "1e5cf7eff37b96e64af7be09e0ead447a60702338c2274e15446573e6c29729b"
+   },
+   "series.f32": {
+    "bytes": 11664000,
+    "sha256": "631a568015c5d89d2e42651a937dce4696ab0ca17327246d118e4d289dd97e80"
+   },
+   "sigma.f32": {
+    "bytes": 259200,
+    "sha256": "4a06b03723e0a591e98c55b97ff137722919c73580b87a7aa070351968349313"
+   },
+   "verdict.u8": {
+    "bytes": 64800,
+    "sha256": "a66a229411a80149841ddefd14e02b751c88e638633b2367199ab239348214ac"
+   },
+   "years_more.f32": {
+    "bytes": 259200,
+    "sha256": "e23e7be9fe65c8a2c738a1ca1422b65722b2e2f2ef2b0c4d21783d2eae3bd58a"
    }
   }
  },

@@ -1,0 +1,759 @@
+{
+ "contract": "0.4",
+ "kind": "joint",
+ "id": "joint_t2m-snow_cover_1981-2025",
+ "profile": "earth",
+ "title": {
+  "es": "Cambio conjunto T2M + SNOW_COVER, 1981–2025",
+  "en": "Joint change T2M + SNOW_COVER, 1981–2025"
+ },
+ "variable": {
+  "name": "JOINT",
+  "unit": ""
+ },
+ "grid": {
+  "type": "latlon",
+  "nlat": 180,
+  "nlon": 360,
+  "lat0": 89.5,
+  "dlat": -1.0,
+  "lon0": -179.5,
+  "dlon": 1.0
+ },
+ "window": {
+  "start": 1981,
+  "end": 2025,
+  "n": 45,
+  "step": "annual"
+ },
+ "variables": {
+  "T2M": {
+   "layer": "earth/t2m_1deg_1981-2025",
+   "unit": "C",
+   "dataset": "NASA POWER ARD (MERRA-2), Zarr on AWS",
+   "kind": "reanalysis",
+   "delta_per_decade": 0.3,
+   "probado_cells": 40449
+  },
+  "SNOW_COVER": {
+   "layer": "earth/snow_cover_1deg_1981-2025",
+   "unit": "1",
+   "dataset": "M2TMNXLND v5.12.4 — MERRA-2 tavgM_2d_lnd_Nx: 2d,Monthly mean,Time-Averaged,Single-Level,Assimilation,Land Surface Diagnostics 0.625 x 0.5 degree V5.12.4 (M2TMNXLND) ",
+   "kind": "reanalysis",
+   "delta_per_decade": 0.02,
+   "probado_cells": 972
+  }
+ },
+ "rules": [
+  {
+   "rule": "J3",
+   "name": {
+    "es": "Más calor y menos nieve",
+    "en": "Warmer and less snow"
+   },
+   "a": "T2M",
+   "sign_a": 1,
+   "b": "SNOW_COVER",
+   "sign_b": -1,
+   "usable_cells": 13823,
+   "counts": {
+    "NADA": 56202,
+    "SOLO_UNA": 6730,
+    "CONJUNTO_CANDIDATO": 1120,
+    "AMBAS_PROBADO": 95,
+    "CONJUNTO_PROBADO": 653
+   },
+   "fraction_probado_a": 0.6302,
+   "fraction_probado_b": 0.0617,
+   "observed_both_probado": 0.0541,
+   "expected_if_unrelated": 0.0389,
+   "min_q_joint": 0.0036,
+   "ratio": 1.39,
+   "note": {
+    "es": "Coincidir en el mismo lugar no prueba que una cosa cause la otra; la correlación espacial hace ruidosa la comparación con el azar.",
+    "en": "Coinciding in place does not prove that one causes the other; spatial correlation makes the comparison with chance noisy."
+   },
+   "examples": [
+    {
+     "cell": 4148,
+     "lat": 78.5,
+     "lon": 8.5,
+     "q_joint": 0.00363,
+     "effect": {
+      "T2M": 0.7401,
+      "SNOW_COVER": -0.0313
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.74 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0313 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.004). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.74 °C/decade, PROBADO) and snow cover fell (-0.0313 /decade, PROBADO). Both happen at the same place and period (joint q = 0.004). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4147,
+     "lat": 78.5,
+     "lon": 7.5,
+     "q_joint": 0.00363,
+     "effect": {
+      "T2M": 0.6883,
+      "SNOW_COVER": -0.0318
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.688 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0318 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.004). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.688 °C/decade, PROBADO) and snow cover fell (-0.0318 /decade, PROBADO). Both happen at the same place and period (joint q = 0.004). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4146,
+     "lat": 78.5,
+     "lon": 6.5,
+     "q_joint": 0.00363,
+     "effect": {
+      "T2M": 0.6348,
+      "SNOW_COVER": -0.0318
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.635 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0318 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.004). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.635 °C/decade, PROBADO) and snow cover fell (-0.0318 /decade, PROBADO). Both happen at the same place and period (joint q = 0.004). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4149,
+     "lat": 78.5,
+     "lon": 9.5,
+     "q_joint": 0.00601,
+     "effect": {
+      "T2M": 0.7553,
+      "SNOW_COVER": -0.0308
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.755 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0308 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.006). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.755 °C/decade, PROBADO) and snow cover fell (-0.0308 /decade, PROBADO). Both happen at the same place and period (joint q = 0.006). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 16304,
+     "lat": 44.5,
+     "lon": -75.5,
+     "q_joint": 0.00601,
+     "effect": {
+      "T2M": 0.5798,
+      "SNOW_COVER": -0.0242
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.58 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0242 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.006). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.58 °C/decade, PROBADO) and snow cover fell (-0.0242 /decade, PROBADO). Both happen at the same place and period (joint q = 0.006). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 3790,
+     "lat": 79.5,
+     "lon": 10.5,
+     "q_joint": 0.0062,
+     "effect": {
+      "T2M": 0.756,
+      "SNOW_COVER": -0.0283
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.756 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0283 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.006). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.756 °C/decade, PROBADO) and snow cover fell (-0.0283 /decade, PROBADO). Both happen at the same place and period (joint q = 0.006). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4150,
+     "lat": 78.5,
+     "lon": 10.5,
+     "q_joint": 0.0062,
+     "effect": {
+      "T2M": 0.7529,
+      "SNOW_COVER": -0.0305
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.753 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0305 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.006). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.753 °C/decade, PROBADO) and snow cover fell (-0.0305 /decade, PROBADO). Both happen at the same place and period (joint q = 0.006). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4151,
+     "lat": 78.5,
+     "lon": 11.5,
+     "q_joint": 0.0062,
+     "effect": {
+      "T2M": 0.7521,
+      "SNOW_COVER": -0.0303
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.752 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0303 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.006). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.752 °C/decade, PROBADO) and snow cover fell (-0.0303 /decade, PROBADO). Both happen at the same place and period (joint q = 0.006). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 3789,
+     "lat": 79.5,
+     "lon": 9.5,
+     "q_joint": 0.0062,
+     "effect": {
+      "T2M": 0.7344,
+      "SNOW_COVER": -0.0291
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.734 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0291 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.006). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.734 °C/decade, PROBADO) and snow cover fell (-0.0291 /decade, PROBADO). Both happen at the same place and period (joint q = 0.006). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 5695,
+     "lat": 74.5,
+     "lon": 115.5,
+     "q_joint": 0.0062,
+     "effect": {
+      "T2M": 0.5316,
+      "SNOW_COVER": -0.0207
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.532 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0207 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.006). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.532 °C/decade, PROBADO) and snow cover fell (-0.0207 /decade, PROBADO). Both happen at the same place and period (joint q = 0.006). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 19872,
+     "lat": 34.5,
+     "lon": -107.5,
+     "q_joint": 0.0062,
+     "effect": {
+      "T2M": 0.5121,
+      "SNOW_COVER": -0.0029
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.512 °C/década, PROBADO) y bajó la cobertura de nieve (-0.00286 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.006). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.512 °C/decade, PROBADO) and snow cover fell (-0.00286 /decade, PROBADO). Both happen at the same place and period (joint q = 0.006). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4152,
+     "lat": 78.5,
+     "lon": 12.5,
+     "q_joint": 0.0063,
+     "effect": {
+      "T2M": 0.7375,
+      "SNOW_COVER": -0.0292
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.737 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0292 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.006). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.737 °C/decade, PROBADO) and snow cover fell (-0.0292 /decade, PROBADO). Both happen at the same place and period (joint q = 0.006). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 3788,
+     "lat": 79.5,
+     "lon": 8.5,
+     "q_joint": 0.0063,
+     "effect": {
+      "T2M": 0.6994,
+      "SNOW_COVER": -0.0297
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.699 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0297 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.006). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.699 °C/decade, PROBADO) and snow cover fell (-0.0297 /decade, PROBADO). Both happen at the same place and period (joint q = 0.006). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 3787,
+     "lat": 79.5,
+     "lon": 7.5,
+     "q_joint": 0.0063,
+     "effect": {
+      "T2M": 0.6711,
+      "SNOW_COVER": -0.031
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.671 °C/década, PROBADO) y bajó la cobertura de nieve (-0.031 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.006). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.671 °C/decade, PROBADO) and snow cover fell (-0.031 /decade, PROBADO). Both happen at the same place and period (joint q = 0.006). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 3791,
+     "lat": 79.5,
+     "lon": 11.5,
+     "q_joint": 0.00738,
+     "effect": {
+      "T2M": 0.751,
+      "SNOW_COVER": -0.0251
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.751 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0251 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.007). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.751 °C/decade, PROBADO) and snow cover fell (-0.0251 /decade, PROBADO). Both happen at the same place and period (joint q = 0.007). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4153,
+     "lat": 78.5,
+     "lon": 13.5,
+     "q_joint": 0.00917,
+     "effect": {
+      "T2M": 0.7186,
+      "SNOW_COVER": -0.027
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.719 °C/década, PROBADO) y bajó la cobertura de nieve (-0.027 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.009). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.719 °C/decade, PROBADO) and snow cover fell (-0.027 /decade, PROBADO). Both happen at the same place and period (joint q = 0.009). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 5696,
+     "lat": 74.5,
+     "lon": 116.5,
+     "q_joint": 0.00917,
+     "effect": {
+      "T2M": 0.6448,
+      "SNOW_COVER": -0.0202
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.645 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0202 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.009). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.645 °C/decade, PROBADO) and snow cover fell (-0.0202 /decade, PROBADO). Both happen at the same place and period (joint q = 0.009). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4512,
+     "lat": 77.5,
+     "lon": 12.5,
+     "q_joint": 0.00951,
+     "effect": {
+      "T2M": 0.7552,
+      "SNOW_COVER": -0.029
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.755 °C/década, PROBADO) y bajó la cobertura de nieve (-0.029 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.010). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.755 °C/decade, PROBADO) and snow cover fell (-0.029 /decade, PROBADO). Both happen at the same place and period (joint q = 0.010). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4511,
+     "lat": 77.5,
+     "lon": 11.5,
+     "q_joint": 0.00951,
+     "effect": {
+      "T2M": 0.7525,
+      "SNOW_COVER": -0.0277
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.753 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0277 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.010). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.753 °C/decade, PROBADO) and snow cover fell (-0.0277 /decade, PROBADO). Both happen at the same place and period (joint q = 0.010). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4513,
+     "lat": 77.5,
+     "lon": 13.5,
+     "q_joint": 0.00951,
+     "effect": {
+      "T2M": 0.7476,
+      "SNOW_COVER": -0.028
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.748 °C/década, PROBADO) y bajó la cobertura de nieve (-0.028 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.010). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.748 °C/decade, PROBADO) and snow cover fell (-0.028 /decade, PROBADO). Both happen at the same place and period (joint q = 0.010). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4510,
+     "lat": 77.5,
+     "lon": 10.5,
+     "q_joint": 0.00951,
+     "effect": {
+      "T2M": 0.7304,
+      "SNOW_COVER": -0.0274
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.73 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0274 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.010). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.73 °C/decade, PROBADO) and snow cover fell (-0.0274 /decade, PROBADO). Both happen at the same place and period (joint q = 0.010). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 3792,
+     "lat": 79.5,
+     "lon": 12.5,
+     "q_joint": 0.00951,
+     "effect": {
+      "T2M": 0.7243,
+      "SNOW_COVER": -0.0231
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.724 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0231 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.010). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.724 °C/decade, PROBADO) and snow cover fell (-0.0231 /decade, PROBADO). Both happen at the same place and period (joint q = 0.010). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4154,
+     "lat": 78.5,
+     "lon": 14.5,
+     "q_joint": 0.00951,
+     "effect": {
+      "T2M": 0.7072,
+      "SNOW_COVER": -0.0242
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.707 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0242 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.010). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.707 °C/decade, PROBADO) and snow cover fell (-0.0242 /decade, PROBADO). Both happen at the same place and period (joint q = 0.010). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4509,
+     "lat": 77.5,
+     "lon": 9.5,
+     "q_joint": 0.00951,
+     "effect": {
+      "T2M": 0.6927,
+      "SNOW_COVER": -0.0268
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.693 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0268 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.010). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.693 °C/decade, PROBADO) and snow cover fell (-0.0268 /decade, PROBADO). Both happen at the same place and period (joint q = 0.010). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 5713,
+     "lat": 74.5,
+     "lon": 133.5,
+     "q_joint": 0.00951,
+     "effect": {
+      "T2M": 0.63,
+      "SNOW_COVER": -0.0186
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.63 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0186 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.010). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.63 °C/decade, PROBADO) and snow cover fell (-0.0186 /decade, PROBADO). Both happen at the same place and period (joint q = 0.010). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 5714,
+     "lat": 74.5,
+     "lon": 134.5,
+     "q_joint": 0.00951,
+     "effect": {
+      "T2M": 0.5694,
+      "SNOW_COVER": -0.0195
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.569 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0195 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.010). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.569 °C/decade, PROBADO) and snow cover fell (-0.0195 /decade, PROBADO). Both happen at the same place and period (joint q = 0.010). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4514,
+     "lat": 77.5,
+     "lon": 14.5,
+     "q_joint": 0.00956,
+     "effect": {
+      "T2M": 0.7346,
+      "SNOW_COVER": -0.0262
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.735 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0262 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.010). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.735 °C/decade, PROBADO) and snow cover fell (-0.0262 /decade, PROBADO). Both happen at the same place and period (joint q = 0.010). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 5715,
+     "lat": 74.5,
+     "lon": 135.5,
+     "q_joint": 0.00956,
+     "effect": {
+      "T2M": 0.4855,
+      "SNOW_COVER": -0.0196
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.486 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0196 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.010). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.486 °C/decade, PROBADO) and snow cover fell (-0.0196 /decade, PROBADO). Both happen at the same place and period (joint q = 0.010). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 16303,
+     "lat": 44.5,
+     "lon": -76.5,
+     "q_joint": 0.01084,
+     "effect": {
+      "T2M": 0.5888,
+      "SNOW_COVER": -0.022
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.589 °C/década, PROBADO) y bajó la cobertura de nieve (-0.022 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.011). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.589 °C/decade, PROBADO) and snow cover fell (-0.022 /decade, PROBADO). Both happen at the same place and period (joint q = 0.011). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 3793,
+     "lat": 79.5,
+     "lon": 13.5,
+     "q_joint": 0.0119,
+     "effect": {
+      "T2M": 0.7103,
+      "SNOW_COVER": -0.0211
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.71 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0211 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.012). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.71 °C/decade, PROBADO) and snow cover fell (-0.0211 /decade, PROBADO). Both happen at the same place and period (joint q = 0.012). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4515,
+     "lat": 77.5,
+     "lon": 15.5,
+     "q_joint": 0.0119,
+     "effect": {
+      "T2M": 0.7046,
+      "SNOW_COVER": -0.024
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.705 °C/década, PROBADO) y bajó la cobertura de nieve (-0.024 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.012). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.705 °C/decade, PROBADO) and snow cover fell (-0.024 /decade, PROBADO). Both happen at the same place and period (joint q = 0.012). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 3795,
+     "lat": 79.5,
+     "lon": 15.5,
+     "q_joint": 0.01232,
+     "effect": {
+      "T2M": 0.7012,
+      "SNOW_COVER": -0.0183
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.701 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0183 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.012). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.701 °C/decade, PROBADO) and snow cover fell (-0.0183 /decade, PROBADO). Both happen at the same place and period (joint q = 0.012). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 4155,
+     "lat": 78.5,
+     "lon": 15.5,
+     "q_joint": 0.01327,
+     "effect": {
+      "T2M": 0.6956,
+      "SNOW_COVER": -0.0209
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.696 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0209 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.013). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.696 °C/decade, PROBADO) and snow cover fell (-0.0209 /decade, PROBADO). Both happen at the same place and period (joint q = 0.013). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 3794,
+     "lat": 79.5,
+     "lon": 14.5,
+     "q_joint": 0.01358,
+     "effect": {
+      "T2M": 0.7165,
+      "SNOW_COVER": -0.0203
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.716 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0203 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.014). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.716 °C/decade, PROBADO) and snow cover fell (-0.0203 /decade, PROBADO). Both happen at the same place and period (joint q = 0.014). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 3796,
+     "lat": 79.5,
+     "lon": 16.5,
+     "q_joint": 0.01358,
+     "effect": {
+      "T2M": 0.6931,
+      "SNOW_COVER": -0.017
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.693 °C/década, PROBADO) y bajó la cobertura de nieve (-0.017 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.014). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.693 °C/decade, PROBADO) and snow cover fell (-0.017 /decade, PROBADO). Both happen at the same place and period (joint q = 0.014). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 5712,
+     "lat": 74.5,
+     "lon": 132.5,
+     "q_joint": 0.01358,
+     "effect": {
+      "T2M": 0.6745,
+      "SNOW_COVER": -0.0178
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.675 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0178 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.014). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.675 °C/decade, PROBADO) and snow cover fell (-0.0178 /decade, PROBADO). Both happen at the same place and period (joint q = 0.014). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 3786,
+     "lat": 79.5,
+     "lon": 6.5,
+     "q_joint": 0.01358,
+     "effect": {
+      "T2M": 0.6131,
+      "SNOW_COVER": -0.0312
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.613 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0312 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.014). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.613 °C/decade, PROBADO) and snow cover fell (-0.0312 /decade, PROBADO). Both happen at the same place and period (joint q = 0.014). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 15594,
+     "lat": 46.5,
+     "lon": -65.5,
+     "q_joint": 0.01358,
+     "effect": {
+      "T2M": 0.5416,
+      "SNOW_COVER": -0.0315
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.542 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0315 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.014). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.542 °C/decade, PROBADO) and snow cover fell (-0.0315 /decade, PROBADO). Both happen at the same place and period (joint q = 0.014). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 19895,
+     "lat": 34.5,
+     "lon": -84.5,
+     "q_joint": 0.01358,
+     "effect": {
+      "T2M": 0.3908,
+      "SNOW_COVER": -0.0018
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.391 °C/década, PROBADO) y bajó la cobertura de nieve (-0.00185 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.014). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.391 °C/decade, PROBADO) and snow cover fell (-0.00185 /decade, PROBADO). Both happen at the same place and period (joint q = 0.014). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    },
+    {
+     "cell": 15941,
+     "lat": 45.5,
+     "lon": -78.5,
+     "q_joint": 0.01406,
+     "effect": {
+      "T2M": 0.5913,
+      "SNOW_COVER": -0.0385
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.591 °C/década, PROBADO) y bajó la cobertura de nieve (-0.0385 /década, PROBADO). Las dos cosas ocurren en el mismo lugar y periodo (q conjunto = 0.014). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.591 °C/decade, PROBADO) and snow cover fell (-0.0385 /decade, PROBADO). Both happen at the same place and period (joint q = 0.014). HORI does not say that one causes the other.",
+      "rule": "J3",
+      "level": "CONJUNTO_PROBADO"
+     }
+    }
+   ]
+  }
+ ],
+ "levels": {
+  "0": "NADA",
+  "1": "SOLO_UNA",
+  "2": "CONJUNTO_CANDIDATO",
+  "3": "AMBAS_PROBADO",
+  "4": "CONJUNTO_PROBADO"
+ },
+ "arrays": {
+  "level_J3": {
+   "file": "level_J3.u8",
+   "dtype": "u8",
+   "codes": {
+    "0": "NADA",
+    "1": "SOLO_UNA",
+    "2": "CONJUNTO_CANDIDATO",
+    "3": "AMBAS_PROBADO",
+    "4": "CONJUNTO_PROBADO"
+   }
+  },
+  "q_J3": {
+   "file": "q_J3.f32",
+   "dtype": "f32"
+  }
+ },
+ "method": {
+  "p_joint": "max(p_a, p_b) / 2 when both effects have the rule's (pre-declared) sign: one-sided intersection-union test",
+  "fdr": "Benjamini-Hochberg q = 0.10 per rule over cells where both variables are usable",
+  "level_4": "CONJUNTO_PROBADO: q_joint <= 0.10 and both variables PROBADO in their own layer",
+  "level_3": "AMBAS_PROBADO: both PROBADO in their own layers; the joint claim over the map is not reached",
+  "calibration": "sim/results_joint_calibration.json"
+ },
+ "honesty": {
+  "data_real": true,
+  "not_causal": true,
+  "note": {
+   "es": "Que dos cambios ocurran en el mismo lugar no prueba que uno cause el otro.",
+   "en": "Two changes at the same place do not prove that one causes the other."
+  }
+ }
+}

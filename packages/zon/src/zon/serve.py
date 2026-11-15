@@ -21,6 +21,11 @@ _TITLES = {
     "RH2M": {"es": "Humedad del aire", "en": "Air humidity"},
     "WS2M": {"es": "Viento", "en": "Wind"},
     "CDOD610": {"es": "Polvo en Marte", "en": "Dust on Mars"},
+    "NDVI": {"es": "Vegetación (NDVI, MODIS)", "en": "Vegetation (NDVI, MODIS)"},
+    "SOIL_MOISTURE": {"es": "Humedad del suelo (SMAP)", "en": "Soil moisture (SMAP)"},
+    "AOD": {"es": "Aerosoles (MERRA-2)", "en": "Aerosols (MERRA-2)"},
+    "SNOW_COVER": {"es": "Cobertura de nieve (MERRA-2)", "en": "Snow cover (MERRA-2)"},
+    "SEA_ICE": {"es": "Hielo marino (NSIDC-0051)", "en": "Sea ice (NSIDC-0051)"},
 }
 
 
@@ -37,7 +42,7 @@ def _entry(rel: str, d: Path) -> dict | None:
     elif (d / "manifest.json").exists():
         doc = json.loads((d / "manifest.json").read_text(encoding="utf-8"))
         # a trend layer has no `kind`; the anomaly map says so, and the web must not open it as a trend layer
-        kind = "anomaly" if doc.get("kind") == "anomaly_map" else "layer"
+        kind = {"anomaly_map": "anomaly", "joint": "joint"}.get(doc.get("kind"), "layer")
     else:
         return None
     var, win = doc.get("variable", {}), doc.get("window", doc.get("windows", {}))

@@ -1,0 +1,327 @@
+{
+  "contract": "0.4",
+  "id": "earthdata_snow_cover_1981-2025",
+  "profile": "earth",
+  "variable": {
+    "name": "SNOW_COVER",
+    "unit": "1",
+    "unit_per_decade": "1/década"
+  },
+  "entity": {
+    "kind": "region_cell",
+    "body": "earth",
+    "count": 64800,
+    "valid": 19538,
+    "id": "earth-bbox-89-5s-179-5w-89-5n-179-5e",
+    "type": "region",
+    "name": {
+      "es": "Recuadro [-89.5, -179.5, 89.5, 179.5]",
+      "en": "Box [-89.5, -179.5, 89.5, 179.5]"
+    },
+    "status": "real",
+    "version": "1",
+    "source": {
+      "place": {
+        "name": "recuadro de la consulta"
+      },
+      "dataset": "M2TMNXLND v5.12.4 — MERRA-2 tavgM_2d_lnd_Nx: 2d,Monthly mean,Time-Averaged,Single-Level,Assimilation,Land Surface Diagnostics 0.625 x 0.5 degree V5.12.4 (M2TMNXLND) ",
+      "dataset_url": "",
+      "dataset_version": "",
+      "variable": "SNOW_COVER",
+      "input_sha256": "0d0c0fd231860e8f1862269353dc1152a4364f617c85a893ce8432c37533e749",
+      "card_sha256": "a0e1c11114f3fa16c691a928901299468e279dd0dbb7487aaa5e78cfbf8a4a5c"
+    },
+    "geometry": {
+      "type": "bbox",
+      "bbox": [
+        -89.5,
+        -179.5,
+        89.5,
+        179.5
+      ]
+    },
+    "relations": []
+  },
+  "grid": {
+    "type": "latlon",
+    "nlat": 180,
+    "nlon": 360,
+    "lat0": 89.5,
+    "dlat": -1.0,
+    "lon0": -179.5,
+    "dlon": 1.0,
+    "native_resolution_deg": 1.0
+  },
+  "dataset": {
+    "name": "M2TMNXLND v5.12.4 — MERRA-2 tavgM_2d_lnd_Nx: 2d,Monthly mean,Time-Averaged,Single-Level,Assimilation,Land Surface Diagnostics 0.625 x 0.5 degree V5.12.4 (M2TMNXLND) ",
+    "kind": "reanalysis",
+    "doi": "10.5067/8S35XF81C28F",
+    "concept_id": "C1276812856-GES_DISC",
+    "provider": "GES_DISC",
+    "licence": "NASA EOSDIS data: no restrictions on use; cite the DOI",
+    "sha256": "66ce9c8a83475f57ba5282ecdc60d737bfde11ff14f048f805985b543a562a6d"
+  },
+  "window": {
+    "start": 1981,
+    "end": 2025,
+    "n": 45,
+    "step": "annual",
+    "aggregation": "mean of monthly anomalies; >= 9/12 months per year"
+  },
+  "params": {
+    "alpha": 0.05,
+    "fdr_q": 0.1,
+    "delta_sigma_per_decade": 2.0,
+    "delta_per_decade": 0.02,
+    "delta_source": "profile",
+    "memory_hurst": 0.7,
+    "min_valid_years": 10,
+    "min_months": 9
+  },
+  "detectability": {
+    "cells": 13823,
+    "n_years": 45,
+    "share_detectable_now": 0.8201,
+    "share_needs_more_than_60_years": 0.0006,
+    "years_more_p50": 9.0,
+    "years_more_p90": 24.0,
+    "not_yet_knowable": 1986,
+    "note": "MDE <= delta: a change of size delta would have been detected with >= 80 % power (noise model)."
+  },
+  "methods": [
+    "MK-VC",
+    "TFPW-WS"
+  ],
+  "verdict_codes": {
+    "0": "INSUFICIENTE",
+    "1": "PROBADO",
+    "2": "CANDIDATA",
+    "3": "NO_CONCLUYENTE",
+    "4": "SIN_CAMBIO_MAYOR_QUE_DELTA"
+  },
+  "flag_bits": {
+    "1": "depende_del_metodo",
+    "2": "cambio_de_version",
+    "4": "cobertura_baja",
+    "8": "resolucion_gruesa",
+    "16": "reconstruccion",
+    "32": "simulado",
+    "64": "autocorrelacion_alta",
+    "128": "quiebre_posible"
+  },
+  "summary": {
+    "cells_valid": 19538,
+    "naive_marked": 4186,
+    "ebh_discoveries": 26,
+    "probado_robusto_memoria": 785,
+    "bh_discoveries": 972,
+    "quiebre_posible": 756,
+    "insuficiente": 45262,
+    "probado": 972,
+    "candidata": 2575,
+    "no_concluyente": 7701,
+    "sin_cambio_mayor_que_delta": 8290
+  },
+  "calibration": {
+    "note": "NOT calibrated: this method set was not simulated; treat PROBADO as provisional."
+  },
+  "honesty": {
+    "data_real": true,
+    "simulated": false,
+    "label_es": "Datos reales: M2TMNXLND v5.12.4 — MERRA-2 tavgM_2d_lnd_Nx: 2d,Monthly mean,Time-Averaged,Single-Level,Assimilation,Land Surface Diagnostics 0.625 x 0.5 degree V5.12.4 (M2TMNXLND) ",
+    "label_en": "Real data: M2TMNXLND v5.12.4 — MERRA-2 tavgM_2d_lnd_Nx: 2d,Monthly mean,Time-Averaged,Single-Level,Assimilation,Land Surface Diagnostics 0.625 x 0.5 degree V5.12.4 (M2TMNXLND) "
+  },
+  "warnings": [
+    "Reanalysis (land model forced by observed precipitation), not a satellite snow map.",
+    "MODIS MOD10CM (satellite) is HDF4 and Hyrax does not serve it; it needs pyhdf to be read directly."
+  ],
+  "build": {
+    "hori": "0.0.1",
+    "python": "3.14.8",
+    "numpy": "2.5.4",
+    "seed": 247,
+    "input_sha256": "0d0c0fd231860e8f1862269353dc1152a4364f617c85a893ce8432c37533e749",
+    "created_at": "2026-11-15T18:47:12Z"
+  },
+  "profile_spec": {
+    "id": "auto.fraccion.snow-cover",
+    "version": "auto-1",
+    "body": "earth",
+    "mode": "trend",
+    "variables": [
+      "SNOW_COVER"
+    ],
+    "unit": "1",
+    "aggregation": {
+      "step": "annual",
+      "method": "mean_monthly_anomaly",
+      "min_months": 9
+    },
+    "delta_per_decade": 0.02,
+    "delta_rationale": "0.02/década (2 puntos de fracción) [propuesta del equipo].",
+    "review": "automatico",
+    "methods": [
+      "MK-VC",
+      "TFPW-WS"
+    ],
+    "name": {
+      "es": "Fractional snow covered area (MERRA-2 land)",
+      "en": "Fractional snow covered area (MERRA-2 land)"
+    },
+    "physical_class": "fraccion",
+    "decisions": [
+      "Clase física «Fracción» porque units = '1' y el nombre dice 'fraction'; δ = 0.02 1/década (tabla curada).",
+      "Agregación anual = media de anomalías mensuales (≥ 9 de 12 meses); la fuente no declara cell_methods = mean, se asume que los meses son medias.",
+      "Medido en los datos: 52.5% de meses en cero, 0.0% en los límites válidos, 37.2% de años con media cero.",
+      "Más de 10 % de años con media cero: OLS deja de votar (residuos lejos de normales) y quedan MK-VC + TFPW-WS. Esta combinación NO está calibrada por simulación.",
+      "Tras correr: σ interanual mediana 0.0109, φ̂ mediana 0.0731, MDE mediano 0.0128 1/década frente a δ 0.02."
+    ],
+    "flags": [
+      "CEROS_FRECUENTES"
+    ],
+    "measured": {
+      "sigma_median": 0.0109,
+      "r1_median": 0.0731,
+      "mde_median": 0.0128,
+      "delta_used_median": 0.02
+    },
+    "catalog_version": "auto-1"
+  },
+  "title": {
+    "es": "SNOW_COVER",
+    "en": "SNOW_COVER"
+  },
+  "arrays": {
+    "effect": {
+      "file": "effect.f32",
+      "dtype": "f32"
+    },
+    "ci_lo": {
+      "file": "ci_lo.f32",
+      "dtype": "f32"
+    },
+    "ci_hi": {
+      "file": "ci_hi.f32",
+      "dtype": "f32"
+    },
+    "sigma": {
+      "file": "sigma.f32",
+      "dtype": "f32"
+    },
+    "r1": {
+      "file": "r1.f32",
+      "dtype": "f32"
+    },
+    "p_cons": {
+      "file": "p_cons.f32",
+      "dtype": "f32"
+    },
+    "q_cons": {
+      "file": "q_cons.f32",
+      "dtype": "f32"
+    },
+    "mde": {
+      "file": "mde.f32",
+      "dtype": "f32"
+    },
+    "years_more": {
+      "file": "years_more.f32",
+      "dtype": "f32"
+    },
+    "verdict": {
+      "file": "verdict.u8",
+      "dtype": "u8"
+    },
+    "flags": {
+      "file": "flags.u8",
+      "dtype": "u8"
+    },
+    "nvalid": {
+      "file": "nvalid.u8",
+      "dtype": "u8"
+    },
+    "nsig_methods": {
+      "file": "nsig_methods.u8",
+      "dtype": "u8"
+    },
+    "naive_sig": {
+      "file": "naive_sig.u8",
+      "dtype": "u8"
+    },
+    "delta": {
+      "file": "delta.f32",
+      "dtype": "f32"
+    },
+    "e_cons": {
+      "file": "e_cons.f32",
+      "dtype": "f32"
+    },
+    "ebh_sig": {
+      "file": "ebh_sig.u8",
+      "dtype": "u8"
+    },
+    "robust_mem": {
+      "file": "robust_mem.u8",
+      "dtype": "u8"
+    },
+    "break_year": {
+      "file": "break_year.f32",
+      "dtype": "f32"
+    }
+  },
+  "series": {
+    "file": "series.f32",
+    "dtype": "f32",
+    "shape": [
+      "cells",
+      "n"
+    ],
+    "years": [
+      1981,
+      1982,
+      1983,
+      1984,
+      1985,
+      1986,
+      1987,
+      1988,
+      1989,
+      1990,
+      1991,
+      1992,
+      1993,
+      1994,
+      1995,
+      1996,
+      1997,
+      1998,
+      1999,
+      2000,
+      2001,
+      2002,
+      2003,
+      2004,
+      2005,
+      2006,
+      2007,
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ]
+  }
+}

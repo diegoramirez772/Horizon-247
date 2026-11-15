@@ -27,8 +27,10 @@ export interface Sky {
   fogDensity: number;
   ambientTop: [number, number, number];
   ambientBottom: [number, number, number];
-  /** Direction of the Earth disc in the Moon's sky, or null. */
+  /** Direction of the Earth disc in the Moon's sky (or of Jupiter over Europa and Io), or null. */
   earthDir: [number, number, number] | null;
+  /** Cosine of that disc's angular radius and what it is (0 Earth, 1 Jupiter). Absent = the Moon's Earth. */
+  giant?: { cos: number; kind: 0 | 1 };
   night: boolean;
 }
 
@@ -48,6 +50,8 @@ export interface Scene {
   pitch: number;
   banner: string;
 }
+
+import { WORLDS, sunCos, sunlight } from "./worlds";
 
 const C3 = (c: RGBA): [number, number, number] => [c[0], c[1], c[2]];
 
@@ -88,7 +92,10 @@ function fmt(k: VarKey, v: number): string {
 export function compose(spec: SceneSpec): Scene {
   const seed = spec.seed ?? seedOf(`${spec.place}|${spec.biome}`);
   const r = rng(seed);
-  const kit = BIOMES[spec.body === "mars" ? "marte" : spec.body === "moon" ? "luna" : spec.biome];
+  const world = WORLDS[spec.body] ?? WORLDS.earth;
+  // Mars and the Moon keep their tuned kits; the other worlds take theirs from the reference table (worlds.ts).
+  const kit: BiomeKit = spec.body === "mars" ? BIOMES.marte : spec.body === "moon" ? BIOMES.luna : spec.body === "earth" ? BIOMES[spec.biome]
+    : { relief: world.look.relief, lake: !!world.look.liquid, soil: world.look.soil, rock: world.look.rock, ndvi: 0, trees: [], treeCount: 0, grass: 0 };
   const has = (k: VarKey) => spec.vars[k] !== undefined;
   const v = (k: VarKey, d: number) => spec.vars[k]?.value ?? d;
   const say = (k: VarKey) => (has(k) ? `${VAR_INFO[k].label} ${fmt(k, v(k, 0))}` : `${VAR_INFO[k].label} sin dato (valor típico)`);
@@ -98,7 +105,7 @@ export function compose(spec: SceneSpec): Scene {
 
   const earth = spec.body === "earth";
   const hour = v("hour", 12);
-  const temp = v("temp_c", earth ? 24 : spec.body === "mars" ? -50 : 20);
+  const temp = v("temp_c", earth ? 24 : spec.body === "mars" ? -50 : spec.body === "moon" ? 20 : world.facts.tempC);
   const rh = v("rh_pct", 40);
   const precip = earth ? v("precip_mm_h", 0) : 0;
   const cloudF = earth ? v("cloud_frac", 0.25) : 0;
@@ -127,7 +134,7 @@ export function compose(spec: SceneSpec): Scene {
     const d = Math.hypot(x - cx, z - cz) / rad;
     return d < 1 ? (d * d - 1) * 1.4 : d < 1.35 ? (1.35 - d) * 1.6 : 0;
   };
-  const craters = spec.body !== "earth" ? Array.from({ length: spec.body === "moon" ? 7 : 3 }, () => [(r() * 2 - 1) * HALF * 0.8, (r() * 2 - 1) * HALF * 0.8, 2 + r() * 6]) : [];
+  const craters = spec.body !== "earth" ? Array.from({ length: world.look.craters }, () => [(r() * 2 - 1) * HALF * 0.8, (r() * 2 - 1) * HALF * 0.8, 2 + r() * 6]) : [];
   const heightRaw = (x: number, z: number): number => {
     let h = (fbm(x * 0.045 + 3, z * 0.045 + 7, seed % 1000) - 0.5) * 2 * kit.relief;
     h += (fbm(x * 0.2, z * 0.2, seed % 997) - 0.5) * 0.35;
@@ -192,7 +199,8 @@ export function compose(spec: SceneSpec): Scene {
   // ---- water ----
   if (kit.lake && level > -3.4) {
     const turbid = clamp(flood * 1.6 + precip / 30, 0, 1);
-    const water = mix(rgb(spec.biome === "costa" ? "#2f86b8" : "#3f7fa6", 0.82), rgb("#7a7a5c", 0.86), turbid * 0.75);
+    const water = !earth && world.look.liquid ? rgb(world.look.liquid, 0.9)
+      : mix(rgb(spec.biome === "costa" ? "#2f86b8" : "#3f7fa6", 0.82), rgb("#7a7a5c", 0.86), turbid * 0.75);
     clear.grid(-HALF, -HALF, HALF * 2, 30, () => level, () => ({ color: water, anim: 7, amount: 0.04 + wind * 0.008 }));
     // water sides where it stands above the ground at the edge
     const edge = (ax: number, az: number, bx: number, bz: number) => {
@@ -207,7 +215,8 @@ export function compose(spec: SceneSpec): Scene {
     const pondRule = drought > 0.25
       ? `Nivel bajo y lodo agrietado: ${say("spi")}, ${say("soil_moisture")}`
       : flood > 0.05 ? `Agua turbia que cubre lo bajo: ${say("flood_frac")}` : "Nivel normal (sin sequía ni inundación en los datos)";
-    add("agua", flood > 0.05 ? "Agua de inundación" : "Bordo de agua", 1, ["spi", "soil_moisture", "flood_frac"], pondRule);
+    if (!earth) add("agua", "Lago de metano y etano", 1, [], `Titán tiene mares y lagos de hidrocarburos líquidos (${world.facts.source}); aquí uno ilustrativo`);
+    else add("agua", flood > 0.05 ? "Agua de inundación" : "Bordo de agua", 1, ["spi", "soil_moisture", "flood_frac"], pondRule);
   }
 
   // ---- placement helper ----
@@ -412,6 +421,26 @@ export function compose(spec: SceneSpec): Scene {
   if (earth && freezing && spec.entities.some((e) => e.kind === "ganado" || e.kind === "personas")) alerts.push({ level: temp < -8 ? "alto" : "atencion", text: `Helada: ${say("temp_c")}. Proteger crías y agua de bebederos.`, drivenBy: ["temp_c"] });
   if (spec.body === "mars" && dustTau > 2) alerts.push({ level: "alto", text: `Tormenta de polvo: ${say("dust_tau")}. Menos energía solar para el rover y el módulo (simulado).`, drivenBy: ["dust_tau"] });
 
+  // ---- the world itself (modeler): its signature feature and its reference facts ----
+  if (!earth) {
+    const f = world.look.feature;
+    if (f === "plumas") {
+      for (let i = 0; i < 2; i++) { const x = (r() * 2 - 1) * HALF * 0.6, z = (r() * 2 - 1) * HALF * 0.6; M.smoke(clear, x, height(x, z), z, 26, 0, 0, r); }
+      add("plumas", "Penachos volcánicos", 2, [], "Ío tiene cientos de volcanes activos (Galileo, Juno); dos penachos ilustrativos, no en su lugar real");
+    } else if (f === "crestas_hielo") {
+      const red = rgb(world.look.rock);
+      let n = 0;
+      for (let k = 0; k < 3; k++) {
+        const z0 = (r() * 2 - 1) * HALF * 0.7, a = r() * 0.8 - 0.4;
+        for (let x = -HALF * 0.9; x < HALF * 0.9; x += 1.6) { const z = z0 + x * a; M.rock(solid, x, height(x, z), z, 0.7 + r() * 0.4, red, r); n++; }
+      }
+      add("crestas", "Crestas rojizas en el hielo", n, [], "Europa: corteza de hielo cruzada por líneas rojizas (lineae) vistas por Galileo; trazado ilustrativo");
+    }
+    const sun = Math.round(sunlight(world) * 1000) / 10;
+    add("mundo", `${world.name.es} · datos de referencia`, 1, [],
+      `Gravedad ${world.facts.gravity} m/s² · ${world.facts.tempC} °C de media · ${world.facts.pressureBar >= 0.01 ? `${world.facts.pressureBar} bar` : "casi sin presión"} · luz del Sol en el suelo ≈ ${sun} % de la de la Tierra · ${world.facts.atmosphere.es}. Fuente: ${world.facts.source}.`);
+  }
+
   // ---- sky ----
   const sky = makeSky(spec.body, hour, { cloudF, precip, aod, dustTau, frp, drought, temp });
   const animated = wind > 0.3 || precip > 0.1 || frp > 0 || dusty || storm || earth;
@@ -420,7 +449,7 @@ export function compose(spec: SceneSpec): Scene {
   return {
     solid: solidArr, clear: clearArr, sky, elements, alerts,
     fallHeight: cloudBase || 15, wind: [windDir[0] * wind, windDir[1] * wind],
-    vertices: solid.vertexCount + clear.vertexCount, animated, pitch: spec.body === "moon" ? 0.2 : 0.42,
+    vertices: solid.vertexCount + clear.vertexCount, animated, pitch: spec.body === "moon" || world.look.giant ? 0.2 : 0.42,
     banner: "Escena generada a partir de los datos: ilustra, no es una foto. Cada elemento dice qué dato lo produjo.",
   };
 }
@@ -449,6 +478,23 @@ function makeSky(body: Body, hour: number, s: { cloudF: number; precip: number; 
       sunDir, sunColor: [1.0 * (1 - dust * 0.5) * day, 0.93 * (1 - dust * 0.5) * day, 0.85 * (1 - dust * 0.5) * day], sunSize: 0.9997,
       stars: 1 - day, fogColor: v3(shade(hor, k)), fogDensity: 0.004 + dust * 0.025,
       ambientTop: v3(shade(zen, 0.55 * k)), ambientBottom: v3(shade(rgb("#5a3220"), 0.5 * k)), earthDir: null, night: day < 0.3,
+    };
+  }
+  if (body !== "earth") {
+    // Any other world, from its reference facts: sunlight ∝ transmission / d² (shown on a perceptual curve), the Sun's
+    // apparent size by its distance, no visible disc under a thick haze, stars where there is no real atmosphere.
+    const w = WORLDS[body];
+    const light = sunlight(w), k = clamp(0.2 + 0.85 * light ** 0.3, 0.22, 1.1), thick = w.look.transmit < 0.5;
+    const zen = rgb(w.look.zenith), hor = rgb(w.look.horizon);
+    const lit = thick ? 0.55 + 0.45 * day : 1;
+    const g = w.look.giant;
+    return {
+      zenith: v3(shade(zen, lit)), horizon: v3(shade(hor, lit)), ground: v3(shade(hor, 0.5 * lit)),
+      sunDir, sunColor: [1.15 * k * day, 1.08 * k * day, (thick ? 0.8 : 1.0) * k * day], sunSize: thick ? 1.0001 : sunCos(w),
+      stars: w.facts.pressureBar < 0.001 ? 1 : 0, fogColor: v3(shade(hor, lit)), fogDensity: w.look.fog,
+      ambientTop: v3(thick ? shade(hor, 0.5 * lit) : rgb("#101014")), ambientBottom: v3(shade(rgb(w.look.soil), thick ? 0.25 : 0.06)),
+      earthDir: g ? g.dir : null, giant: g ? { cos: Math.cos(((g.deg / 2) * Math.PI) / 180), kind: g.kind === "jupiter" ? 1 : 0 } : undefined,
+      night: day < 0.3,
     };
   }
   const overcast = clamp((s.cloudF - 0.55) * 2 + s.precip / 10, 0, 1);

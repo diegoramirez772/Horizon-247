@@ -1,0 +1,306 @@
+{
+  "contract": "0.4",
+  "id": "earthdata_ndvi_2001-2025",
+  "profile": "earth",
+  "variable": {
+    "name": "NDVI",
+    "unit": "1",
+    "unit_per_decade": "1/década"
+  },
+  "entity": {
+    "kind": "region_cell",
+    "body": "earth",
+    "count": 64800,
+    "valid": 17695,
+    "id": "earth-bbox-89-5s-179-5w-89-5n-179-5e",
+    "type": "region",
+    "name": {
+      "es": "Recuadro [-89.5, -179.5, 89.5, 179.5]",
+      "en": "Box [-89.5, -179.5, 89.5, 179.5]"
+    },
+    "status": "real",
+    "version": "1",
+    "source": {
+      "place": {
+        "name": "recuadro de la consulta"
+      },
+      "dataset": "MOD13C2 v061 — MODIS/Terra Vegetation Indices Monthly L3 Global 0.05Deg CMG V061",
+      "dataset_url": "",
+      "dataset_version": "",
+      "variable": "NDVI",
+      "input_sha256": "8dadc5342dc3e7e9058738471ed812e844c1c2440ac7c5c7e900b3567709d600",
+      "card_sha256": "7806d0d1a256af0f7d2be4127889e88f7a679ca72a2ce05ec470dcec906ce401"
+    },
+    "geometry": {
+      "type": "bbox",
+      "bbox": [
+        -89.5,
+        -179.5,
+        89.5,
+        179.5
+      ]
+    },
+    "relations": []
+  },
+  "grid": {
+    "type": "latlon",
+    "nlat": 180,
+    "nlon": 360,
+    "lat0": 89.5,
+    "dlat": -1.0,
+    "lon0": -179.5,
+    "dlon": 1.0,
+    "native_resolution_deg": 1.0
+  },
+  "dataset": {
+    "name": "MOD13C2 v061 — MODIS/Terra Vegetation Indices Monthly L3 Global 0.05Deg CMG V061",
+    "kind": "satellite",
+    "doi": "10.5067/MODIS/MOD13C2.061",
+    "concept_id": "C2565788914-LPCLOUD",
+    "provider": "LPCLOUD",
+    "licence": "NASA EOSDIS data: no restrictions on use; cite the DOI",
+    "sha256": "cda6dc58660c3dbb115bf091856a9574b4be498652ea94f438456e4f90d4a7f2"
+  },
+  "window": {
+    "start": 2001,
+    "end": 2025,
+    "n": 25,
+    "step": "annual",
+    "aggregation": "mean of monthly anomalies; >= 9/12 months per year"
+  },
+  "params": {
+    "alpha": 0.05,
+    "fdr_q": 0.1,
+    "delta_sigma_per_decade": 2.0,
+    "delta_per_decade": 0.02,
+    "delta_source": "profile",
+    "memory_hurst": 0.7,
+    "min_valid_years": 10,
+    "min_months": 9
+  },
+  "detectability": {
+    "cells": 17695,
+    "n_years": 25,
+    "share_detectable_now": 0.5406,
+    "share_needs_more_than_60_years": 0.0016,
+    "years_more_p50": 7.0,
+    "years_more_p90": 22.0,
+    "not_yet_knowable": 5433,
+    "note": "MDE <= delta: a change of size delta would have been detected with >= 80 % power (noise model)."
+  },
+  "methods": [
+    "MK-VC",
+    "TFPW-WS",
+    "OLS-AR1"
+  ],
+  "verdict_codes": {
+    "0": "INSUFICIENTE",
+    "1": "PROBADO",
+    "2": "CANDIDATA",
+    "3": "NO_CONCLUYENTE",
+    "4": "SIN_CAMBIO_MAYOR_QUE_DELTA"
+  },
+  "flag_bits": {
+    "1": "depende_del_metodo",
+    "2": "cambio_de_version",
+    "4": "cobertura_baja",
+    "8": "resolucion_gruesa",
+    "16": "reconstruccion",
+    "32": "simulado",
+    "64": "autocorrelacion_alta",
+    "128": "quiebre_posible"
+  },
+  "summary": {
+    "cells_valid": 17695,
+    "naive_marked": 7896,
+    "ebh_discoveries": 2505,
+    "probado_robusto_memoria": 3577,
+    "bh_discoveries": 4004,
+    "quiebre_posible": 1245,
+    "insuficiente": 47105,
+    "probado": 4004,
+    "candidata": 3681,
+    "no_concluyente": 5433,
+    "sin_cambio_mayor_que_delta": 4577
+  },
+  "calibration": {
+    "note": "Measured by simulation (AR(1) Gaussian noise, n=23): false alarms 5.2% (phi=0.3) and 6.8% (phi=0.5); power 92% / 78% at 2 sigma per decade. Illustrates, does not prove, behaviour on real data. See sim/."
+  },
+  "honesty": {
+    "data_real": true,
+    "simulated": false,
+    "label_es": "Datos reales: MOD13C2 v061 — MODIS/Terra Vegetation Indices Monthly L3 Global 0.05Deg CMG V061",
+    "label_en": "Real data: MOD13C2 v061 — MODIS/Terra Vegetation Indices Monthly L3 Global 0.05Deg CMG V061"
+  },
+  "warnings": [
+    "Regular sample: 1 of every 4 x 4 pixels of 0.05 degrees (0.2 degree spacing), then the mean of the ~25 samples inside each 1 degree box. Not every pixel is read.",
+    "MODIS stores NDVI x 10000 with scale_factor = 10000 (divide), as the MOD13 user guide states."
+  ],
+  "build": {
+    "hori": "0.0.1",
+    "python": "3.14.8",
+    "numpy": "2.5.4",
+    "seed": 247,
+    "input_sha256": "8dadc5342dc3e7e9058738471ed812e844c1c2440ac7c5c7e900b3567709d600",
+    "created_at": "2026-11-15T17:41:23Z"
+  },
+  "profile_spec": {
+    "id": "auto.indice_de_vegetacion.ndvi",
+    "version": "auto-1",
+    "body": "earth",
+    "mode": "trend",
+    "variables": [
+      "NDVI"
+    ],
+    "unit": "1",
+    "aggregation": {
+      "step": "annual",
+      "method": "mean_monthly_anomaly",
+      "min_months": 9
+    },
+    "delta_per_decade": 0.02,
+    "delta_rationale": "0.02 de NDVI/década: ~4 % de un NDVI típico de pastizal (0.5). Valor de trabajo del equipo, por revisar con quien estudia vegetación.",
+    "review": "automatico",
+    "methods": [
+      "MK-VC",
+      "TFPW-WS",
+      "OLS-AR1"
+    ],
+    "name": {
+      "es": "Normalized Difference Vegetation Index (MODIS Terra MOD13C2)",
+      "en": "Normalized Difference Vegetation Index (MODIS Terra MOD13C2)"
+    },
+    "physical_class": "indice_de_vegetacion",
+    "decisions": [
+      "Clase física «Índice de vegetación» porque units = '1' y el nombre dice 'vegetation index'; δ = 0.02 1/década (tabla curada).",
+      "Agregación anual = media de anomalías mensuales (≥ 9 de 12 meses); la fuente no declara cell_methods = mean, se asume que los meses son medias.",
+      "Medido en los datos: 0.0% de meses en cero, 0.0% en los límites válidos, 0.0% de años con media cero.",
+      "Tras correr: σ interanual mediana 0.016, φ̂ mediana 0.1594, MDE mediano 0.0189 1/década frente a δ 0.02."
+    ],
+    "flags": [],
+    "measured": {
+      "sigma_median": 0.016,
+      "r1_median": 0.1594,
+      "mde_median": 0.0189,
+      "delta_used_median": 0.02
+    },
+    "catalog_version": "auto-1"
+  },
+  "title": {
+    "es": "NDVI",
+    "en": "NDVI"
+  },
+  "arrays": {
+    "effect": {
+      "file": "effect.f32",
+      "dtype": "f32"
+    },
+    "ci_lo": {
+      "file": "ci_lo.f32",
+      "dtype": "f32"
+    },
+    "ci_hi": {
+      "file": "ci_hi.f32",
+      "dtype": "f32"
+    },
+    "sigma": {
+      "file": "sigma.f32",
+      "dtype": "f32"
+    },
+    "r1": {
+      "file": "r1.f32",
+      "dtype": "f32"
+    },
+    "p_cons": {
+      "file": "p_cons.f32",
+      "dtype": "f32"
+    },
+    "q_cons": {
+      "file": "q_cons.f32",
+      "dtype": "f32"
+    },
+    "mde": {
+      "file": "mde.f32",
+      "dtype": "f32"
+    },
+    "years_more": {
+      "file": "years_more.f32",
+      "dtype": "f32"
+    },
+    "verdict": {
+      "file": "verdict.u8",
+      "dtype": "u8"
+    },
+    "flags": {
+      "file": "flags.u8",
+      "dtype": "u8"
+    },
+    "nvalid": {
+      "file": "nvalid.u8",
+      "dtype": "u8"
+    },
+    "nsig_methods": {
+      "file": "nsig_methods.u8",
+      "dtype": "u8"
+    },
+    "naive_sig": {
+      "file": "naive_sig.u8",
+      "dtype": "u8"
+    },
+    "delta": {
+      "file": "delta.f32",
+      "dtype": "f32"
+    },
+    "e_cons": {
+      "file": "e_cons.f32",
+      "dtype": "f32"
+    },
+    "ebh_sig": {
+      "file": "ebh_sig.u8",
+      "dtype": "u8"
+    },
+    "robust_mem": {
+      "file": "robust_mem.u8",
+      "dtype": "u8"
+    },
+    "break_year": {
+      "file": "break_year.f32",
+      "dtype": "f32"
+    }
+  },
+  "series": {
+    "file": "series.f32",
+    "dtype": "f32",
+    "shape": [
+      "cells",
+      "n"
+    ],
+    "years": [
+      2001,
+      2002,
+      2003,
+      2004,
+      2005,
+      2006,
+      2007,
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ]
+  }
+}

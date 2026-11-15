@@ -5,6 +5,7 @@
 // Pure and deterministic (H19): text already normalized with digits → a new spec + what to say. Anything changed by
 // voice is marked «simulada · ajustado por voz», so the legend never presents it as observed (H5).
 
+import { worldRequest } from "./worlds";
 import { normalize } from "@/core/assistant/patterns";
 import type { SceneElement } from "./compose";
 import type { Body, DeviceType, Entity, Role, SceneSpec, Species, VarKey } from "./spec";
@@ -159,6 +160,15 @@ function withCount(spec: SceneSpec, m: EntityMatch, next: (cur: number) => numbe
  * the text is not about the scene (the caller then tries the rest: interface, assistant…).
  */
 export function sceneCommand(t: string, spec: SceneSpec, elements: SceneElement[], presets: { id: string; label: string }[]): SceneCommandResult | null {
+  // 0) the modeler: «llévame a Titán», «Júpiter» (no surface: says so and shows its moon)
+  const w = worldRequest(t);
+  if (w) {
+    if (!w.preset) return { say: w.say! };
+    if (presets.some((p) => p.id === w.preset)) {
+      const label = presets.find((p) => p.id === w.preset)!.label;
+      return { presetId: w.preset, say: w.say ? { es: `${w.say.es} Escena: ${label}.`, en: `${w.say.en} Scene: ${label}.` } : { es: `Escena: ${label}.`, en: `Scene: ${label}.` } };
+    }
+  }
   // 1) a situation: «muestra la sequía», or its exact name
   for (const p of presets) {
     const name = normalize(p.label);

@@ -85,7 +85,8 @@ describe("generative interface", () => {
     expect(topicAnswer("ganado", null).widgets.map((w) => w.w)).toEqual(["thi", "now"]);
     expect(topicAnswer("astronauta", null).origin).toBe("sim");
     expect(topicAnswer("marte", null).widgets[0].w).toBe("mars");
-    expect(topicAnswer("eventos", null).widgets[0]).toEqual({ w: "events", near: null });
+    // live storms first (detected now), then the NASA events list
+    expect(topicAnswer("eventos", null).widgets).toEqual([{ w: "storms", near: null }, { w: "events", near: null }]);
   });
   it("finds places by name, without accents", () => {
     expect(findPlace("¿cómo están las vacas en Torreón?")?.name).toBe("Torreón");

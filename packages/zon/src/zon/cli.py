@@ -5,6 +5,9 @@
     python -m zon watch --config watch.json --once                               # vigilancia: datos nuevos -> alertas -> avisos
     python -m zon home --place Durango Chihuahua --var T2M PRECTOTCORR --out apps/web/public/bundles   # «Mis monitores»
     python -m zon db-push --bundles apps/web/public/bundles      # lo ligero a Supabase (catálogo, corridas, hallazgos, monitores)
+    python -m zon earthdata search --short-name MOD13C2 --version 061 --start 2024-01-01 --end 2024-12-31
+    python -m zon earthdata cube --recipe ndvi --out data/earthdata          # NASA Earthdata -> cubo mensual + evidencia
+    python -m zon earthdata reproduce --evidence data/earthdata/ndvi/evidence.json --k 5
 """
 import argparse
 import sys
@@ -68,7 +71,33 @@ def main() -> None:
     dp.add_argument("--project", default=None, help="Supabase project ref (default: horizon-247)")
     dp.add_argument("--sql", default=None, help="only write the SQL to this file; send nothing")
     dp.add_argument("--cell-limit", type=int, default=500, help="cell findings only for regional boxes up to this many cells")
+    ed = sub.add_parser("earthdata", help="any NASA Earthdata mission: search, monthly cube + evidence, reproduce")
+    ed.add_argument("action", choices=["search", "cube", "reproduce", "recipes"])
+    ed.add_argument("--short-name")
+    ed.add_argument("--version")
+    ed.add_argument("--start")
+    ed.add_argument("--end")
+    ed.add_argument("--recipe", help="a name from `zon earthdata recipes` or a recipe .json file")
+    ed.add_argument("--out", default="data/earthdata")
+    ed.add_argument("--workers", type=int, default=3)
+    ed.add_argument("--limit", type=int, help="only the first N granules (a quick test)")
+    ed.add_argument("--evidence")
+    ed.add_argument("--k", type=int, default=5)
+    mv = sub.add_parser("multivar", help="several variables on one 1-degree grid and window -> one layer each + joint-change bundle")
+    mv.add_argument("--vars", nargs="+", required=True, help="T2M PRECTOTCORR NDVI SOIL_MOISTURE AOD SNOW_COVER SEA_ICE")
+    mv.add_argument("--window", type=int, nargs=2, required=True, metavar=("START", "END"))
+    mv.add_argument("--root", default="data")
+    mv.add_argument("--bundles", default=None, help="default: <root>/bundles")
     args = ap.parse_args()
+    if args.cmd == "multivar":
+        import json
+        from .multivar import run as run_mv
+        print(json.dumps(run_mv(args.vars, args.window[0], args.window[1], args.root, args.bundles), indent=1, ensure_ascii=False))
+        return
+    if args.cmd == "earthdata":
+        from .earthdata_cli import run
+        run(args)
+        return
     if args.cmd == "db-push":
         import json
         from .supa import PROJECT_REF, push
@@ -104,15 +133,23 @@ def main() -> None:
         import json
         from pathlib import Path
         from .monitors import MonitorStore
-        from .notify import EscalationPolicy, FileSink, WebhookSink, power_place_source, watch
+        from .notify import EscalationPolicy, FileSink, WebhookSink, fauna_source, power_place_source, watch
         from .places import PlaceIndex
         c = json.loads(Path(args.config).read_text(encoding="utf-8"))
         idx = PlaceIndex.from_natural_earth(c.get("admin0"), c.get("admin1"))
         sinks = [FileSink(c.get("inbox", Path(c["store"]) / "bandeja.jsonl"))] + \
                 [WebhookSink(w["url"], w["secret"].encode()) for w in c.get("webhooks", [])]
         pol = EscalationPolicy(c["levels"], c.get("ack_minutes", {"alta": 30, "media": 240, "leve": None}))
-        srcs = [power_place_source(s["monitor"], s["place"], s["var"], s.get("start", 1981), index=idx) for s in c.get("sources", [])]
-        for t in watch(MonitorStore(c["store"]), srcs, sinks, pol, every_s=args.every, once=args.once):
+        # a source is a POWER place series or, with "fauna": {"box": [...], "group": "aves"}, an animal reporting rate
+        srcs = [fauna_source(s["monitor"], s["fauna"]["box"], s["fauna"]["group"], start=s["fauna"].get("start", "2012-01-01"))
+                if "fauna" in s else power_place_source(s["monitor"], s["place"], s["var"], s.get("start", 1981), index=idx)
+                for s in c.get("sources", [])]
+        mstore = MonitorStore(c["store"])
+        for s in c.get("sources", []):
+            if "fauna" in s and s["monitor"] not in mstore.monitors():
+                from .notify import fauna_monitor
+                mstore.add_monitor(fauna_monitor(s["monitor"], s["fauna"]["box"], s["fauna"]["group"]))
+        for t in watch(mstore, srcs, sinks, pol, every_s=args.every, once=args.once):
             print(json.dumps(t, ensure_ascii=False))
         return
     if args.cmd == "export-web":

@@ -4,6 +4,7 @@
 // re-reads the whole conversation without losing your place (doc 01 §5).
 
 import type { CellFinding, Verdict } from "@/contract/types";
+import type { FaunaGroup } from "@/core/live/fauna";
 import { entryWindow, siblings, type IndexEntry, type RegionGeo } from "@/core/contract/extra";
 import { cellFinding, type Layer } from "@/core/contract/loader";
 import { capitalise, count, deltaValue, digitsFor, num, shortLabel, templateValues } from "@/core/format/format";
@@ -11,6 +12,8 @@ import { narrateTrend, planetAverage, type TrendFacts } from "@/core/nlg/realize
 import { topicAnswer, type Widget } from "@/core/genui/topic";
 import type { Where } from "@/core/genui/places";
 import { LAYERS } from "@/core/map/imagery";
+import { NO_SURFACE, WORLDS, WORLD_PRESET, type WorldId } from "@/core/scene/worlds";
+import { type HowKey, howtoAnswer } from "./howto";
 import { certaintyText } from "@/core/honesty/calibration";
 import { limitsFor, type Limit } from "@/core/honesty/limits";
 import { LEGEND, REGISTERS, UI, verdictName, verdictText, type Lang, type Register } from "@/core/i18n/texts";
@@ -78,7 +81,8 @@ export interface Ctx {
 export type CardKind =
   | "greet" | "area" | "summary" | "detect" | "compare" | "contrast" | "legend" | "provenance" | "help"
   | "advice" | "cause" | "unknown1" | "unknown2" | "unknown3" | "noSelection" | "year" | "accumulated"
-  | "undo" | "profile" | "noWindow" | "loading" | "done" | "filter" | "world" | "level" | "certainty" | "imagery" | "evolution" | "scene" | "zone";
+  | "undo" | "profile" | "noWindow" | "loading" | "done" | "filter" | "world" | "level" | "certainty" | "imagery" | "evolution" | "scene" | "zone"
+  | `howto:${HowKey}` | "speed" | "open:fauna" | "open:person" | "open:map" | "open:zone" | "open:live" | "gestures:on" | "gestures:off";
 
 const LANGS: Lang[] = ["es", "en"];
 const REGS: Register[] = REGISTERS;
@@ -242,6 +246,22 @@ const TOPIC_CHIPS: Record<Topic, Chip[]> = {
   astronauta: [chip(L("¿Y Marte?", "And Mars?"), { t: "topic", topic: "marte", where: null })],
   marte: [chip(L("Marte en 3D", "Mars in 3D"), { t: "scene", where: null, timeline: false, preset: "marte" }), chip(L("Otros planetas", "Other planets"), { t: "topic", topic: "planetas", where: null }), chip(L("Volver a la Tierra", "Back to Earth"), { t: "summary" })],
   planetas: [chip(L("Polvo en Marte", "Dust on Mars"), { t: "topic", topic: "marte", where: null }), chip(L("Monitoreo de astronautas", "Astronaut monitoring"), { t: "topic", topic: "astronauta", where: null })],
+  camaras: [
+    chip(L("¿Hay alertas aquí?", "Any alerts here?"), { t: "topic", topic: "alertas", where: null }),
+    chip(L("Infrarrojo en vivo", "Live infrared"), { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }),
+  ],
+  conjunto: [
+    chip(L("Ver lo significativo", "Show what is significant"), { t: "open", panel: "map", tour: "apoyado" }),
+    chip(L("¿Hay alertas aquí?", "Any alerts here?"), { t: "topic", topic: "alertas", where: null }),
+  ],
+  alertas: [
+    chip(L("Todas las señales de fauna", "All animal signals"), { t: "topic", topic: "fauna", where: null }),
+    chip(L("Tormentas y eventos", "Storms and events"), { t: "topic", topic: "eventos", where: null }),
+  ],
+  fauna: [
+    chip(L("¿Hay alertas aquí?", "Any alerts here?"), { t: "topic", topic: "alertas", where: null }),
+    chip(L("Abrir Señales de fauna", "Open Animal signals"), { t: "open", panel: "fauna" }),
+  ],
   red: [chip(L("Eventos naturales de la NASA", "NASA natural events"), { t: "topic", topic: "eventos", where: null })],
   eventos: [
     chip(L("Infrarrojo en vivo", "Live infrared"), { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }),
@@ -253,8 +273,8 @@ const TOPIC_CHIPS: Record<Topic, Chip[]> = {
  * An answer that builds its own interface (Plan de unión U3). For clima and ganado, when the layer on screen
  * covers the place, HORI's long-term reading is added to the text and the figure (the «now» and the «trend» together).
  */
-export function topicCard(topic: Topic, where: Where | null, ctx: Ctx, source: Source, draft: string | null = null): Card {
-  const a = topicAnswer(topic, where, draft);
+export function topicCard(topic: Topic, where: Where | null, ctx: Ctx, source: Source, draft: string | null = null, group: FaunaGroup | null = null): Card {
+  const a = topicAnswer(topic, where, draft, group);
   const r = (topic === "clima" || topic === "ganado") && ctx.state.selection?.kind === "cell" ? readSelection(ctx) : null;
   const text = { es: { sencillo: "", normal: "", tecnico: "" }, en: { sencillo: "", normal: "", tecnico: "" } } as Card["text"];
   for (const lang of LANGS) for (const reg of REGS) {
@@ -277,6 +297,36 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
   const m = ctx.layer?.manifest;
   const sib = hasSiblings(ctx);
 
+  // «¿Cómo se usa…?» and the product's own actions: they never need a layer on screen.
+  if (kind.startsWith("howto:")) {
+    const a = howtoAnswer(kind.slice(6) as HowKey);
+    return ui(a.text.es, a.text.en, a.chips.map((c) => chip(L(c.label.es, c.label.en), c.intent)));
+  }
+  if (kind === "speed") {
+    const v = ctx.state.speed;
+    return ui(`Línea de tiempo a ×${num(v, "es", v % 1 ? 1 : 0)}: un año cada ${num(1.1 / v, "es", 1)} s. Pausa con ❚❚ o arrastra la barra para ir año por año.`,
+      `Timeline at ×${num(v, "en", v % 1 ? 1 : 0)}: one year every ${num(1.1 / v, "en", 1)} s. Pause with ❚❚ or drag the bar to go year by year.`,
+      [chip(L("Más lento", "Slower"), { t: "speed", v: "-" }), chip(L("Más rápido", "Faster"), { t: "speed", v: "+" }), chip(L("Velocidad normal", "Normal speed"), { t: "speed", v: 1 })]);
+  }
+  if (kind.startsWith("open:")) {
+    const what = kind.slice(5);
+    const T: Record<string, [string, string]> = {
+      fauna: ["Abrí Señales de fauna. Pulsa «Revisar los 6 grupos»; con «Vigilar y avisarme» te aviso de lo nuevo.", "I opened Animal signals. Press «Check the 6 groups»; «Watch and notify me» tells you what is new."],
+      person: ["Abrí Persona: una semana simulada (rotulada) o tu propio archivo, que no sale de tu navegador.", "I opened Person: a simulated (labelled) week or your own file, which never leaves your browser."],
+      map: ["Te llevo por lo significativo: usa «Siguiente foco» o di «siguiente foco». «¿Por qué va en este orden?» muestra la cuenta.", "Touring what is significant: use «Next focus» or say «next focus». «Why this order?» shows the numbers."],
+      zone: ["Abrí la zona en 3D real con el veredicto de HORI encima.", "I opened the real 3D zone with HORI's verdict on top."],
+      live: ["Abrí En vivo: satélite cada 10 minutos, clima de tus lugares y eventos abiertos.", "I opened Live: satellite every 10 minutes, weather at your places and open events."],
+    };
+    const [es, en] = T[what] ?? T.map;
+    return ui(es, en, [chip(L("¿Cómo funciona la detección?", "How does detection work?"), { t: "howto", key: "deteccion" })]);
+  }
+  if (kind === "gestures:on" || kind === "gestures:off") {
+    return kind === "gestures:on"
+      ? ui("Encendí los gestos (la cámara no sale del equipo). Clic = pellizco rápido sin mover la mano; puño = congelar el puntero; palma abierta quieta = regresar.",
+        "Gestures on (the camera never leaves the device). Click = quick pinch without moving; fist = freeze the pointer; open palm held = back.",
+        [chip(L("¿Por qué brinca el puntero?", "Why does the pointer jump?"), { t: "howto", key: "gestos_loco" }), chip(L("Apagar gestos", "Turn gestures off"), { t: "gestures", on: false })])
+      : ui("Apagué los gestos y la cámara.", "Gestures and camera off.", [chip(L("Encender gestos", "Turn gestures on"), { t: "gestures", on: true })]);
+  }
   if (!m && !["help", "advice", "cause", "profile", "done", "level", "certainty"].includes(kind) && !kind.startsWith("unknown")) {
     return ui("Cargando capa…", "Loading layer…", []);
   }
@@ -398,9 +448,9 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
     }
     case "help":
       return ui(
-        "Muestro qué cambia, dónde, cuánto y si ya se puede saber, con datos de la NASA. No doy consejos ni explico por qué ocurre un cambio. También te muestro lo último que midió la NASA en un lugar, el estrés por calor del ganado, los eventos naturales abiertos, el infrarrojo en vivo, el polvo de Marte y un monitoreo de astronautas (simulado). Puedes escribir, hablar o tocar el globo.",
-        "I show what changes, where, how much and whether it is knowable yet, with NASA data. I don't give advice or explain why a change happens. I can also show the latest NASA measurements at a place, livestock heat stress, open natural events, live infrared, Mars dust and a (simulated) astronaut monitor. You can type, speak or tap the globe.",
-        [chip(L("La evolución de la Tierra", "How Earth has changed"), { t: "evolution" }), chip(L("Durango en 3D", "Durango in 3D"), { t: "scene", where: null, timeline: true }), chip(L("¿Cómo está el ganado en Durango?", "How is the livestock in Durango?"), { t: "topic", topic: "ganado", where: null }), chip(L("¿Qué está pasando en el mundo?", "What is happening in the world?"), { t: "topic", topic: "eventos", where: null })],
+        "Muestro qué cambia, dónde, cuánto y si ya se puede saber, con datos de la NASA. No doy consejos ni explico por qué ocurre un cambio. También te muestro lo último que midió la NASA en un lugar, el estrés por calor del ganado, los eventos naturales abiertos, el infrarrojo en vivo, señales de fauna con avisos, el monitoreo de una persona, y escenas 3D de la Tierra y de otros mundos. Pregúntame cómo se usa cualquier parte. Puedes escribir, hablar o tocar el globo.",
+        "I show what changes, where, how much and whether it is knowable yet, with NASA data. I don't give advice or explain why a change happens. I can also show the latest NASA measurements at a place, livestock heat stress, open natural events, live infrared, animal signals with notices, a person monitor, and 3D scenes of Earth and other worlds. Ask me how to use any part. You can type, speak or tap the globe.",
+        [chip(L("¿Cómo funciona la detección?", "How does detection work?"), { t: "howto", key: "deteccion" }), chip(L("Recorrer lo significativo", "Tour what is significant"), { t: "open", panel: "map", tour: "apoyado" }), chip(L("Señales de fauna", "Animal signals"), { t: "open", panel: "fauna" }), chip(L("¿Qué gestos hay?", "Which gestures?"), { t: "howto", key: "gestos" }), chip(L("La evolución de la Tierra", "How Earth has changed"), { t: "evolution" })],
       );
     case "advice":
       return ui("No doy consejos. Sí puedo mostrar qué cambió en tu zona y con qué datos.", "I don't give advice. I can show what changed in your area and with what data.",
@@ -409,7 +459,8 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
       return ui("HORIZON detecta cambios; no explica por qué ocurren. Sí puedo mostrar qué cambió y con qué datos.", "HORIZON detects changes; it does not explain why they happen. I can show what changed and with what data.",
         chips(ctx, placeChip(ctx) ?? C.summary, C.data));
     case "unknown1":
-      return ui("No lo entendí. Puedes probar:", "I didn't catch that. You can try:", chips(ctx, placeChip(ctx) ?? C.summary, C.detect, C.legend));
+      return ui("No lo entendí. Puedes preguntarme cómo se usa algo («¿cómo funciona la detección?», «¿cómo doy clic con gestos?») o probar:", "I didn't catch that. Ask me how to use something («how does detection work?», «how do I click with gestures?») or try:",
+        chips(ctx, placeChip(ctx) ?? C.summary, chip(L("¿Cómo funciona la detección?", "How does detection work?"), { t: "howto", key: "deteccion" }), C.legend));
     case "unknown2":
       return ui("Sigo sin entenderlo. Estas son las opciones:", "I still didn't get it. These are the options:",
         [placeChip(ctx) ?? C.summary, C.detect, C.legend, C.data, C.contrast, C.help].filter(Boolean) as Chip[]);
@@ -483,11 +534,16 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
     case "scene": {
       const sc = ctx.state.scene;
       if (sc?.preset) {
-        const what = sc.preset === "marte" ? L("Marte", "Mars") : L("la Luna", "the Moon");
+        const wid = (Object.keys(WORLD_PRESET) as WorldId[]).find((k) => WORLD_PRESET[k] === sc.preset);
+        const wo = wid ? WORLDS[wid] : null;
+        const what = sc.preset === "luna" ? L("la Luna", "the Moon") : wo ? L(wo.name.es, wo.name.en) : L("Marte", "Mars");
+        const giant = sc.from ? NO_SURFACE[sc.from] : null;
+        const facts = wo && wid !== "earth" ? L(` Con datos de referencia de la NASA: gravedad ${wo.facts.gravity} m/s², ${wo.facts.tempC} °C de media, ${wo.facts.atmosphere.es}.`,
+          ` With NASA reference data: gravity ${wo.facts.gravity} m/s², ${wo.facts.tempC} °C on average, ${wo.facts.atmosphere.en}.`) : L("", "");
         return {
           ...base, origin: "zon", evidence: null, action: L("Monitoreo · escena 3D", "Monitoring · 3D scene"),
-          text: allRegs(L(`Abrí la escena 3D de ${what.es}. Mueve las barras (polvo, viento, hora) y la escena se rehace al momento; es una ilustración, no una foto.`,
-            `I opened the 3D scene of ${what.en}. Move the sliders (dust, wind, hour) and it rebuilds right away; it illustrates, it is not a photo.`)),
+          text: allRegs(L(`${giant ? `${giant.es} ` : ""}Abrí la escena 3D de ${what.es}.${facts.es} Mueve las barras (hora, viento) y la escena se rehace al momento; es una ilustración, no una foto.`,
+            `${giant ? `${giant.en} ` : ""}I opened the 3D scene of ${what.en}.${facts.en} Move the sliders (hour, wind) and it rebuilds right away; it illustrates, it is not a photo.`)),
           chips: [chip(L("Polvo en Marte (HORI)", "Dust on Mars (HORI)"), { t: "topic", topic: "marte", where: null })],
         };
       }

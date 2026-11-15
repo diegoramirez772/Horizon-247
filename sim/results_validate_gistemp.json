@@ -1,0 +1,464 @@
+{
+ "source_a": "NASA POWER (MERRA-2 reanalysis), annual anomalies",
+ "source_b": "NASA GISTEMP v4 (GHCNv4 + ERSSTv5)",
+ "grid": "GISTEMP 2 degrees, land only",
+ "delta_per_decade": 0.3,
+ "windows": {
+  "1981-2025": {
+   "cells_compared": 5329,
+   "probado_power": 3291,
+   "probado_gistemp": 4699,
+   "replication_power_in_gistemp": 0.948,
+   "replication_gistemp_in_power": 0.664,
+   "probado_in_both_opposite_sign": 13,
+   "sign_agreement_all_cells": 0.938,
+   "slope_correlation": 0.291,
+   "verdict_labels": [
+    "PROBADO",
+    "CANDIDATA",
+    "NO_CONCLUYENTE",
+    "SIN_CAMBIO_MAYOR_QUE_DELTA"
+   ],
+   "confusion_power_rows_gistemp_cols": [
+    [
+     3134,
+     23,
+     99,
+     35
+    ],
+    [
+     436,
+     21,
+     49,
+     9
+    ],
+    [
+     831,
+     106,
+     133,
+     118
+    ],
+    [
+     298,
+     13,
+     6,
+     18
+    ]
+   ],
+   "verdict_agreement": 0.62,
+   "cohen_kappa": 0.134,
+   "power_probado_where_gistemp": {
+    "PROBADO": 3134,
+    "CANDIDATA": 23,
+    "NO_CONCLUYENTE": 99,
+    "SIN_CAMBIO_MAYOR_QUE_DELTA": 35
+   },
+   "regions": {
+    "tierra_global": {
+     "cells": 5378,
+     "power": {
+      "source": "power",
+      "verdict": "PROBADO",
+      "effect": 0.253,
+      "ci": [
+       0.173,
+       0.333
+      ],
+      "e": 6509508.91192792
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.325,
+      "ci": [
+       0.28,
+       0.369
+      ],
+      "e": 2.6851245500419287e+43
+     },
+     "multisource": "CONFIRMADO",
+     "magnitudes_compatible": true
+    },
+    "hemisferio_norte": {
+     "cells": 3103,
+     "power": {
+      "source": "power",
+      "verdict": "PROBADO",
+      "effect": 0.27,
+      "ci": [
+       0.19,
+       0.35
+      ],
+      "e": 169800901.0811223
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.38,
+      "ci": [
+       0.323,
+       0.437
+      ],
+      "e": 9.948717567108043e+34
+     },
+     "multisource": "CONFIRMADO",
+     "magnitudes_compatible": false
+    },
+    "hemisferio_sur": {
+     "cells": 2275,
+     "power": {
+      "source": "power",
+      "verdict": "PROBADO",
+      "effect": 0.208,
+      "ci": [
+       0.124,
+       0.292
+      ],
+      "e": 4731.212166015496
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.22,
+      "ci": [
+       0.181,
+       0.259
+      ],
+      "e": 2.3788571182855026e+23
+     },
+     "multisource": "CONFIRMADO",
+     "magnitudes_compatible": true
+    },
+    "artico_66N": {
+     "cells": 570,
+     "power": {
+      "source": "power",
+      "verdict": "PROBADO",
+      "effect": 0.357,
+      "ci": [
+       0.254,
+       0.461
+      ],
+      "e": 18604050.027688853
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.635,
+      "ci": [
+       0.531,
+       0.738
+      ],
+      "e": 7.015760754520192e+27
+     },
+     "multisource": "CONFIRMADO",
+     "magnitudes_compatible": false
+    },
+    "latitudes_medias_norte_23_66": {
+     "cells": 2029,
+     "power": {
+      "source": "power",
+      "verdict": "PROBADO",
+      "effect": 0.278,
+      "ci": [
+       0.186,
+       0.37
+      ],
+      "e": 4021137.5777293704
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.378,
+      "ci": [
+       0.302,
+       0.455
+      ],
+      "e": 1.1801310364801153e+19
+     },
+     "multisource": "CONFIRMADO",
+     "magnitudes_compatible": true
+    },
+    "tropicos_23S_23N": {
+     "cells": 1075,
+     "power": {
+      "source": "power",
+      "verdict": "PROBADO",
+      "effect": 0.238,
+      "ci": [
+       0.163,
+       0.314
+      ],
+      "e": 13007700.54120023
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.262,
+      "ci": [
+       0.217,
+       0.306
+      ],
+      "e": 2.6230350262984204e+28
+     },
+     "multisource": "CONFIRMADO",
+     "magnitudes_compatible": true
+    },
+    "sur_de_23S": {
+     "cells": 1816,
+     "power": {
+      "source": "power",
+      "verdict": "PROBADO",
+      "effect": 0.158,
+      "ci": [
+       0.05,
+       0.266
+      ],
+      "e": 16.656687056325982
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.18,
+      "ci": [
+       0.124,
+       0.237
+      ],
+      "e": 26167197.93643452
+     },
+     "multisource": "CONFIRMADO",
+     "magnitudes_compatible": true
+    }
+   }
+  },
+  "2001-2025": {
+   "cells_compared": 5376,
+   "probado_power": 446,
+   "probado_gistemp": 2060,
+   "replication_power_in_gistemp": 0.839,
+   "replication_gistemp_in_power": 0.182,
+   "probado_in_both_opposite_sign": 5,
+   "sign_agreement_all_cells": 0.816,
+   "slope_correlation": 0.501,
+   "verdict_labels": [
+    "PROBADO",
+    "CANDIDATA",
+    "NO_CONCLUYENTE",
+    "SIN_CAMBIO_MAYOR_QUE_DELTA"
+   ],
+   "confusion_power_rows_gistemp_cols": [
+    [
+     379,
+     56,
+     11,
+     0
+    ],
+    [
+     727,
+     198,
+     161,
+     0
+    ],
+    [
+     939,
+     569,
+     2299,
+     17
+    ],
+    [
+     15,
+     1,
+     2,
+     2
+    ]
+   ],
+   "verdict_agreement": 0.535,
+   "cohen_kappa": 0.238,
+   "power_probado_where_gistemp": {
+    "PROBADO": 379,
+    "CANDIDATA": 56,
+    "NO_CONCLUYENTE": 11,
+    "SIN_CAMBIO_MAYOR_QUE_DELTA": 0
+   },
+   "regions": {
+    "tierra_global": {
+     "cells": 5378,
+     "power": {
+      "source": "power",
+      "verdict": "NO_CONCLUYENTE",
+      "effect": 0.211,
+      "ci": [
+       -0.104,
+       0.525
+      ],
+      "e": 0.9441256573368731
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.331,
+      "ci": [
+       0.213,
+       0.449
+      ],
+      "e": 865445.9036618918
+     },
+     "multisource": "UNA_FUENTE",
+     "magnitudes_compatible": true
+    },
+    "hemisferio_norte": {
+     "cells": 3103,
+     "power": {
+      "source": "power",
+      "verdict": "NO_CONCLUYENTE",
+      "effect": 0.222,
+      "ci": [
+       -0.069,
+       0.514
+      ],
+      "e": 1.0145551171017264
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.393,
+      "ci": [
+       0.229,
+       0.558
+      ],
+      "e": 4889.034989694242
+     },
+     "multisource": "UNA_FUENTE",
+     "magnitudes_compatible": true
+    },
+    "hemisferio_sur": {
+     "cells": 2275,
+     "power": {
+      "source": "power",
+      "verdict": "NO_CONCLUYENTE",
+      "effect": 0.203,
+      "ci": [
+       -0.098,
+       0.503
+      ],
+      "e": 0.844663839508618
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.267,
+      "ci": [
+       0.179,
+       0.355
+      ],
+      "e": 28581.917154753057
+     },
+     "multisource": "UNA_FUENTE",
+     "magnitudes_compatible": true
+    },
+    "artico_66N": {
+     "cells": 570,
+     "power": {
+      "source": "power",
+      "verdict": "CANDIDATA",
+      "effect": 0.309,
+      "ci": [
+       0.038,
+       0.58
+      ],
+      "e": 1.6083783738339605
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.6,
+      "ci": [
+       0.361,
+       0.839
+      ],
+      "e": 6395.963132306144
+     },
+     "multisource": "UNA_FUENTE",
+     "magnitudes_compatible": true
+    },
+    "latitudes_medias_norte_23_66": {
+     "cells": 2029,
+     "power": {
+      "source": "power",
+      "verdict": "NO_CONCLUYENTE",
+      "effect": 0.288,
+      "ci": [
+       -0.045,
+       0.621
+      ],
+      "e": 1.3691114342432007
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.425,
+      "ci": [
+       0.194,
+       0.655
+      ],
+      "e": 38.71700878665194
+     },
+     "multisource": "UNA_FUENTE",
+     "magnitudes_compatible": true
+    },
+    "tropicos_23S_23N": {
+     "cells": 1075,
+     "power": {
+      "source": "power",
+      "verdict": "NO_CONCLUYENTE",
+      "effect": 0.149,
+      "ci": [
+       -0.097,
+       0.396
+      ],
+      "e": 0.6502682745333556
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "PROBADO",
+      "effect": 0.276,
+      "ci": [
+       0.161,
+       0.392
+      ],
+      "e": 8901.52298722214
+     },
+     "multisource": "UNA_FUENTE",
+     "magnitudes_compatible": true
+    },
+    "sur_de_23S": {
+     "cells": 1816,
+     "power": {
+      "source": "power",
+      "verdict": "NO_CONCLUYENTE",
+      "effect": 0.081,
+      "ci": [
+       -0.249,
+       0.41
+      ],
+      "e": 0.567077329600968
+     },
+     "gistemp": {
+      "source": "gistemp",
+      "verdict": "CANDIDATA",
+      "effect": 0.19,
+      "ci": [
+       0.06,
+       0.32
+      ],
+      "e": 3.460950402950799
+     },
+     "multisource": "SIN_CONFIRMAR",
+     "magnitudes_compatible": true
+    }
+   }
+  }
+ },
+ "gistemp_sha256": "f7788db9044d0f0e3f9561ad5d0fd82e59cdfdb82ea8a10244f78f2cb032a3c7",
+ "seconds": 51.0
+}

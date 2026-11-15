@@ -6,6 +6,7 @@
 
 import type { Lang } from "@/core/i18n/texts";
 import type { Topic } from "@/core/assistant/parse";
+import type { FaunaGroup } from "@/core/live/fauna";
 import { HOME_PLACE, type Where } from "./places";
 
 export type Widget =
@@ -15,7 +16,13 @@ export type Widget =
   | { w: "astronaut" } // simulated crew vitals + real context; always labelled SIMULADO
   | { w: "mars" } // HORI's Martian dust layer (real, MCS/Montabone) + the 2018 global storm
   | { w: "planets" } // NASA planetary fact sheet (constants, not measurements of today)
-  | { w: "swarm"; where: Where | null; draft: string | null }; // red enjambre: send a report + the latest reports (unverified)
+  | { w: "swarm"; where: Where | null; draft: string | null } // red enjambre: send a report + the latest reports (unverified)
+  | { w: "alerts"; where: Where | null } // everything watched around a place; prints the component of each anomaly found
+  | { w: "fauna"; where: Where | null; group: FaunaGroup | null } // animal signals: one group, or the six
+  | { w: "storms"; near: Where | null } // storms and heavy rain detected live in GOES/Himawari + IMERG
+  | { w: "iss" } // NASA's live camera on the International Space Station
+  | { w: "sky"; near: Where | null } // the sky over a region in true colour (GOES GeoColor, every 10 min)
+  | { w: "joint"; hint: string | null }; // HORI's joint change: two variables changing together
 
 export interface TopicAnswer {
   widgets: Widget[];
@@ -27,7 +34,7 @@ export interface TopicAnswer {
 
 const L = (es: string, en: string): Record<Lang, string> => ({ es, en });
 
-export function topicAnswer(topic: Topic, where: Where | null, draft: string | null = null): TopicAnswer {
+export function topicAnswer(topic: Topic, where: Where | null, draft: string | null = null, group: FaunaGroup | null = null): TopicAnswer {
   const at = where ?? HOME_PLACE;
   switch (topic) {
     case "clima":
@@ -90,12 +97,51 @@ export function topicAnswer(topic: Topic, where: Where | null, draft: string | n
       };
     case "eventos":
       return {
-        widgets: [{ w: "events", near: where }],
+        widgets: [{ w: "storms", near: where }, { w: "events", near: where }],
         action: L("Eventos naturales abiertos ahora", "Natural events open now"),
         text: L(
           "Estos son los eventos naturales que la NASA tiene abiertos (EONET). Los reúne de otras fuentes y cada uno trae su enlace; HORI no los detectó.",
           "These are the natural events NASA has open (EONET). It gathers them from other sources and each one keeps its link; HORI did not detect them."),
         origin: "zon",
+      };
+    case "alertas":
+      return {
+        widgets: [{ w: "alerts", where }],
+        action: L(`Alertas cerca de ${where?.name ?? "tu lugar"}`, `Alerts near ${where?.name ?? "your place"}`),
+        text: L(
+          "Reviso todo lo que vigilo alrededor del lugar: tormentas y lluvia fuerte en vivo, eventos de la NASA y las señales de fauna. Te muestro el componente de cada cosa rara que encuentre; si no hay nada, te lo digo y por qué.",
+          "I check everything I watch around the place: live storms and heavy rain, NASA events and the animal signals. I show you the component of each unusual thing I find; if there is nothing, I say so and why."),
+        origin: "zon",
+      };
+    case "camaras": {
+      const t = draft ?? "";
+      const iss = /(iss|estacion espacial|space station|astronaut)/.test(t), sky = /(cielo|satelite|nubes|sky|satellite|clouds)/.test(t);
+      return {
+        widgets: iss && !sky ? [{ w: "iss" }] : sky && !iss ? [{ w: "sky", near: where }] : [{ w: "iss" }, { w: "sky", near: where }],
+        action: L("Cámaras en vivo", "Live cameras"),
+        text: L(
+          "Lo que se ve ahora mismo: la cámara oficial de la NASA en la Estación Espacial y el cielo de tu región en color real desde el satélite GOES, cada 10 minutos. El video solo carga cuando lo tocas.",
+          "What can be seen right now: NASA's official camera on the Space Station and your region's sky in true colour from the GOES satellite, every 10 minutes. The video only loads when you tap it."),
+        origin: "zon",
+      };
+    }
+    case "conjunto":
+      return {
+        widgets: [{ w: "joint", hint: draft }],
+        action: L("Cambios que ocurren juntos", "Changes that happen together"),
+        text: L(
+          "HORI revisó si dos variables cambian a la vez en el mismo lugar con reglas escritas antes de ver los datos. Naranja fuerte: las dos juntas, probado en el mapa completo. Que coincidan no dice que una cause la otra.",
+          "HORI checked whether two variables change together at the same place, with rules written before seeing the data. Strong orange: both together, proven over the whole map. Coinciding does not say one causes the other."),
+        origin: "hori",
+      };
+    case "fauna":
+      return {
+        widgets: [{ w: "fauna", where, group }],
+        action: L(`Señales de fauna en ${at.name}`, `Animal signals in ${at.name}`),
+        text: L(
+          "Cuánto se reporta cada grupo de animales aquí frente a su propio pasado (iNaturalist, dividido entre todo lo que se reporta ese mes), revisado con el detector de anomalías de HORI. Dice dónde, cuánto y desde cuándo; no por qué.",
+          "How often each group of animals is reported here against its own past (iNaturalist, divided by everything reported that month), checked with HORI's anomaly detector. It says where, how much and since when; not why."),
+        origin: "hori",
       };
   }
 }

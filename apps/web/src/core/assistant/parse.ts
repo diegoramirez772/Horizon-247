@@ -2,9 +2,34 @@
 // It understands Spanish and English at the same time, whatever the interface language is.
 
 import type { Region } from "@/contract/types";
+import type { FaunaGroup } from "@/core/live/fauna";
 import type { Register } from "@/core/i18n/texts";
 import { findPlace, type Where } from "@/core/genui/places";
 import { P, normalize } from "./patterns";
+import { worldRequest } from "@/core/scene/worlds";
+import { type HowKey, howtoOf, speedOf } from "./howto";
+
+/** «abre / muestra / revisa …» + a section of the product: open it directly. */
+const OPEN_PANEL = /\b(abre|abrir|open)\b/;
+const OPEN_VERB = /\b(abre|abrir|muestra|muestrame|ver|ve|revisa|vigila|vigilar|ensename|open|show|check|watch)\b/;
+const FAUNA = /\b(fauna|animales|aves|pajaros|mariposas|anfibios|insectos|mamiferos|reptiles|senales de fauna|wildlife|birds|animal signals)\b/;
+/** Which group of animals a question names (null = all six). */
+export function faunaGroupOf(text: string): FaunaGroup | null {
+  return /\b(mariposas?|polillas?|butterfl\w*|moths?)\b/.test(text) ? "mariposas"
+    : /\b(aves?|pajar\w*|birds?)\b/.test(text) ? "aves"
+    : /\b(mamifer\w*|mammals?)\b/.test(text) ? "mamiferos"
+    : /\b(anfibios?|ranas?|sapos?|amphibians?|frogs?|toads?)\b/.test(text) ? "anfibios"
+    : /\b(reptil\w*|lagart\w*|serpientes?|viboras?|snakes?|lizards?)\b/.test(text) ? "reptiles"
+    : /\b(insect\w*|abejas?|bees?)\b/.test(text) ? "insectos"
+    : null;
+}
+const PERSON = /\b(persona|ritmo cardiaco|frecuencia cardiaca|mi pulso|person|heart rate)\b/;
+const FOCI = /\b(focos?|lo significativo|significativo|foci)\b/;
+const GESTURES_ON = /\b(enciende|activa|prende|usar|turn on)\b.*\bgestos?\b|\bgestures? on\b/;
+const GESTURES_OFF = /\b(apaga|desactiva|quita)\b.*\bgestos?\b|\bgestures? off\b/;
+
+/** Verbs of going to / building a world (input vocabulary, never shown). */
+const TRAVEL = /\b(llevame|muestrame|muestra|ve a|vamos a|viaja|viajar|visita|como se ve|como es|genera|modela|crea|construye|take me|show me|go to|fly to|build|model)\b/;
 
 export type Intent =
   | { t: "greet" }
@@ -31,16 +56,24 @@ export type Intent =
   | { t: "world" }
   | { t: "undo" }
   | { t: "clear" }
-  | { t: "topic"; topic: Topic; where: Where | null }
+  | { t: "topic"; topic: Topic; where: Where | null; group?: FaunaGroup | null; /** The words said, for components that pick from them. */ hint?: string }
   | { t: "imagery"; layer: string }
   | { t: "evolution" }
   | { t: "variable"; v: "T2M" | "PRECTOTCORR" }
   | { t: "report"; text: string; where: Where | null }
-  | { t: "scene"; where: Where | null; timeline: boolean; preset?: "marte" | "luna" | null; /** The real place (relief + satellite), not the generated diorama. */ real?: boolean }
+  | { t: "scene"; where: Where | null; timeline: boolean; /** A world of the modeler (core/scene/worlds.ts → presets.ts). */ preset?: string | null; /** The real place (relief + satellite), not the generated diorama. */ real?: boolean;
+      /** A giant without surface was asked for (jupiter, saturno…): the answer says so and shows its moon. */ from?: string }
+  /** «¿Cómo se usa…?»: the assistant explains a part of the product and offers the action (howto.ts). */
+  | { t: "howto"; key: HowKey }
+  /** Open a section of the side panel; on the map, optionally start the tour of the foci. */
+  | { t: "open"; panel: "fauna" | "person" | "zone" | "map" | "live"; tour?: "apoyado" | "no_se_sabe" }
+  /** Timeline speed: an absolute factor or one step slower / faster. */
+  | { t: "speed"; v: number | "+" | "-" }
+  | { t: "gestures"; on: boolean }
   | { t: "unknown" };
 
 /** What the answer is about when it brings its own components (clima, ganado, astronauta, Marte, planetas, eventos). */
-export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos" | "red";
+export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos" | "red" | "alertas" | "fauna" | "camaras" | "conjunto";
 
 /** What a command may carry besides its intent: a place to look at first. */
 export type Place = { kind: "region"; id: string } | { kind: "coord"; lat: number; lon: number } | null;
@@ -93,6 +126,10 @@ export function parse(raw: string, regions: Region[]): Command {
   const place: Place = regionId ? { kind: "region", id: regionId } : coord ? { kind: "coord", ...coord } : null;
   const year = text.match(P.year);
   const win = text.match(P.window);
+  const world = worldRequest(text);
+  const speed = speedOf(text);
+  const how = world?.preset && TRAVEL.test(text) ? null : howtoOf(text, true);
+  const lenient = howtoOf(text, false);
 
   // Order matters: limits first (advice, causes), then questions, then commands, then a bare place.
   const intent: Intent =
@@ -105,6 +142,22 @@ export function parse(raw: string, regions: Region[]): Command {
     : P.clear.test(text) ? { t: "clear" }
     : P.unfilter.test(text) ? { t: "filter", verdicts: null }
     : P.only.test(text) && filterOf(text) ? { t: "filter", verdicts: filterOf(text) }
+    // The product explains itself first («¿cómo doy clic con gestos?»), then the direct actions it can take.
+    : speed !== null ? { t: "speed", v: speed }
+    : GESTURES_OFF.test(text) ? { t: "gestures", on: false }
+    : GESTURES_ON.test(text) ? { t: "gestures", on: true }
+    : how ? { t: "howto", key: how }
+    // «¿hay alertas por mi casa?», «¿algo raro aquí?»: everything watched around the place, each anomaly with its component
+    : P.alerts.test(text) ? { t: "topic", topic: "alertas", where: whereOf(raw, place) }
+    // «cámara de la ISS», «¿cómo se ve el cielo ahora?»: the live views
+    : P.cameras.test(text) ? { t: "topic", topic: "camaras", where: whereOf(raw, place), hint: text }
+    // «¿qué cambia junto?», «más calor y menos nieve»: HORI's joint change
+    : P.joint.test(text) ? { t: "topic", topic: "conjunto", where: null, hint: text }
+    // «abre señales de fauna» opens the panel; «muéstrame las aves» prints the card here
+    : (OPEN_PANEL.test(text) || /(panel|senales de fauna|animal signals)/.test(text)) && FAUNA.test(text) ? { t: "open", panel: "fauna" }
+    : (FAUNA.test(text) || faunaGroupOf(text)) && !P.livestock.test(text) ? { t: "topic", topic: "fauna", where: whereOf(raw, place), group: faunaGroupOf(text) }
+    : OPEN_VERB.test(text) && PERSON.test(text) ? { t: "open", panel: "person" }
+    : OPEN_VERB.test(text) && FOCI.test(text) ? { t: "open", panel: "map", tour: /(no se sabe|not known)/.test(text) ? "no_se_sabe" : "apoyado" }
     : P.help.test(text) ? { t: "help" }
     : P.legend.test(text) ? { t: "legend" }
     : P.contrast.test(text) ? { t: "contrast" }
@@ -125,6 +178,8 @@ export function parse(raw: string, regions: Region[]): Command {
     : P.plain.test(text) ? { t: "register", r: "sencillo" }
     : P.dark.test(text) ? { t: "theme", th: "dark" }
     : P.light.test(text) ? { t: "theme", th: "light" }
+    // The modeler: «llévame a Venus», «genera Titán en 3D», «cómo se ve Europa» → that world (a giant: its moon, said honestly).
+    : (world?.preset && (P.scene.test(text) || TRAVEL.test(text))) ? { t: "scene", where: null, timeline: false, preset: world.preset || null, real: false, from: world.from }
     : P.scene.test(text) ? { t: "scene", where: whereOf(raw, place), timeline: P.timeline.test(text) || P.evolution.test(text), preset: P.mars.test(text) ? "marte" : /\b(luna|moon)\b/.test(text) ? "luna" : null, real: !/(escena|diorama|maqueta|paisaje|generad|scene|linea de(l)? tiempo|timeline|evolucion|marte|mars|luna|moon)/.test(text) }
     : P.evolution.test(text) || P.timeline.test(text) ? { t: "evolution" }
     : P.infrared.test(text) && !P.events.test(text) ? { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }
@@ -143,6 +198,8 @@ export function parse(raw: string, regions: Region[]): Command {
     : P.summary.test(text) ? { t: "summary" }
     : year ? { t: "year", y: Number(year[1]) }
     : P.greet.test(text) ? { t: "greet" }
+    // Nothing else understood it: if it names a part of the product, explain that part instead of «no entendí».
+    : lenient ? { t: "howto", key: lenient }
     : { t: "unknown" };
 
   // «¿Qué cambió en Durango?» is about the place, not the whole map.

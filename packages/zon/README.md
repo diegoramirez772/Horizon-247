@@ -46,6 +46,25 @@ Módulos: `db` (almacén y cadena) · `monitors` (monitores, alertas, ciclo de v
 escalamiento, vigilancia) · `server` (API + SSE) · `sync` (sin red ↔ servidor) · `anomaly_map` · `update` · `serve` (export).
 Contrato: `contract/SPEC.md` §11–14. Números medidos: ficha del modelo del equipo (fuera del repositorio).
 
+## NASA Earthdata, cualquier misión (`zon/earthdata.py`)
+Busca en CMR, lee **solo la variable** que hace falta y entrega un cubo mensual a 1° con **evidencia reproducible**.
+Tres caminos, el que NASA sirva para ese producto: `opendap` (Hyrax recorta en el servidor; convierte hasta HDF4 de MODIS
+a NetCDF-4), `range` (lectura por rangos HTTP de un HDF5/NetCDF-4 en la nube) y `download` (archivo completo). Zarr v2 con
+los códecs propios. El token (`EARTHDATA_TOKEN`) solo viaja a hosts de Earthdata y nunca se escribe.
+```bash
+export PYTHONPATH=packages/zon/src:packages/hori/src EARTHDATA_TOKEN=...   # token de urs.earthdata.nasa.gov
+python -m zon earthdata recipes                                              # NDVI, humedad del suelo, aerosoles, nieve
+python -m zon earthdata search --short-name MOD13C2 --version 061 --start 2024-01-01 --end 2024-12-31
+python -m zon earthdata cube --recipe ndvi --out data/earthdata               # reanudable; cubo .npz + evidence.json
+python -m zon earthdata cube --recipe mi_receta.json                         # cualquier producto: una receta JSON
+python -m zon earthdata reproduce --evidence data/earthdata/ndvi/evidence.json --k 5    # vuelve a leer y compara SHA-256
+python -m zon multivar --vars T2M NDVI AOD SNOW_COVER --window 2001 2025     # una capa por variable + cambio conjunto
+```
+**Receta** (`Recipe`): producto y versión, ruta de la variable, latitud/longitud (ruta o eje regular), recorte, convención de
+escala (`cf` o `divide` de MODIS), filtro de calidad, rango físico, días muestreados, tipo (satélite / reanálisis) y notas.
+**Evidencia:** por grano, la URL usada, la restricción enviada al servidor y el SHA-256 **del arreglo decodificado** (las
+respuestas del servidor traen fechas y no sirven para comparar). Hielo marino (NSIDC-0051): `zon/fetch/seaice.py`.
+
 ### Dependencias opcionales (licencias BSD/Apache, en `.venv`)
 `python3 -m venv --system-site-packages .venv && .venv/bin/pip install h5py pynacl` — h5py (BSD-3) lee HDF5/NetCDF4 (IMERG);
 PyNaCl (Apache-2.0) firma con libsodium. Sin ellas todo lo demás funciona (las pruebas que las necesitan se saltan).

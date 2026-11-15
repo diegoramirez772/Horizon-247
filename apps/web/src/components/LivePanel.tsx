@@ -8,7 +8,9 @@ import { useEffect, useState } from "react";
 import { findPlace, HOME_PLACE, type Where } from "@/core/genui/places";
 import type { Lang } from "@/core/i18n/texts";
 import { LAYERS, liveSlot } from "@/core/map/imagery";
+import { type LiveDetection, type WeatherFrame, distanceKm, subscribeWeather } from "@/core/map/weather";
 import { EventsWidget, NowWidget } from "./genui/Widgets";
+import { IssCam, SkyCam } from "./genui/LiveViews";
 
 const PLACES_STORE = "h247-places-v1";
 
@@ -72,8 +74,12 @@ export function LivePanel({ lang, imagery, onImagery, onLook }: {
   return (
     <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
       <section>
-        <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-3"><span className="live-dot" aria-hidden="true" />{es ? "Satélites ahora" : "Satellites now"}</h2>
-        <p className="mt-1 text-sm text-text-2">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-3"><span className="live-dot" aria-hidden="true" />{es ? "Satélites y cámaras ahora" : "Satellites and cameras now"}</h2>
+        <div className="@container mt-2"><div className="grid gap-3 @xl:grid-cols-2">
+          <IssCam lang={lang} />
+          <SkyCam lang={lang} near={places[0] ?? null} />
+        </div></div>
+        <p className="mt-3 text-sm text-text-2">
           {es ? `Infrarrojo térmico de las ${slot.slice(11, 16)} UTC: lo brillante son nubes frías y altas, también de noche. Se actualiza cada 10 minutos.`
             : `Thermal infrared at ${slot.slice(11, 16)} UTC: bright means cold, high clouds, day or night. Updated every 10 minutes.`}
         </p>
@@ -92,6 +98,8 @@ export function LivePanel({ lang, imagery, onImagery, onLook }: {
           </button>
         ) : null}
       </section>
+
+      <LiveDetections lang={lang} places={places} onLook={onLook} />
 
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-3">{es ? "Tus lugares" : "Your places"}</h2>
@@ -120,5 +128,64 @@ export function LivePanel({ lang, imagery, onImagery, onLook }: {
         <EventsWidget near={places[0] ?? null} lang={lang} actions={actions} />
       </section>
     </div>
+  );
+}
+
+const KIND = {
+  es: { tormenta: "Tormenta (topes muy fríos)", lluvia_intensa: "Lluvia intensa", nieve: "Nieve o lluvia helada" },
+  en: { tormenta: "Storm (very cold tops)", lluvia_intensa: "Heavy rain", nieve: "Snow or freezing rain" },
+};
+const TREND = {
+  es: { nuevo: "nuevo", crece: "crece", se_debilita: "se debilita", sigue: "sigue" },
+  en: { nuevo: "new", crece: "growing", se_debilita: "weakening", sigue: "ongoing" },
+};
+
+/**
+ * «Detección en vivo»: the storms and heavy rain the live detector (core/map/weather.ts) finds in the same infrared and
+ * IMERG pictures the globe shows, followed from one frame to the next. A detection is a signal in the picture, not a forecast.
+ */
+function LiveDetections({ lang, places, onLook }: { lang: Lang; places: Where[]; onLook: (lat: number, lon: number) => void }) {
+  const es = lang === "es";
+  const [f, setF] = useState<WeatherFrame | null>(null);
+  useEffect(() => subscribeWeather(setF), []);
+  const where = (d: LiveDetection) => {
+    const near = places.map((p) => ({ p, km: distanceKm(p.lat, p.lon, d.lat, d.lon) })).sort((a, b) => a.km - b.km)[0];
+    const ll = `${Math.abs(d.lat).toFixed(1)}° ${d.lat >= 0 ? "N" : "S"}, ${Math.abs(d.lon).toFixed(1)}° ${d.lon >= 0 ? "E" : es ? "O" : "W"}`;
+    return near && near.km < 1500 ? `${ll} · ${es ? "a" : ""} ${Math.round(near.km).toLocaleString(lang)} km ${es ? "de" : "from"} ${near.p.name}` : ll;
+  };
+  const hhmm = (t: string | null) => (t ? `${t.slice(11, 16)} UTC` : "—");
+  const list = f?.detections.slice(0, 6) ?? [];
+  return (
+    <section>
+      <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-3"><span className="live-dot" aria-hidden="true" />{es ? "Detección en vivo" : "Live detection"}</h2>
+      <p className="mt-1 text-sm text-text-2">
+        {!f ? (es ? "Leyendo las nubes y la lluvia de ahora…" : "Reading current clouds and rain…")
+          : es ? `Nubes ${hhmm(f.irTime)} · lluvia ${hhmm(f.rainTime)}. ${f.detections.length} zonas activas; se revisa cada 10 minutos y cada una se sigue entre imágenes.`
+            : `Clouds ${hhmm(f.irTime)} · rain ${hhmm(f.rainTime)}. ${f.detections.length} active areas; checked every 10 minutes and followed between pictures.`}
+      </p>
+      {list.length ? (
+        <ul className="mt-2 space-y-1.5">
+          {list.map((d) => (
+            <li key={d.id}>
+              <button type="button" onClick={() => onLook(d.lat, d.lon)}
+                className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-left text-sm transition-colors hover:border-accent">
+                <span className="flex items-center gap-2">
+                  <span aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${d.kind === "tormenta" ? "bg-[#ff5a3c]" : d.kind === "nieve" ? "bg-[#7fd8ff]" : "bg-[#3cb4ff]"}`} />
+                  <span className="font-medium">{KIND[lang][d.kind]}</span>
+                  <span className={`ml-auto rounded-full px-2 py-0.5 text-[11px] font-semibold ${d.trend === "nuevo" || d.trend === "crece" ? "bg-accent text-on-accent" : "bg-surface-2 text-text-2"}`}>{TREND[lang][d.trend]}</span>
+                </span>
+                <span className="mt-0.5 block text-xs text-text-3">
+                  {where(d)} · ≈{Math.round(d.areaKm2 / 1000).toLocaleString(lang)} mil km²{d.movedKm ? ` · ${es ? "se movió" : "moved"} ${d.movedKm} km` : ""}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <p className="mt-2 text-xs text-text-3">
+        {es ? "Tormenta = topes de nube muy fríos en el infrarrojo (GOES/Himawari); lluvia intensa = naranja a rojo en IMERG. Es lo que se ve en la imagen, no un pronóstico; IMERG llega con unas horas de retraso."
+          : "Storm = very cold cloud tops in the infrared (GOES/Himawari); heavy rain = orange to red in IMERG. It is what the picture shows, not a forecast; IMERG arrives a few hours late."}
+      </p>
+    </section>
   );
 }

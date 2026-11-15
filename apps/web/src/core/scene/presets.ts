@@ -114,6 +114,22 @@ export const PRESETS: { id: string; label: string; spec: SceneSpec }[] = [
       entities: [{ kind: "dispositivo", type: "modulo" }, { kind: "dispositivo", type: "rover" }, { kind: "personas", role: "astronauta", count: 3 }, { kind: "dispositivo", type: "panel_solar", count: 2 }],
     },
   },
+  // ---- the modeler's other worlds (worlds.ts): reference facts, simulated visitors ----
+  ...([
+    ["mercurio", "Mercurio", "mercury", "Llanura de cráteres al mediodía", 12, [{ kind: "dispositivo", type: "modulo" }, { kind: "dispositivo", type: "panel_solar", count: 2 }]],
+    ["venus", "Venus", "venus", "Llanura volcánica bajo las nubes", 12, [{ kind: "dispositivo", type: "modulo" }]],
+    ["titan", "Titán", "titan", "Orilla de un lago de metano", 12, [{ kind: "dispositivo", type: "dron" }, { kind: "dispositivo", type: "modulo" }]],
+    ["europa", "Europa", "europa", "Hielo de Europa con Júpiter en el cielo", 9, [{ kind: "dispositivo", type: "modulo" }, { kind: "personas", role: "astronauta", count: 2 }]],
+    ["io", "Ío", "io", "Volcanes de Ío bajo Júpiter", 15, [{ kind: "dispositivo", type: "rover" }]],
+    ["pluton", "Plutón", "pluto", "Llanura de hielo de nitrógeno", 12, [{ kind: "dispositivo", type: "modulo" }]],
+  ] as const).map(([id, label, body, title, hour, entities]) => ({
+    id, label,
+    spec: {
+      title: `${title} (simulada)`, place: label, body, biome: "luna" as const,
+      note: "Mundo construido con datos de referencia de la NASA; visitantes y equipos simulados",
+      vars: { hour: ex(hour, "h") }, entities: entities.map((e) => ({ ...e })) as Entity[],
+    } satisfies SceneSpec,
+  })),
 ];
 
 export function preset(id: string): SceneSpec {
