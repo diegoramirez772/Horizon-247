@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 
 from hori.api import Config, Cube, run_grid, run_layer, write_bundle
-from zon.fetch.power_zarr import PowerZarr
+from zon.fetch.power_zarr import KNOWN_BREAKS, PowerZarr
 
 var, start, end = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
 z = PowerZarr(offline="--offline" in sys.argv)
@@ -21,7 +21,7 @@ meta = {"id": f"powerzarr_{var}_global_{start}-{end}", "profile": "earth",
         "variable": {"name": var, "unit": at.get("units", ""), "long_name": at.get("long_name", ""),
                      "definition": at.get("definition", ""), "valid_min": at.get("valid_min"),
                      "valid_max": at.get("valid_max"), "cell_methods": at.get("cell_methods", "")},
-        "dataset": {"name": "NASA POWER ARD (MERRA-2), Zarr on AWS", "kind": "reanalysis", "url": z.url, "time_standard": "LST"},
+        "dataset": {"name": "NASA POWER ARD (MERRA-2), Zarr on AWS", "kind": "reanalysis", "url": z.url, "time_standard": "LST", "known_breaks": KNOWN_BREAKS},
         "native_resolution_deg": 0.5, "native_resolution_lon_deg": 0.625, "notes": []}
 cfg = Config()                                       # delta comes from the inferred profile
 t0 = time.time()

@@ -63,10 +63,25 @@ class TestRedTeam(unittest.TestCase):
 
     def test_LIMIT_random_walk_is_partly_read_as_trend_but_mostly_flagged(self):
         a = np.cumsum(self.rng.standard_normal((M, N)), axis=1)
-        _, _, n_p, warned = run(a.T, ANNUAL)
+        res, _, n_p, warned = run(a.T, ANNUAL)
         print(f"\n[red team] random walk: false PROBADO {n_p}/{M} ({n_p / M:.0%}), with a warning flag {warned} "
-              f"({warned / max(n_p, 1):.0%})")
+              f"({warned / max(n_p, 1):.0%}); still «robusto a memoria larga»: {int(res.robust_mem.sum())}")
         self.assertLess(n_p / M, 0.30)                              # NOT solved: long memory (phase H8)
+
+    def test_long_memory_noise_without_trend_stays_nearly_empty_and_marker_is_a_subset(self):
+        from hori.longmemory import fgn_acf
+        out = {}
+        for H in (0.7, 0.8):
+            R = np.array([fgn_acf(H, N)[np.abs(k - np.arange(N))] for k in range(N)])
+            a = self.rng.standard_normal((M, N)) @ np.linalg.cholesky(R + 1e-12 * np.eye(N)).T
+            res, _, n_p, _ = run(a.T, ANNUAL)
+            out[H] = (n_p, int(res.robust_mem.sum()))
+        print("\n[red team] fGn noise, no trend: false PROBADO (and robust) " +
+              ", ".join(f"H={h}: {p}/{M} ({r} robust)" for h, (p, r) in out.items()))
+        for h, (p, r) in out.items():
+            self.assertLessEqual(r, p)
+        # with BH over 400 independent cells almost nothing false survives at all; the marker's effect on a MIXED map
+        # (real signals + noise with memory) is measured in sim/null_planet.py and published in the model card
 
 
 if __name__ == "__main__":

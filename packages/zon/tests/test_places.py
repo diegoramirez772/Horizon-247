@@ -92,6 +92,23 @@ class TestShapefileAndSearch(unittest.TestCase):
         self.assertEqual(ep["relations"][0]["target"], "earth-mexico")
         self.assertEqual(norm("  São Paulo! "), "sao paulo")
 
+    def test_physical_regions_and_marine_layers_are_searchable_with_either_field_case(self):
+        reg, mar, adm = self.tmp / "regions", self.tmp / "marine", self.tmp / "adm1"
+        write_shapefile(reg, [[SQUARE]], [{"NAME": "Sahara", "NAME_EN": "Sahara", "NAME_ES": "Sáhara", "FEATURECLA": "Desert", "NE_ID": "1"}])
+        write_shapefile(mar, [[SQUARE + 30]], [{"name": "Gulf of Mexico", "name_en": "Gulf of Mexico", "name_es": "Golfo de México",
+                                                "featurecla": "gulf"}])               # the marine layer ships lower-case fields
+        write_shapefile(adm, [[SQUARE + 60]], [{"name": "Sahara Occidental", "name_en": "Western Sahara", "name_es": "Sahara Occidental",
+                                                "admin": "Morocco", "iso_3166_2": "MA-X"}])
+        idx = PlaceIndex.from_natural_earth(admin1_shp=adm.with_suffix(".shp"), regions_shp=reg.with_suffix(".shp"),
+                                            marine_shp=mar.with_suffix(".shp"))
+        hit = idx.search("sahara")                                                    # exact name beats the prefix match
+        self.assertEqual((hit[0].kind, hit[0].name["es"]), ("region", "Sáhara"))
+        self.assertEqual(hit[1].kind, "admin1")
+        self.assertEqual(hit[0].source["featurecla"], "Desert")
+        g = idx.search("golfo de mexico")[0]
+        self.assertEqual(g.kind, "marine")
+        self.assertEqual(g.to_entity_place()["relations"], [])                        # no country to be «part of»
+
 
 if __name__ == "__main__":
     unittest.main()

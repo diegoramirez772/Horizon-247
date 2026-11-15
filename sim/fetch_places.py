@@ -1,4 +1,4 @@
-"""Download the local place index sources once (no account): Natural Earth 10m admin-0/admin-1 + GeoNames cities15000.
+"""Download the local place index sources once (no account): Natural Earth 10m admin-0/admin-1 + geography regions/marine + GeoNames cities15000.
 
     PYTHONPATH=packages/zon/src python3 sim/fetch_places.py          # -> data/places/
 Licences: Natural Earth = public domain; GeoNames = CC BY 4.0 (attribution in the UI and NOTICE).
@@ -15,6 +15,8 @@ OUT = Path("data/places")
 SRC = {
     "ne_10m_admin_0_countries.zip": "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip",
     "ne_10m_admin_1_states_provinces.zip": "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_1_states_provinces.zip",
+    "ne_10m_geography_regions_polys.zip": "https://naciscdn.org/naturalearth/10m/physical/ne_10m_geography_regions_polys.zip",
+    "ne_10m_geography_marine_polys.zip": "https://naciscdn.org/naturalearth/10m/physical/ne_10m_geography_marine_polys.zip",
     "cities15000.zip": "https://download.geonames.org/export/dump/cities15000.zip",
 }
 OUT.mkdir(parents=True, exist_ok=True)

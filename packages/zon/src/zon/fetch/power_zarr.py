@@ -31,6 +31,10 @@ BUCKET_URL = "https://nasa-power.s3.us-west-2.amazonaws.com"
 STORE = "merra2/temporal/power_merra2_monthly_temporal_lst.zarr"   # local solar time: identical to the API (verified)
 STORE_UTC = "merra2/temporal/power_merra2_monthly_temporal_utc.zarr"
 SOURCE = "nasa_power_zarr"
+# MERRA-2 was produced in four streams; the first year of each later stream is a documented place where artefacts can
+# appear (UCAR Climate Data Guide: breaks at 1990-91, 2000-01 and 2010-11, mostly deep soil; reanalyses.org: stream 100 =
+# 1980-1991, 200 = 1992-2000, 300 = 2001-2010, 400 = 2011-). HORI only CHECKS whether flagged breaks pile up there.
+KNOWN_BREAKS = {"years": [1992, 2001, 2011], "source": "MERRA-2 production streams (GMAO); see UCAR Climate Data Guide"}
 META_TTL = 24 * 3600.0          # metadata can change when a month is added; chunks are content-hashed anyway
 
 
@@ -53,11 +57,13 @@ class Block:
 
 class PowerZarr:
     def __init__(self, cache_dir: str | Path | None = None, *, store: str = STORE, base_url: str = BUCKET_URL,
-                 http: PoliteHTTP | None = None, offline: bool = False, workers: int = 8, min_interval: float = 0.1):
+                 http: PoliteHTTP | None = None, offline: bool = False, workers: int = 8, min_interval: float = 0.1,
+                 refresh: bool = False):
         self.url = f"{base_url.rstrip('/')}/{store}"
         self.cache = ContentCache(cache_dir or default_cache_dir(), None, offline)
         self.http = http or PoliteHTTP(limiter=RateLimiter(min_interval))
         self.workers = workers
+        self.refresh = refresh          # Z3: a chunk spans all months, so a new month changes it: never trust the cache
         self.prov = ProvenanceLog()
         self._meta = None
         self._axes = None
@@ -83,7 +89,7 @@ class PowerZarr:
     @property
     def meta(self) -> dict:
         if self._meta is None:
-            body, _ = self._get(".zmetadata", ttl=META_TTL)
+            body, _ = self._get(".zmetadata", ttl=0.0 if self.refresh else META_TTL)
             try:
                 self._meta = json.loads(body)["metadata"]
             except (ValueError, KeyError) as e:
@@ -111,7 +117,7 @@ class PowerZarr:
         za = self.zarray(name)
         if [int(c) for c in za["chunks"]] != [int(s) for s in za["shape"]]:
             raise ZarrError(f"coordinate {name} is chunked; not supported")
-        body, _ = self._get(f"{name}/0")
+        body, _ = self._get(f"{name}/0", ttl=0.0 if self.refresh else None)
         return decode_chunk(body, za)
 
     @property
@@ -149,7 +155,7 @@ class PowerZarr:
         za = self.zarray(var)
         if len(za["shape"]) != 3:
             raise ZarrError(f"{var}: expected (time, lat, lon)")
-        body, sha = self._get(f"{var}/0.{row}.{col}")
+        body, sha = self._get(f"{var}/0.{row}.{col}", ttl=0.0 if self.refresh else None)
         arr = decode_chunk(body, za)
         months, lat, lon = self.axes
         _, cy, cx = za["chunks"]
@@ -275,7 +281,8 @@ class PowerZarr:
             "dataset": {"name": "NASA POWER ARD (MERRA-2), Zarr on AWS", "provider": "NASA Langley Research Center POWER Project",
                         "version": self.meta.get(".zattrs", {}).get("comment", ""), "doi": None, "url": self.url,
                         "sha256": hashlib.sha256("".join(sorted(blocks[c].sha256 for c in coords)).encode()).hexdigest(), "licence": LICENCE_NOTE,
-                        "kind": "reanalysis", "time_standard": "UTC" if self.url.endswith("_utc.zarr") else "LST"},
+                        "kind": "reanalysis", "time_standard": "UTC" if self.url.endswith("_utc.zarr") else "LST",
+                        "known_breaks": KNOWN_BREAKS},
             "native_resolution_deg": abs(dlat), "native_resolution_lon_deg": abs(dlon), "grid_source": "zarr-store",
             "aggregation": {"level": "monthly", "note": "monthly means as published; aggregate in HORI"},
             "window": {"start": str(start), "end": str(end), "step": "monthly", "last_month": want[-1] if want else None},

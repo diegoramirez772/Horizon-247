@@ -14,7 +14,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .fetch.power_zarr import PowerZarr
+from .fetch.power_zarr import KNOWN_BREAKS, PowerZarr
 from .provenance import iso_utc
 
 
@@ -39,7 +39,7 @@ def annual_planet(var: str, start: int, end: int, out_root: str | Path, *, store
                          "definition": at.get("definition", ""), "valid_min": at.get("valid_min"),
                          "valid_max": at.get("valid_max"), "cell_methods": at.get("cell_methods", "")},
             "dataset": {"name": "NASA POWER ARD (MERRA-2), Zarr on AWS", "kind": "reanalysis", "url": z.url,
-                        "sha256": z.prov.combined_sha256(), "time_standard": "LST"},
+                        "sha256": z.prov.combined_sha256(), "time_standard": "LST", "known_breaks": KNOWN_BREAKS},
             "aggregation": f"mean of monthly anomalies (vs {start}-{end} monthly means); >= {min_months}/12 months",
             "native_resolution_deg": 0.5, "native_resolution_lon_deg": 0.625, "built_at": iso_utc()}
     out = Path(out_root) / "planet" / f"{var.lower()}_annual_{start}-{end}.npz"

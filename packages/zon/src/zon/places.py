@@ -151,7 +151,7 @@ def norm(text: str) -> str:
 @dataclass
 class Place:
     id: str
-    kind: str                         # country | admin1 | city
+    kind: str                         # country | admin1 | region (desert, range...) | marine | city
     name: dict                        # {"es", "en"}
     country: str
     rings: list = field(default_factory=list, repr=False)   # polygons (empty for cities)
@@ -163,11 +163,11 @@ class Place:
     def to_entity_place(self) -> dict:
         geom = {"type": "point", "point": list(self.point)} if self.point else \
             {"type": "bbox", "bbox": [round(v, 4) for v in rings_bbox(self.rings)], "polygon_source": self.source.get("name")}
-        rel = [{"rel": "part_of", "target": f"earth-{norm(self.country).replace(' ', '-')}"}] if self.kind != "country" else []
+        rel = [{"rel": "part_of", "target": f"earth-{norm(self.country).replace(' ', '-')}"}] if self.kind not in ("country", "region", "marine") and self.country else []
         return {"id": f"earth-{self.id}", "name": self.name, "geometry": geom, "relations": rel, "source": self.source}
 
 
-KIND_RANK = {"country": 0, "admin1": 1, "city": 2}
+KIND_RANK = {"country": 0, "admin1": 1, "region": 2, "marine": 2, "city": 3}
 
 
 class PlaceIndex:
@@ -196,7 +196,8 @@ class PlaceIndex:
         return (exact + pref)[:limit]
 
     @classmethod
-    def from_natural_earth(cls, admin0_shp=None, admin1_shp=None, cities_tsv=None, min_population: int = 15000):
+    def from_natural_earth(cls, admin0_shp=None, admin1_shp=None, cities_tsv=None, min_population: int = 15000,
+                           regions_shp=None, marine_shp=None):
         places: list[Place] = []
         ne = {"name": "Natural Earth", "licence": "public domain", "url": "https://www.naturalearthdata.com"}
         for shp, kind in ((admin0_shp, "country"), (admin1_shp, "admin1")):
@@ -218,6 +219,24 @@ class PlaceIndex:
                     alias = (g("name", "NAME"), g("name_alt"), g("woe_name"))
                 places.append(Place(pid, kind, {"es": es, "en": en}, country, geom, source={**ne, "layer": shp.stem},
                                     aliases=tuple(a for a in alias if a)))
+        for shp, kind in ((regions_shp, "region"), (marine_shp, "marine")):        # physical geography: «Sahara», «Andes», «Golfo de México»
+            if not shp:
+                continue
+            shp = Path(shp)
+            for geom, attrs in zip(read_shp(shp), read_dbf(shp.with_suffix(".dbf"))):
+                if geom is None or attrs is None:
+                    continue
+                attrs = {k.upper(): v for k, v in attrs.items()}                # the marine layer ships lower-case field names
+                en = attrs.get("NAME_EN") or attrs.get("NAME") or ""
+                es = attrs.get("NAME_ES") or en
+                if not en:
+                    continue
+                cls_ = attrs.get("FEATURECLA") or kind
+                alias = tuple(a for a in (attrs.get("NAME"), *(attrs.get("NAMEALT") or "").split(",")) if a and a.strip())
+                places.append(Place(norm(f"{kind} {attrs.get('NE_ID') or ''} {en}").replace(" ", "-"), kind, {"es": es, "en": en}, "",
+                                    geom, source={**ne, "layer": shp.stem, "featurecla": cls_,
+                                                  "note": "limites aproximados de rasgos fisicos (Natural Earth), no administrativos"},
+                                    aliases=tuple(a.strip() for a in alias)))
         if cities_tsv:
             gn = {"name": "GeoNames", "licence": "CC BY 4.0 (attribution required)", "url": "https://www.geonames.org"}
             for line in Path(cities_tsv).read_text(encoding="utf-8").splitlines():

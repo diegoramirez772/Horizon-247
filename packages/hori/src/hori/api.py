@@ -23,11 +23,12 @@ from .cube import Cube
 from .detect import YEARS_CAP, mde_per_decade, years_more
 from .evalue import combine_mean, ebh, mixture_e
 from .fdr import bh_adjust
+from .longmemory import memory_scale
 from .identity import PROFILES_VERSION, Entity, IdentityError, Profile, auto_entity, check_pair, infer_profile
 from .quality import detect_breaks
 from .result import LayerResult
 from .stats import Z_CRIT, analyze, p_two
-from .verdict import (CODES, FLAG_BITS, F_QUIEBRE_POSIBLE, NO_CONCLUYENTE, F_AUTOCORR_ALTA, F_COBERTURA_BAJA, F_DEPENDE_METODO, F_RECONSTRUCCION,
+from .verdict import (CODES, PROBADO, FLAG_BITS, F_QUIEBRE_POSIBLE, NO_CONCLUYENTE, F_AUTOCORR_ALTA, F_COBERTURA_BAJA, F_DEPENDE_METODO, F_RECONSTRUCCION,
                       F_RESOLUCION_GRUESA, F_SIMULADO, decide)
 
 __all__ = ["Config", "Cube", "Entity", "IdentityError", "LayerResult", "Profile", "cell_stats", "infer_profile", "auto_entity", "run_grid",
@@ -91,7 +92,7 @@ def cell_stats(values: np.ndarray, time, cfg: Config) -> dict:
     cells = Z.shape[0]
     series, nvalid, usable, filled = prepare(Z, cfg.min_years, cfg.min_valid_fraction, cfg.max_interior_gap_years)
     nan = lambda: np.full(cells, np.nan)
-    st = {k: nan() for k in ("effect", "ci_lo", "ci_hi", "sigma", "r1", "p_cons", "mde", "years_more", "delta", "e_cons")}
+    st = {k: nan() for k in ("effect", "ci_lo", "ci_hi", "sigma", "r1", "p_cons", "mde", "years_more", "delta", "e_cons", "p_mem")}
     st.update(nsig=np.zeros(cells, dtype=np.uint8), naive=np.zeros(cells, dtype=np.uint8), usable=usable,
               filled=filled, nvalid=nvalid, series=series, years=years, anomaly=anomaly,
               break_flag=np.zeros(cells, dtype=bool), break_year=nan())
@@ -113,6 +114,7 @@ def cell_stats(values: np.ndarray, time, cfg: Config) -> dict:
         with np.errstate(divide="ignore", invalid="ignore"):
             tau = st["delta"][usable] / (10.0 * s["se_ols"])                # delta in z units, fixed before the effect
         st["e_cons"][usable] = combine_mean([mixture_e(zs[m], tau) for m in cfg.methods])   # parallel; does not decide
+        st["p_mem"][usable] = p_two(s["z_naive"] * memory_scale(n, cfg.memory_hurst))   # sensitivity: Mann-Kendall under fGn(H)
         bflag, where, _ = detect_breaks(series[usable])                   # L1: possible step (flag only, verdict untouched)
         st["break_flag"][usable] = bflag
         st["break_year"][usable] = np.where(where >= 0, np.asarray(years, dtype=float)[np.clip(where, 0, n - 1)], np.nan)
@@ -144,10 +146,13 @@ def _finish(st: dict, meta: dict, cfg: Config, delta_source: str, entity, profil
     simulated = ds.get("kind") == "simulated"
     var = meta.get("variable", {})
     ebh_sig = ebh(st["e_cons"], cfg.fdr_q)
+    with np.errstate(invalid="ignore"):
+        robust_mem = ((verdict == PROBADO) & (st["p_mem"] <= cfg.alpha)).astype(np.uint8)   # PROBADO that survives fGn(H) noise
     summary = {"cells_valid": int(usable.sum()), "naive_marked": int(st["naive"].sum()),
-               "ebh_discoveries": int(ebh_sig.sum()), "bh_discoveries": int((usable & (q <= cfg.fdr_q)).sum()),
+               "ebh_discoveries": int(ebh_sig.sum()), "probado_robusto_memoria": int(robust_mem.sum()), "bh_discoveries": int((usable & (q <= cfg.fdr_q)).sum()),
                "quiebre_posible": int((usable & st["break_flag"]).sum()),
                **{CODES[c].lower(): int((verdict == c).sum()) for c in CODES}}
+    quality = _known_breaks(ds, usable & st["break_flag"], st["break_year"], years)
     detectability = _detectability(usable, st["mde"], st["delta"], st["years_more"], verdict, n)
     manifest = {
         "contract": CONTRACT, "id": meta.get("id", "layer"), "profile": meta.get("profile", "earth"),
@@ -158,9 +163,9 @@ def _finish(st: dict, meta: dict, cfg: Config, delta_source: str, entity, profil
         "window": {"start": years[0], "end": years[-1], "n": n, "step": "annual",
                    "aggregation": f"mean of monthly anomalies; >= {cfg.min_months}/12 months per year" if st["anomaly"] else "annual input"},
         "params": {"alpha": cfg.alpha, "fdr_q": cfg.fdr_q, "delta_sigma_per_decade": cfg.delta_sigma_per_decade,
-                   "delta_per_decade": cfg.delta_per_decade, "delta_source": delta_source, "min_valid_years": cfg.min_years,
+                   "delta_per_decade": cfg.delta_per_decade, "delta_source": delta_source, "memory_hurst": cfg.memory_hurst, "min_valid_years": cfg.min_years,
                    "min_months": cfg.min_months},
-        "detectability": detectability,
+        "detectability": detectability, **({"quality": quality} if quality else {}),
         "methods": list(cfg.methods), "verdict_codes": {str(k): v for k, v in CODES.items()},
         "flag_bits": {str(k): v for k, v in FLAG_BITS.items()}, "summary": summary,
         "calibration": {"note": CALIBRATION_NOTE if tuple(cfg.methods) == tuple(METHODS) else
@@ -193,7 +198,22 @@ def _finish(st: dict, meta: dict, cfg: Config, delta_source: str, entity, profil
     return LayerResult(st["effect"], st["ci_lo"], st["ci_hi"], st["sigma"], r1, st["p_cons"], q, st["mde"],
                        st["years_more"], verdict, flags, st["nvalid"].astype(np.uint8), nsig, st["naive"], series, years,
                        manifest, delta=st["delta"], break_year=st["break_year"], e_cons=st["e_cons"],
-                       ebh_sig=ebh_sig.astype(np.uint8))
+                       ebh_sig=ebh_sig.astype(np.uint8), robust_mem=robust_mem)
+
+
+def _known_breaks(ds: dict, flagged: np.ndarray, break_year: np.ndarray, years: list) -> dict | None:
+    """Do the flagged breaks pile up at the product's documented version changes (dataset.known_breaks)? A diagnostic:
+    observed share within +-1 year of a known change vs what a uniform spread of break years would give."""
+    kb = ds.get("known_breaks")
+    if not kb or not kb.get("years") or not flagged.any():
+        return None
+    near = lambda y: np.zeros(np.shape(y), bool) | np.any([np.abs(y - k) <= 1 for k in kb["years"]], axis=0)
+    cand = np.arange(years[0] + 2, years[-1] - 1, dtype=float)               # years where a break can be placed
+    expected = float(near(cand).mean()) if cand.size else None
+    obs = float(near(break_year[flagged]).mean())
+    return {"known_breaks": {"years": list(kb["years"]), "source": kb.get("source"), "flagged_cells": int(flagged.sum()),
+                             "share_within_1_year": _r(obs), "expected_if_uniform": _r(expected) if expected is not None else None,
+                             "note": "Diagnóstico: si la parte observada supera a la esperada, parte de los saltos son artefactos de versión del producto."}}
 
 
 def _detectability(usable, mde, delta, years_more, verdict, n) -> dict:
@@ -264,7 +284,7 @@ def run_grid(blocks, lat, lon, time, meta: dict, config: Config | None = None, *
         if out is None:
             n = len(st["years"])
             out = {k: np.full(cells, np.nan) for k in ("effect", "ci_lo", "ci_hi", "sigma", "r1", "p_cons", "mde",
-                                                     "years_more", "delta", "e_cons")}
+                                                     "years_more", "delta", "e_cons", "p_mem")}
             out.update(break_flag=np.zeros(cells, bool), break_year=np.full(cells, np.nan))
             out.update(nsig=np.zeros(cells, np.uint8), naive=np.zeros(cells, np.uint8), usable=np.zeros(cells, bool),
                        filled=np.zeros(cells, bool), nvalid=np.zeros(cells, np.int64), years=st["years"],
@@ -277,7 +297,7 @@ def run_grid(blocks, lat, lon, time, meta: dict, config: Config | None = None, *
         if out["seen"][idx].any():
             raise ValueError(f"block at ({y0}, {x0}) overlaps another block")
         out["seen"][idx] = True
-        for k in ("effect", "ci_lo", "ci_hi", "sigma", "r1", "p_cons", "mde", "years_more", "delta", "e_cons", "nsig", "naive",
+        for k in ("effect", "ci_lo", "ci_hi", "sigma", "r1", "p_cons", "mde", "years_more", "delta", "e_cons", "p_mem", "nsig", "naive",
                   "usable", "filled", "nvalid", "break_flag", "break_year"):
             out[k][idx] = st[k]
         if keep_series:
@@ -321,12 +341,17 @@ def write_bundle(result: LayerResult, out_dir: str, title_es: str | None = None,
     if result.e_cons is not None:                             # v0.4, additive (H6): evidence in parallel, not the verdict
         arrays["e_cons"] = ("f32", result.e_cons)
         arrays["ebh_sig"] = ("u8", result.ebh_sig)
+    if result.robust_mem is not None:                         # v0.4, additive (L2b): PROBADO that also holds under fGn(H) noise
+        arrays["robust_mem"] = ("u8", result.robust_mem)
     if result.break_year is not None:                         # v0.4, additive (L1): year the possible new regime starts
         arrays["break_year"] = ("f32", result.break_year)
     listing = {}
     for name, (dt, arr) in arrays.items():
         fname = f"{name}.{dt}"
-        np.asarray(arr).astype("<f4" if dt == "f32" else "u1").tofile(out / fname)
+        a = np.asarray(arr)
+        if dt == "f32":
+            a = np.clip(a.astype(float), -3.0e38, 3.0e38)                      # e-values beyond float32 become «very large», not inf (NaN stays NaN)
+        a.astype("<f4" if dt == "f32" else "u1").tofile(out / fname)
         listing[name] = {"file": fname, "dtype": dt}
     m = dict(result.manifest)
     var = m["variable"]

@@ -17,5 +17,6 @@ class Config:
     tfpw_ws_iterations: int = 6
     mde_power: float = 0.80
     coarse_resolution_deg: float = 2.0   # cells at least this coarse get the `resolucion_gruesa` flag
+    memory_hurst: float = 0.7            # «robust to long memory» check: Mann-Kendall variance under fGn(H) (see longmemory.py)
     seed: int = 247
     methods: tuple = ("MK-VC", "TFPW-WS", "OLS-AR1")   # which tests vote; PROBADO needs all of them (calibrated: all 3)

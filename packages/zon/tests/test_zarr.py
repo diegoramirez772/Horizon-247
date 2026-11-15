@@ -102,7 +102,7 @@ class TestCodecs(unittest.TestCase):
         self.assertTrue(np.isnan(out[4]))
 
 
-def make_store(root, months=24, valid_months=20, chunk=4, ny=9, nx=10):
+def make_store(root, months=24, valid_months=20, chunk=4, ny=9, nx=10, noise=0.0, seed=0, bump=None):
     """A tiny POWER-like Zarr store (lat -2..2 by 0.5, lon 0..5.625 by 0.625) seeded straight into the cache."""
     from zon.cache import ContentCache
     from zon.fetch.power_zarr import BUCKET_URL, SOURCE, STORE
@@ -114,6 +114,10 @@ def make_store(root, months=24, valid_months=20, chunk=4, ny=9, nx=10):
                      for k in range(months)], dtype="<i8")
     t = np.arange(months)
     truth = (10 + 0.01 * t[:, None, None] + 0.1 * lat[None, :, None] + 0.01 * lon[None, None, :]).astype("<f8")
+    if noise:                                                         # deterministic by seed: a later «release» keeps old months
+        truth = truth + noise * np.random.default_rng(seed).normal(size=truth.shape)
+    if bump:                                                          # (first month index, size): a late shift in the data
+        truth[bump[0]:] += bump[1]
     truth = np.round(truth, 2)
     truth[valid_months:] = np.nan
     fso = [{"id": "fixedscaleoffset", "scale": 100, "offset": 1000, "dtype": "<f4", "astype": "<f4"}]

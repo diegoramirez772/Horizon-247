@@ -264,3 +264,10 @@ Carpeta `earth/timeline_<var>_<inicio>-<fin>/` con `timeline.json` + arreglos po
 ### 10.6 Calidad (L1) y detectabilidad (D2) en cada bundle
 - Bandera `128 = quiebre_posible` + arreglo `break_year.f32`: posible salto (recta vs recta + escalón). **No cambia el veredicto.** «Sin bandera» no significa «homogéneo»: con 24–45 años solo se atrapan saltos grandes (medido: 55 % de los de 3σ).
 - Arreglo `delta.f32` (el δ con el que se juzgó cada celda) y `manifest.detectability` (qué parte del mapa ya podría ver un cambio δ y cuántos años faltan en el resto).
+
+### 10.7 Memoria larga (L2b) — «PROBADO robusto»
+- Arreglo `robust_mem.u8` (1 = PROBADO **y** sigue significativo a `alpha` con la varianza de Mann-Kendall de ruido fGn(H), H = `params.memory_hurst`, 0.7 por defecto; 0 = no). **No cambia el veredicto**: es una afirmación más fuerte que se muestra al lado. `manifest.summary.probado_robusto_memoria` cuenta las celdas.
+- No se estima H por celda: con 24–45 años la estimación sale sesgada hacia abajo (medido) y tendencia y memoria larga no se separan. Detalle y cifras en `docs/MODEL_CARD.md`.
+
+### 10.8 Actualización incremental (Z3) — `events.json` de tipo `update`
+`bundles/earth/global_<var>_<inicio>-<fin>/events.json` (`kind: "update"`): `last_month`, `window_end`, `previous` (`last_month`, `window_end`, `path`), `counts` (NUEVO / CRUZO / SE_DEBILITO / CAMBIO_SIGNO), `tiers`, `events_top[]` (celda, lat, lon, evento, efecto, razón con `origin: "HORI"`) y `honesty`. Junto a él: `event.u8`, `priority_tier.u8`, `priority_strength.f32`, `priority_order.u32` (mismo código que el timeline). `bundles/earth/updates.json` es la bitácora de actualizaciones (`from`, `to`, `status`, `events`). `manifest.dataset.last_month` = último mes con datos usado. Un año solo entra a la ventana con ≥ 9 meses.
