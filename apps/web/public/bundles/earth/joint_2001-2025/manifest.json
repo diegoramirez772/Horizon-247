@@ -1,0 +1,1547 @@
+{
+ "contract": "0.4",
+ "kind": "joint",
+ "id": "joint_2001-2025",
+ "profile": "earth",
+ "title": {
+  "es": "Cambio conjunto 2001–2025",
+  "en": "Joint change 2001–2025"
+ },
+ "variable": {
+  "name": "JOINT",
+  "unit": ""
+ },
+ "grid": {
+  "type": "latlon",
+  "nlat": 180,
+  "nlon": 360,
+  "lat0": 89.5,
+  "dlat": -1.0,
+  "lon0": -179.5,
+  "dlon": 1.0
+ },
+ "window": {
+  "start": 2001,
+  "end": 2025,
+  "n": 25,
+  "step": "annual"
+ },
+ "variables": {
+  "T2M": {
+   "layer": "earth/t2m_1deg_2001-2025",
+   "unit": "C",
+   "dataset": "NASA POWER ARD (MERRA-2), Zarr on AWS",
+   "kind": "reanalysis",
+   "delta_per_decade": 0.3,
+   "probado_cells": 10563
+  },
+  "PRECTOTCORR": {
+   "layer": "earth/prectotcorr_1deg_2001-2025",
+   "unit": "mm/day",
+   "dataset": "NASA POWER ARD (MERRA-2), Zarr on AWS",
+   "kind": "reanalysis",
+   "delta_per_decade": 0.2,
+   "probado_cells": 2161
+  },
+  "NDVI": {
+   "layer": "earth/ndvi_1deg_2001-2025",
+   "unit": "1",
+   "dataset": "MOD13C2 v061 — MODIS/Terra Vegetation Indices Monthly L3 Global 0.05Deg CMG V061",
+   "kind": "satellite",
+   "delta_per_decade": 0.02,
+   "probado_cells": 4004
+  }
+ },
+ "rules": [
+  {
+   "rule": "J1",
+   "name": {
+    "es": "Más calor y menos vegetación",
+    "en": "Warmer and less green"
+   },
+   "a": "T2M",
+   "sign_a": 1,
+   "b": "NDVI",
+   "sign_b": -1,
+   "usable_cells": 17695,
+   "counts": {
+    "NADA": 62533,
+    "SOLO_UNA": 2168,
+    "CONJUNTO_CANDIDATO": 57,
+    "AMBAS_PROBADO": 42,
+    "CONJUNTO_PROBADO": 0
+   },
+   "fraction_probado_a": 0.1676,
+   "fraction_probado_b": 0.0137,
+   "observed_both_probado": 0.0024,
+   "expected_if_unrelated": 0.0023,
+   "min_q_joint": 1.0,
+   "ratio": 1.03,
+   "note": {
+    "es": "Coincidir en el mismo lugar no prueba que una cosa cause la otra; la correlación espacial hace ruidosa la comparación con el azar.",
+    "en": "Coinciding in place does not prove that one causes the other; spatial correlation makes the comparison with chance noisy."
+   },
+   "examples": [
+    {
+     "cell": 35396,
+     "lat": -8.5,
+     "lon": -63.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.9074,
+      "NDVI": -0.0112
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.907 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0112 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.907 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0112 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 36481,
+     "lat": -11.5,
+     "lon": -58.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.9018,
+      "NDVI": -0.013
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.902 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.013 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.902 C/decade, PROBADO) and vegetation (NDVI) fell (-0.013 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 36842,
+     "lat": -12.5,
+     "lon": -57.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.8261,
+      "NDVI": -0.0162
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.826 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0162 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.826 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0162 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 35756,
+     "lat": -9.5,
+     "lon": -63.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.8208,
+      "NDVI": -0.0402
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.821 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0402 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.821 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0402 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 35757,
+     "lat": -9.5,
+     "lon": -62.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.8181,
+      "NDVI": -0.027
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.818 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.027 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.818 C/decade, PROBADO) and vegetation (NDVI) fell (-0.027 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 10652,
+     "lat": 60.5,
+     "lon": 32.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.801,
+      "NDVI": -0.0226
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.801 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0226 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.801 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0226 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 36127,
+     "lat": -10.5,
+     "lon": -52.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.7663,
+      "NDVI": -0.0093
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.766 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.00927 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.766 C/decade, PROBADO) and vegetation (NDVI) fell (-0.00927 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 36487,
+     "lat": -11.5,
+     "lon": -52.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.7657,
+      "NDVI": -0.0084
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.766 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.00836 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.766 C/decade, PROBADO) and vegetation (NDVI) fell (-0.00836 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 36116,
+     "lat": -10.5,
+     "lon": -63.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.7645,
+      "NDVI": -0.0219
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.765 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0219 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.765 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0219 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 35764,
+     "lat": -9.5,
+     "lon": -55.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.7304,
+      "NDVI": -0.0083
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.73 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.00833 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.73 C/decade, PROBADO) and vegetation (NDVI) fell (-0.00833 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 36482,
+     "lat": -11.5,
+     "lon": -57.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.7052,
+      "NDVI": -0.0123
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.705 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0123 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.705 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0123 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 35049,
+     "lat": -7.5,
+     "lon": -50.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.7007,
+      "NDVI": -0.0137
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.701 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0137 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.701 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0137 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 36125,
+     "lat": -10.5,
+     "lon": -54.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.6955,
+      "NDVI": -0.0199
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.696 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0199 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.696 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0199 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 36488,
+     "lat": -11.5,
+     "lon": -51.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.6659,
+      "NDVI": -0.0186
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.666 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0186 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.666 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0186 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 34690,
+     "lat": -6.5,
+     "lon": -49.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.594,
+      "NDVI": -0.0101
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.594 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0101 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.594 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0101 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 38386,
+     "lat": -16.5,
+     "lon": 46.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.4626,
+      "NDVI": -0.0102
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.463 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0102 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.463 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0102 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 38638,
+     "lat": -17.5,
+     "lon": -61.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.4424,
+      "NDVI": -0.038
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.442 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.038 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.442 C/decade, PROBADO) and vegetation (NDVI) fell (-0.038 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 49310,
+     "lat": -46.5,
+     "lon": 170.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.4379,
+      "NDVI": -0.0103
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.438 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0103 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.438 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0103 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 47511,
+     "lat": -41.5,
+     "lon": 171.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.4265,
+      "NDVI": -0.0095
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.427 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.00945 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.427 C/decade, PROBADO) and vegetation (NDVI) fell (-0.00945 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 26011,
+     "lat": 17.5,
+     "lon": -88.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.3771,
+      "NDVI": -0.0094
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.377 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.00938 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.377 C/decade, PROBADO) and vegetation (NDVI) fell (-0.00938 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 38027,
+     "lat": -15.5,
+     "lon": 47.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.3569,
+      "NDVI": -0.0134
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.357 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0134 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.357 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0134 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 28176,
+     "lat": 11.5,
+     "lon": -83.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.3536,
+      "NDVI": -0.0151
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.354 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0151 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.354 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0151 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 25290,
+     "lat": 19.5,
+     "lon": -89.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.3477,
+      "NDVI": -0.0187
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.348 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0187 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.348 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0187 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 32324,
+     "lat": 0.5,
+     "lon": 104.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.3424,
+      "NDVI": -0.0289
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.342 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0289 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.342 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0289 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 31246,
+     "lat": 3.5,
+     "lon": 106.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.31,
+      "NDVI": -0.0101
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.31 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0101 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.31 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0101 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 24347,
+     "lat": 22.5,
+     "lon": 47.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.3087,
+      "NDVI": -0.0009
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.309 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.000912 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.309 C/decade, PROBADO) and vegetation (NDVI) fell (-0.000912 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 38387,
+     "lat": -16.5,
+     "lon": 47.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.3062,
+      "NDVI": -0.0136
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.306 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0136 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.306 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0136 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 34891,
+     "lat": -6.5,
+     "lon": 151.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.3031,
+      "NDVI": -0.0075
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.303 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.00754 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.303 C/decade, PROBADO) and vegetation (NDVI) fell (-0.00754 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 35605,
+     "lat": -8.5,
+     "lon": 145.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.2976,
+      "NDVI": -0.0113
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.298 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0113 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.298 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0113 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 32701,
+     "lat": -0.5,
+     "lon": 121.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.2939,
+      "NDVI": -0.0066
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.294 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.00655 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.294 C/decade, PROBADO) and vegetation (NDVI) fell (-0.00655 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 32699,
+     "lat": -0.5,
+     "lon": 119.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.289,
+      "NDVI": -0.0148
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.289 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0148 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.289 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0148 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 29084,
+     "lat": 9.5,
+     "lon": 104.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.2652,
+      "NDVI": -0.035
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.265 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.035 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.265 C/decade, PROBADO) and vegetation (NDVI) fell (-0.035 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 33057,
+     "lat": -1.5,
+     "lon": 117.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.2448,
+      "NDVI": -0.0304
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.245 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0304 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.245 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0304 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 33766,
+     "lat": -3.5,
+     "lon": 106.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.2341,
+      "NDVI": -0.0167
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.234 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0167 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.234 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0167 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 39108,
+     "lat": -18.5,
+     "lon": 48.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.2332,
+      "NDVI": -0.0135
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.233 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0135 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.233 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0135 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 38748,
+     "lat": -17.5,
+     "lon": 48.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.2321,
+      "NDVI": -0.0078
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.232 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.00783 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.232 C/decade, PROBADO) and vegetation (NDVI) fell (-0.00783 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 39827,
+     "lat": -20.5,
+     "lon": 47.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.232,
+      "NDVI": -0.0109
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.232 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0109 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.232 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0109 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 33804,
+     "lat": -3.5,
+     "lon": 144.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.2223,
+      "NDVI": -0.0131
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.222 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0131 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.222 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0131 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 33782,
+     "lat": -3.5,
+     "lon": 122.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.219,
+      "NDVI": -0.011
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.219 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.011 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.219 C/decade, PROBADO) and vegetation (NDVI) fell (-0.011 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 31980,
+     "lat": 1.5,
+     "lon": 120.5,
+     "q_joint": 1.0,
+     "effect": {
+      "T2M": 0.2183,
+      "NDVI": -0.0117
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.218 C/década, PROBADO) y bajó la vegetación (NDVI) (-0.0117 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.218 C/decade, PROBADO) and vegetation (NDVI) fell (-0.0117 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J1",
+      "level": "AMBAS_PROBADO"
+     }
+    }
+   ]
+  },
+  {
+   "rule": "J4",
+   "name": {
+    "es": "Menos lluvia y menos vegetación",
+    "en": "Less rain and less green"
+   },
+   "a": "PRECTOTCORR",
+   "sign_a": -1,
+   "b": "NDVI",
+   "sign_b": -1,
+   "usable_cells": 17695,
+   "counts": {
+    "NADA": 64379,
+    "SOLO_UNA": 379,
+    "CONJUNTO_CANDIDATO": 39,
+    "AMBAS_PROBADO": 3,
+    "CONJUNTO_PROBADO": 0
+   },
+   "fraction_probado_a": 0.0147,
+   "fraction_probado_b": 0.0137,
+   "observed_both_probado": 0.0002,
+   "expected_if_unrelated": 0.0002,
+   "min_q_joint": 1.0,
+   "ratio": 0.84,
+   "note": {
+    "es": "Coincidir en el mismo lugar no prueba que una cosa cause la otra; la correlación espacial hace ruidosa la comparación con el azar.",
+    "en": "Coinciding in place does not prove that one causes the other; spatial correlation makes the comparison with chance noisy."
+   },
+   "examples": [
+    {
+     "cell": 36481,
+     "lat": -11.5,
+     "lon": -58.5,
+     "q_joint": 1.0,
+     "effect": {
+      "PRECTOTCORR": -0.9926,
+      "NDVI": -0.013
+     },
+     "text": {
+      "es": "Aquí bajó la lluvia (-0.993 mm/day/década, PROBADO) y bajó la vegetación (NDVI) (-0.013 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here rainfall fell (-0.993 mm/day/decade, PROBADO) and vegetation (NDVI) fell (-0.013 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J4",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 36482,
+     "lat": -11.5,
+     "lon": -57.5,
+     "q_joint": 1.0,
+     "effect": {
+      "PRECTOTCORR": -0.9329,
+      "NDVI": -0.0123
+     },
+     "text": {
+      "es": "Aquí bajó la lluvia (-0.933 mm/day/década, PROBADO) y bajó la vegetación (NDVI) (-0.0123 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here rainfall fell (-0.933 mm/day/decade, PROBADO) and vegetation (NDVI) fell (-0.0123 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J4",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 36842,
+     "lat": -12.5,
+     "lon": -57.5,
+     "q_joint": 1.0,
+     "effect": {
+      "PRECTOTCORR": -0.8482,
+      "NDVI": -0.0162
+     },
+     "text": {
+      "es": "Aquí bajó la lluvia (-0.848 mm/day/década, PROBADO) y bajó la vegetación (NDVI) (-0.0162 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here rainfall fell (-0.848 mm/day/decade, PROBADO) and vegetation (NDVI) fell (-0.0162 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J4",
+      "level": "AMBAS_PROBADO"
+     }
+    }
+   ]
+  },
+  {
+   "rule": "J6",
+   "name": {
+    "es": "Más calor y más vegetación",
+    "en": "Warmer and greener"
+   },
+   "a": "T2M",
+   "sign_a": 1,
+   "b": "NDVI",
+   "sign_b": 1,
+   "usable_cells": 17695,
+   "counts": {
+    "NADA": 58894,
+    "SOLO_UNA": 4612,
+    "CONJUNTO_CANDIDATO": 564,
+    "AMBAS_PROBADO": 730,
+    "CONJUNTO_PROBADO": 0
+   },
+   "fraction_probado_a": 0.1676,
+   "fraction_probado_b": 0.2125,
+   "observed_both_probado": 0.0413,
+   "expected_if_unrelated": 0.0356,
+   "min_q_joint": 0.123,
+   "ratio": 1.16,
+   "note": {
+    "es": "Coincidir en el mismo lugar no prueba que una cosa cause la otra; la correlación espacial hace ruidosa la comparación con el azar.",
+    "en": "Coinciding in place does not prove that one causes the other; spatial correlation makes the comparison with chance noisy."
+   },
+   "examples": [
+    {
+     "cell": 38647,
+     "lat": -17.5,
+     "lon": -52.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 1.0208,
+      "NDVI": 0.018
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+1.02 C/década, PROBADO) y subió la vegetación (NDVI) (+0.018 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+1.02 C/decade, PROBADO) and vegetation (NDVI) rose (+0.018 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 38648,
+     "lat": -17.5,
+     "lon": -51.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.946,
+      "NDVI": 0.0212
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.946 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0212 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.946 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0212 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 37565,
+     "lat": -14.5,
+     "lon": -54.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.9423,
+      "NDVI": 0.0181
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.942 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0181 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.942 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0181 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17143,
+     "lat": 42.5,
+     "lon": 43.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.9323,
+      "NDVI": 0.027
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.932 C/década, PROBADO) y subió la vegetación (NDVI) (+0.027 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.932 C/decade, PROBADO) and vegetation (NDVI) rose (+0.027 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17841,
+     "lat": 40.5,
+     "lon": 21.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.9315,
+      "NDVI": 0.0261
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.931 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0261 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.931 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0261 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 18580,
+     "lat": 38.5,
+     "lon": 40.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.9241,
+      "NDVI": 0.0322
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.924 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0322 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.924 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0322 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 39007,
+     "lat": -18.5,
+     "lon": -52.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.9118,
+      "NDVI": 0.0193
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.912 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0193 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.912 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0193 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 18582,
+     "lat": 38.5,
+     "lon": 42.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.9073,
+      "NDVI": 0.0308
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.907 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0308 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.907 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0308 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17142,
+     "lat": 42.5,
+     "lon": 42.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.8804,
+      "NDVI": 0.0289
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.88 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0289 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.88 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0289 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 36493,
+     "lat": -11.5,
+     "lon": -46.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.8739,
+      "NDVI": 0.018
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.874 C/década, PROBADO) y subió la vegetación (NDVI) (+0.018 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.874 C/decade, PROBADO) and vegetation (NDVI) rose (+0.018 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 16780,
+     "lat": 43.5,
+     "lon": 40.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.8725,
+      "NDVI": 0.0173
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.873 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0173 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.873 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0173 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17141,
+     "lat": 42.5,
+     "lon": 41.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.8712,
+      "NDVI": 0.0236
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.871 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0236 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.871 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0236 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17502,
+     "lat": 41.5,
+     "lon": 42.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.8619,
+      "NDVI": 0.0247
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.862 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0247 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.862 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0247 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 18579,
+     "lat": 38.5,
+     "lon": 39.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.8512,
+      "NDVI": 0.0295
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.851 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0295 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.851 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0295 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17842,
+     "lat": 40.5,
+     "lon": 22.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.8429,
+      "NDVI": 0.0224
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.843 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0224 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.843 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0224 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 8856,
+     "lat": 65.5,
+     "lon": 36.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.8412,
+      "NDVI": 0.031
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.841 C/década, PROBADO) y subió la vegetación (NDVI) (+0.031 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.841 C/decade, PROBADO) and vegetation (NDVI) rose (+0.031 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 18583,
+     "lat": 38.5,
+     "lon": 43.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.8228,
+      "NDVI": 0.021
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.823 C/década, PROBADO) y subió la vegetación (NDVI) (+0.021 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.823 C/decade, PROBADO) and vegetation (NDVI) rose (+0.021 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 16757,
+     "lat": 43.5,
+     "lon": 17.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.8222,
+      "NDVI": 0.0205
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.822 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0205 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.822 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0205 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 18578,
+     "lat": 38.5,
+     "lon": 38.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.8216,
+      "NDVI": 0.029
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.822 C/década, PROBADO) y subió la vegetación (NDVI) (+0.029 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.822 C/decade, PROBADO) and vegetation (NDVI) rose (+0.029 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 18220,
+     "lat": 39.5,
+     "lon": 40.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.8154,
+      "NDVI": 0.0233
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.815 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0233 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.815 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0233 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17843,
+     "lat": 40.5,
+     "lon": 23.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.7992,
+      "NDVI": 0.0265
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.799 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0265 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.799 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0265 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17844,
+     "lat": 40.5,
+     "lon": 24.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.7406,
+      "NDVI": 0.0295
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.741 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0295 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.741 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0295 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 16028,
+     "lat": 45.5,
+     "lon": 8.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.7247,
+      "NDVI": 0.0217
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.725 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0217 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.725 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0217 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17501,
+     "lat": 41.5,
+     "lon": 41.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.7138,
+      "NDVI": 0.0176
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.714 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0176 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.714 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0176 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 18929,
+     "lat": 37.5,
+     "lon": 29.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.7127,
+      "NDVI": 0.0289
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.713 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0289 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.713 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0289 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 18943,
+     "lat": 37.5,
+     "lon": 43.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.7052,
+      "NDVI": 0.0135
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.705 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0135 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.705 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0135 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17839,
+     "lat": 40.5,
+     "lon": 19.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.7031,
+      "NDVI": 0.0296
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.703 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0296 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.703 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0296 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17491,
+     "lat": 41.5,
+     "lon": 31.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.6898,
+      "NDVI": 0.0177
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.69 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0177 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.69 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0177 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17496,
+     "lat": 41.5,
+     "lon": 36.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.6857,
+      "NDVI": 0.0248
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.686 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0248 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.686 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0248 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 18200,
+     "lat": 39.5,
+     "lon": 20.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.6807,
+      "NDVI": 0.0224
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.681 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0224 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.681 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0224 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17495,
+     "lat": 41.5,
+     "lon": 35.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.6769,
+      "NDVI": 0.0319
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.677 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0319 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.677 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0319 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17492,
+     "lat": 41.5,
+     "lon": 32.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.6684,
+      "NDVI": 0.023
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.668 C/década, PROBADO) y subió la vegetación (NDVI) (+0.023 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.668 C/decade, PROBADO) and vegetation (NDVI) rose (+0.023 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 19038,
+     "lat": 37.5,
+     "lon": 138.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.6671,
+      "NDVI": 0.0267
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.667 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0267 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.667 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0267 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 18569,
+     "lat": 38.5,
+     "lon": 29.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.661,
+      "NDVI": 0.0311
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.661 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0311 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.661 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0311 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 20457,
+     "lat": 33.5,
+     "lon": 117.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.659,
+      "NDVI": 0.0442
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.659 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0442 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.659 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0442 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 19037,
+     "lat": 37.5,
+     "lon": 137.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.6502,
+      "NDVI": 0.0326
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.65 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0326 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.65 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0326 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 16748,
+     "lat": 43.5,
+     "lon": 8.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.6476,
+      "NDVI": 0.0254
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.648 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0254 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.648 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0254 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 16882,
+     "lat": 43.5,
+     "lon": 142.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.644,
+      "NDVI": 0.0155
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.644 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0155 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.644 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0155 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17469,
+     "lat": 41.5,
+     "lon": 9.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.6388,
+      "NDVI": 0.0117
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.639 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0117 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.639 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0117 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 17858,
+     "lat": 40.5,
+     "lon": 38.5,
+     "q_joint": 0.12304,
+     "effect": {
+      "T2M": 0.6321,
+      "NDVI": 0.0288
+     },
+     "text": {
+      "es": "Aquí subió la temperatura (+0.632 C/década, PROBADO) y subió la vegetación (NDVI) (+0.0288 1/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 0.12). HORI no dice que una cause la otra.",
+      "en": "Here temperature rose (+0.632 C/decade, PROBADO) and vegetation (NDVI) rose (+0.0288 1/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 0.12). HORI does not say that one causes the other.",
+      "rule": "J6",
+      "level": "AMBAS_PROBADO"
+     }
+    }
+   ]
+  }
+ ],
+ "levels": {
+  "0": "NADA",
+  "1": "SOLO_UNA",
+  "2": "CONJUNTO_CANDIDATO",
+  "3": "AMBAS_PROBADO",
+  "4": "CONJUNTO_PROBADO"
+ },
+ "arrays": {
+  "level_J1": {
+   "file": "level_J1.u8",
+   "dtype": "u8",
+   "codes": {
+    "0": "NADA",
+    "1": "SOLO_UNA",
+    "2": "CONJUNTO_CANDIDATO",
+    "3": "AMBAS_PROBADO",
+    "4": "CONJUNTO_PROBADO"
+   }
+  },
+  "q_J1": {
+   "file": "q_J1.f32",
+   "dtype": "f32"
+  },
+  "level_J4": {
+   "file": "level_J4.u8",
+   "dtype": "u8",
+   "codes": {
+    "0": "NADA",
+    "1": "SOLO_UNA",
+    "2": "CONJUNTO_CANDIDATO",
+    "3": "AMBAS_PROBADO",
+    "4": "CONJUNTO_PROBADO"
+   }
+  },
+  "q_J4": {
+   "file": "q_J4.f32",
+   "dtype": "f32"
+  },
+  "level_J6": {
+   "file": "level_J6.u8",
+   "dtype": "u8",
+   "codes": {
+    "0": "NADA",
+    "1": "SOLO_UNA",
+    "2": "CONJUNTO_CANDIDATO",
+    "3": "AMBAS_PROBADO",
+    "4": "CONJUNTO_PROBADO"
+   }
+  },
+  "q_J6": {
+   "file": "q_J6.f32",
+   "dtype": "f32"
+  }
+ },
+ "method": {
+  "p_joint": "max(p_a, p_b) / 2 when both effects have the rule's (pre-declared) sign: one-sided intersection-union test",
+  "fdr": "Benjamini-Hochberg q = 0.10 per rule over cells where both variables are usable",
+  "level_4": "CONJUNTO_PROBADO: q_joint <= 0.10 and both variables PROBADO in their own layer",
+  "level_3": "AMBAS_PROBADO: both PROBADO in their own layers; the joint claim over the map is not reached",
+  "calibration": "sim/results_joint_calibration.json"
+ },
+ "honesty": {
+  "data_real": true,
+  "not_causal": true,
+  "note": {
+   "es": "Que dos cambios ocurran en el mismo lugar no prueba que uno cause el otro.",
+   "en": "Two changes at the same place do not prove that one causes the other."
+  }
+ }
+}
