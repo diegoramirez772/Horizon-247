@@ -22,8 +22,8 @@ import { Sidebar } from "./Sidebar";
 import { useHome, useIndex, useLayer, useMapData, useSeries } from "./useBundles";
 
 const C = {
-  es: { back: "Regresar", backLong: "Regresar al inicio", map: "Monitoreo", newChat: "Nueva pregunta", theme: "Cambiar tema", skip: "Ir a la caja de preguntas", empty: "Aún no hay capas de datos." },
-  en: { back: "Back", backLong: "Back to the start", map: "Monitoring", newChat: "New question", theme: "Switch theme", skip: "Go to the question box", empty: "No data layers yet." },
+  es: { back: "Regresar", backLong: "Regresar al inicio", map: "Monitoreo", theme: "Cambiar tema", skip: "Ir a la caja de preguntas", empty: "Aún no hay capas de datos." },
+  en: { back: "Back", backLong: "Back to the start", map: "Monitoring", theme: "Switch theme", skip: "Go to the question box", empty: "No data layers yet." },
 };
 
 /** Questions that are about the map open the side panel; the rest stay in the conversation. */
@@ -174,13 +174,6 @@ export function HorizonApp() {
     windowEnd: (y: number) => { store.set({ windowEnd: y }); conv.answer(compose("accumulated", { ...ctxRef.current, state: store.get() }, "controls")); },
   }), [store, conv, deps, actions]);
 
-  const newChat = () => {
-    conv.clear();
-    store.set({ selection: null, filter: null, timeMode: "completa", camera: store.get().camera + 1 });
-    setPanel(null);
-    setFull(false);
-    setHome(true);
-  };
   const goHome = () => { setHome(true); setPanel(null); setFull(false); };
 
   // Camera: commands bump `camera`; the map flies to whatever the answer is about. Map taps do not move it.
@@ -210,7 +203,7 @@ export function HorizonApp() {
     <HubProvider value={hub}>
     <div className="flex h-dvh overflow-x-hidden bg-bg">
       <Sidebar lang={s.lang} setLang={(l) => store.set({ lang: l })} panel={panel} setPanel={setPanel} home={home}
-        onHome={goHome} onNew={newChat} dark={theme.pref !== "light"} toggleTheme={() => theme.setPref(theme.pref === "light" ? "dark" : "light")} />
+        onHome={goHome} dark={theme.pref !== "light"} toggleTheme={() => theme.setPref(theme.pref === "light" ? "dark" : "light")} />
       <div className="flex min-w-0 flex-1 flex-col">
       <a href="#ask" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-surface focus:p-2">{c.skip}</a>
 

@@ -1,6 +1,6 @@
 "use client";
 
-// The app's only chrome (replaces the top header): a left rail with home, new question, Monitoreo, En vivo and
+// The app's only chrome (replaces the top header): a left rail with home, Monitoreo, En vivo and
 // Evidencia, and language + theme at the bottom. Collapses to icons on desktop; on phones it is a drawer behind a
 // floating button. The reading level is NOT here: it lives inside the question box, next to what it changes.
 
@@ -11,12 +11,12 @@ import { Logo } from "./ui";
 
 const T = {
   es: {
-    home: "Inicio", newChat: "Nueva pregunta", map: "Mapa y globo", assistant: "Asistente", monitoring: "Monitoreo", prefs: "Preferencias", live: "En vivo", evidence: "Evidencia",
+    home: "Inicio", map: "Mapa y globo", assistant: "Asistente", monitoring: "Monitoreo", prefs: "Preferencias", live: "En vivo", evidence: "Evidencia",
     theme: "Tema", dark: "Oscuro", light: "Claro", lang: "Idioma", collapse: "Contraer menú", expand: "Expandir menú",
     open: "Abrir menú", close: "Cerrar menú", sections: "Secciones",
   },
   en: {
-    home: "Home", newChat: "New question", map: "Map and globe", assistant: "Assistant", monitoring: "Monitoring", prefs: "Preferences", live: "Live", evidence: "Evidence",
+    home: "Home", map: "Map and globe", assistant: "Assistant", monitoring: "Monitoring", prefs: "Preferences", live: "Live", evidence: "Evidence",
     theme: "Theme", dark: "Dark", light: "Light", lang: "Language", collapse: "Collapse menu", expand: "Expand menu",
     open: "Open menu", close: "Close menu", sections: "Sections",
   },
@@ -24,9 +24,9 @@ const T = {
 
 const STORE = "h247-rail";
 
-export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, onNew, dark, toggleTheme }: {
+export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, dark, toggleTheme }: {
   lang: Lang; setLang: (l: Lang) => void; panel: PanelTab | null; setPanel: (p: PanelTab | null) => void;
-  home: boolean; onHome: () => void; onNew: () => void; dark: boolean; toggleTheme: () => void;
+  home: boolean; onHome: () => void; dark: boolean; toggleTheme: () => void;
 }) {
   const t = T[lang];
   const [slim, setSlim] = useState(false);
@@ -47,14 +47,13 @@ export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, onNew, d
   type Item = { key: string; label: string; icon: React.ReactNode; on: boolean; run: () => void };
   const items: Item[] = [
     { key: "home", label: t.home, icon: <path d="M2.5 7.5L8 3l5.5 4.5V13a.5.5 0 0 1-.5.5H9.5v-3.5h-3V13.5H3a.5.5 0 0 1-.5-.5z" />, on: home && !panel, run: go(onHome) },
-    { key: "new", label: t.newChat, icon: <path d="M8 3v10M3 8h10" />, on: false, run: go(onNew) },
     { key: "map", label: t.map, icon: <><path d="M1.5 3.5l4-1.5 5 2 4-1.5v10l-4 1.5-5-2-4 1.5z" /><path d="M5.5 2v10M10.5 4v10" /></>, on: panel === "map", run: tab("map") },
     { key: "live", label: t.live, icon: <><circle cx="8" cy="8" r="2" /><path d="M4.5 4.5a5 5 0 0 0 0 7M11.5 4.5a5 5 0 0 1 0 7M2.5 2.5a8 8 0 0 0 0 11M13.5 2.5a8 8 0 0 1 0 11" /></>, on: panel === "live", run: tab("live") },
     { key: "evidence", label: t.evidence, icon: <path d="M2 13.5h12M3 10l3-3 3 2 4-5" />, on: panel === "evidence", run: tab("evidence") },
   ];
   const groups: { label: string; items: Item[] }[] = [
-    { label: t.assistant, items: items.slice(0, 2) },
-    { label: t.monitoring, items: items.slice(2) },
+    { label: t.assistant, items: items.slice(0, 1) },
+    { label: t.monitoring, items: items.slice(1) },
   ];
 
   return (

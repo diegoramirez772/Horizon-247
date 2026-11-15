@@ -117,7 +117,6 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, h
       <div className="relative flex h-full flex-col overflow-y-auto overflow-x-hidden">
         <HorizonBackdrop />
         <div className="relative mx-auto flex w-full max-w-[720px] flex-1 flex-col justify-center px-4 pb-6 pt-8">
-          <div className="mb-4 flex justify-center"><Emblem size={92} /></div>
           <h1 className="mb-6 text-center text-[clamp(1.75rem,3.2vw,2.5rem)] font-semibold leading-tight tracking-tight text-balance">{t.hello}</h1>
           <Composer conv={conv} lang={lang} register={register} onRegister={onRegister} simulated={simulated} onSend={(x, v) => { onHome(false); ask(x, v); }} autoFocus bare />
           {msgs.length > 0 ? (
