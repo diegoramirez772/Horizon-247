@@ -4,7 +4,7 @@
 // Evidencia, and language + theme at the bottom. Collapses to icons on desktop; on phones it is a drawer behind a
 // floating button. The reading level is NOT here: it lives inside the question box, next to what it changes.
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { authConfigured, currentUser, signOut, subscribe } from "@/core/live/auth";
 import type { Lang } from "@/core/i18n/texts";
 import type { PanelTab } from "./MapPanel";
@@ -31,6 +31,16 @@ export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, dark, to
 }) {
   const t = T[lang];
   const user = useSyncExternalStore(subscribe, currentUser, () => null);
+  const [acct, setAcct] = useState(false);
+  const acctRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!acct) return;
+    const off = (e: PointerEvent) => { if (!acctRef.current?.contains(e.target as Node)) setAcct(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setAcct(false); };
+    addEventListener("pointerdown", off);
+    addEventListener("keydown", esc);
+    return () => { removeEventListener("pointerdown", off); removeEventListener("keydown", esc); };
+  }, [acct]);
   const [slim, setSlim] = useState(false);
   const [drawer, setDrawer] = useState(false);
   useEffect(() => { try { setSlim(localStorage.getItem(STORE) === "slim"); } catch { /* default: wide */ } }, []);
@@ -102,48 +112,61 @@ export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, dark, to
           ))}
         </div>
 
-        {authConfigured() ? (
-          <div className={`mt-auto border-t border-border p-2 ${wide ? "" : "flex justify-center"}`}>
-            {user ? (
-              <div className={`flex items-center gap-2.5 rounded-xl ${wide ? "px-2 py-1.5" : ""}`}>
-                <span aria-hidden="true" title={user.email}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2563eb] to-[#0ea5e9] text-sm font-semibold text-white">
-                  {(user.name || user.email).slice(0, 1).toUpperCase()}
-                </span>
-                {wide ? (
-                  <>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{user.name || user.email}</span>
-                      <span className="block truncate text-xs text-text-3">{user.email}</span>
-                    </span>
-                    <button type="button" onClick={() => void signOut()} className="rounded-lg px-2 py-1 text-xs font-medium text-text-2 hover:bg-surface hover:text-text">
-                      {lang === "es" ? "Salir" : "Sign out"}
-                    </button>
-                  </>
+        {/* Footer: one circle (your initial, or a person when signed out). It opens a card with language, theme and session. */}
+        <div ref={acctRef} className={`relative mt-auto border-t border-border p-3 ${wide ? "" : "flex justify-center"}`}>
+          {acct ? (
+            <div role="dialog" aria-label={lang === "es" ? "Cuenta y preferencias" : "Account and preferences"}
+              className="widget-in absolute bottom-[calc(100%+8px)] left-2 z-[70] w-64 rounded-2xl border border-border bg-surface p-2 shadow-[0_16px_44px_rgba(16,24,40,0.18)]">
+              {user ? (
+                <div className="flex items-center gap-2.5 px-2 pb-2 pt-1.5">
+                  <Avatar text={user.name || user.email} />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold">{user.name || user.email}</span>
+                    <span className="block truncate text-xs text-text-3">{user.email}</span>
+                  </span>
+                </div>
+              ) : authConfigured() ? (
+                <button type="button" onClick={() => { setAcct(false); go(onLogin)(); }}
+                  className="mb-1 flex h-10 w-full items-center justify-center rounded-xl bg-accent text-sm font-semibold text-on-accent">
+                  {lang === "es" ? "Entrar o crear cuenta" : "Sign in or sign up"}
+                </button>
+              ) : null}
+              <div className="space-y-1 border-t border-border pt-2">
+                <div className="flex items-center justify-between gap-2 px-2 py-1">
+                  <span className="text-sm text-text-2">{t.lang}</span>
+                  <div role="radiogroup" aria-label={t.lang} className="flex rounded-full bg-surface-2 p-0.5 shadow-[inset_0_0_0_1px_var(--border)]">
+                    {(["es", "en"] as const).map((l) => (
+                      <button key={l} type="button" role="radio" aria-checked={lang === l} onClick={() => setLang(l)}
+                        className={`h-7 rounded-full px-3 text-xs font-semibold transition-all ${lang === l ? "bg-surface text-text shadow-[0_1px_3px_rgba(16,24,40,0.12),0_0_0_1px_var(--border)]" : "text-text-3 hover:text-text"}`}>
+                        {l.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button type="button" onClick={toggleTheme} className="flex h-9 w-full items-center justify-between rounded-xl px-2 text-sm text-text-2 hover:bg-surface-2 hover:text-text">
+                  <span>{t.theme}</span>
+                  <span className="flex items-center gap-1.5 text-text">
+                    <Icon>{dark ? <path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5z" /> : <><circle cx="8" cy="8" r="3" /><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3" /></>}</Icon>
+                    <span className="text-xs">{dark ? t.dark : t.light}</span>
+                  </span>
+                </button>
+                {user ? (
+                  <button type="button" onClick={() => { setAcct(false); void signOut(); }}
+                    className="flex h-9 w-full items-center gap-2 rounded-xl px-2 text-sm text-text-2 hover:bg-surface-2 hover:text-text">
+                    <Icon><path d="M6 3H3.5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1H6M10.5 5l3 3-3 3M13.5 8H6" /></Icon>
+                    {lang === "es" ? "Cerrar sesión" : "Sign out"}
+                  </button>
                 ) : null}
               </div>
-            ) : (
-              <button type="button" onClick={go(onLogin)} title={wide ? undefined : (lang === "es" ? "Entrar" : "Sign in")}
-                className={`flex h-10 items-center gap-3 rounded-xl text-sm font-medium text-text-2 hover:bg-surface hover:text-text ${wide ? "w-full px-3" : "w-10 justify-center"}`}>
+            </div>
+          ) : null}
+          <button type="button" onClick={() => setAcct((x) => !x)} aria-expanded={acct} aria-label={user ? (user.name || user.email) : (lang === "es" ? "Cuenta y preferencias" : "Account and preferences")}
+            title={user ? user.email : undefined} className="rounded-full transition-transform hover:scale-105">
+            {user ? <Avatar text={user.name || user.email} /> : (
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-text-2 shadow-[inset_0_0_0_1px_var(--border)]">
                 <Icon><><circle cx="8" cy="5.5" r="2.5" /><path d="M3 13.5c.8-2.4 2.7-3.5 5-3.5s4.2 1.1 5 3.5" /></></Icon>
-                {wide ? <span>{lang === "es" ? "Entrar o crear cuenta" : "Sign in or sign up"}</span> : <span className="sr-only">{lang === "es" ? "Entrar" : "Sign in"}</span>}
-              </button>
+              </span>
             )}
-          </div>
-        ) : null}
-        <div className={`${authConfigured() ? "" : "mt-auto "}flex gap-2 border-t border-border p-3 ${wide ? "items-center" : "flex-col items-center"}`}>
-          <div role="radiogroup" aria-label={t.lang}
-            className={`relative flex rounded-full bg-surface-2 p-1 shadow-[inset_0_0_0_1px_var(--border)] ${wide ? "flex-1" : "flex-col"}`}>
-            {(["es", "en"] as const).map((l) => (
-              <button key={l} type="button" role="radio" aria-checked={lang === l} onClick={() => setLang(l)} title={l === "es" ? "Español" : "English"}
-                className={`flex h-8 flex-1 items-center justify-center rounded-full px-2.5 text-xs font-semibold tracking-wide transition-all ${lang === l ? "bg-surface text-text shadow-[0_1px_3px_rgba(16,24,40,0.12),0_0_0_1px_var(--border)]" : "text-text-3 hover:text-text"}`}>
-                {l.toUpperCase()}
-              </button>
-            ))}
-          </div>
-          <button type="button" onClick={toggleTheme} title={`${t.theme}: ${dark ? t.dark : t.light}`} aria-label={`${t.theme}: ${dark ? t.dark : t.light}`}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-2 text-text-2 shadow-[inset_0_0_0_1px_var(--border)] transition-colors hover:bg-surface hover:text-text">
-            <Icon>{dark ? <path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5z" /> : <><circle cx="8" cy="8" r="3" /><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3" /></>}</Icon>
           </button>
         </div>
       </nav>
@@ -156,5 +179,13 @@ function Icon({ children }: { children: React.ReactNode }) {
     <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
       {children}
     </svg>
+  );
+}
+
+function Avatar({ text }: { text: string }) {
+  return (
+    <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2563eb] to-[#0ea5e9] text-sm font-semibold text-white">
+      {text.slice(0, 1).toUpperCase()}
+    </span>
   );
 }
