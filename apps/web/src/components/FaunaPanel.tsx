@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { findPlace, type Where } from "@/core/genui/places";
 import { num } from "@/core/format/format";
 import type { Lang } from "@/core/i18n/texts";
-import { type Box, type FaunaGroup, type FaunaSignal, GROUPS, boxAround, watchFauna } from "@/core/live/fauna";
+import { type Box, type FaunaGroup, type FaunaSignal, type TopSpecies, GROUPS, boxAround, topSpecies, watchFauna } from "@/core/live/fauna";
 import type { AnomalyEvent } from "@/core/watch/anomaly";
 import { WatchChart } from "./WatchChart";
 
@@ -17,6 +17,7 @@ const ALL = Object.keys(GROUPS) as FaunaGroup[];
 const SEEN = "h247-fauna-seen-v1";
 const WATCH = "h247-fauna-watch-v1";
 const EVERY_MS = 6 * 3600e3;
+const ICON: Record<FaunaGroup, string> = { aves: "🐦", mamiferos: "🦊", anfibios: "🐸", reptiles: "🦎", insectos: "🐝", mariposas: "🦋" };
 
 export interface FaunaPlace { name: string; lat: number; lon: number; box?: Box }
 
@@ -38,6 +39,10 @@ const C = {
     source: "Datos: iNaturalist, observaciones verificables (ciencia ciudadana; licencia de cada observación).",
     notifTitle: (g: string, p: string) => `HORI · ${g} en ${p}`,
     error: "No se pudo leer iNaturalist (¿sin internet?).",
+    summary: { changed: "Cambiaron", mild: "Leve", calm: "Estables", thin: "Pocos datos" },
+    progress: (a: number, b: number) => `Revisando ${a} de ${b} grupos…`,
+    again: "Revisar de nuevo", stable: "Estable", few: "Pocos datos", seen: "Lo que más se reporta aquí",
+    reports: (n: string) => `${n} reportes`, how: "¿Cómo se calcula?", seenAt: (t: string) => `Revisado ${t}`,
   },
   en: {
     title: "Animal signals", place: "Place", size: "Area", check: "Check the 6 groups", checking: "Checking…",
@@ -56,6 +61,10 @@ const C = {
     source: "Data: iNaturalist, verifiable observations (citizen science; each observation's licence).",
     notifTitle: (g: string, p: string) => `HORI · ${g} at ${p}`,
     error: "Could not read iNaturalist (offline?).",
+    summary: { changed: "Changed", mild: "Mild", calm: "Stable", thin: "Too few data" },
+    progress: (a: number, b: number) => `Checking ${a} of ${b} groups…`,
+    again: "Check again", stable: "Stable", few: "Too few data", seen: "Most reported here",
+    reports: (n: string) => `${n} reports`, how: "How is it computed?", seenAt: (t: string) => `Checked ${t}`,
   },
 };
 
@@ -85,6 +94,54 @@ export function faunaLine(s: FaunaSignal, lang: Lang): { text: string; level: "l
 
 const RANK = { alta: 3, media: 2, leve: 1 } as const;
 
+/**
+ * One group of animals at a place: what happened (sentence + big change), its chart and the species reported most.
+ * Shared by the panel and by the assistant, which prints it inside the conversation when it matters.
+ */
+export function FaunaGroupCard({ g, s, species, lang }: { g: FaunaGroup; s: FaunaSignal; species?: TopSpecies[]; lang: Lang }) {
+  const c = C[lang];
+  const line = faunaLine(s, lang);
+  return (
+    <article className={`rounded-2xl border p-3 ${line?.level === "media" || line?.level === "alta" ? "border-accent" : "border-border"}`}>
+      <div className="flex items-start gap-3">
+        <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-xl">{ICON[g]}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold">{GROUPS[g][lang]}</h3>
+            {line?.level ? <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${line.level === "leve" ? "bg-surface-2 text-text-2" : "bg-accent text-on-accent"}`}>{c.sev[line.level]}</span> : null}
+          </div>
+          <p className="mt-0.5 text-sm leading-snug text-text-2">{line?.text}</p>
+        </div>
+        <div className="shrink-0 text-right">
+          {s.change && line?.level ? (
+            <p className="tabular text-2xl font-semibold leading-none">{s.change.pct > 0 ? "↑" : "↓"}{num(Math.abs(s.change.pct), lang, 0)}%</p>
+          ) : (
+            <p className="text-xs font-semibold text-text-3">{line?.text === c.thin ? c.few : c.stable}</p>
+          )}
+        </div>
+      </div>
+      <WatchChart values={s.values} labels={s.times} events={s.events} label={`${GROUPS[g][lang]} · ${c.rate}`} height={80} />
+      <p className="mt-1 text-[11px] text-text-3">{c.rate}</p>
+      {species?.length ? (
+        <div className="mt-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-text-3">{c.seen}</p>
+          <ul className="mt-1 grid grid-cols-3 gap-2">
+            {species.map((t) => (
+              <li key={t.scientific}>
+                <a href={t.url} target="_blank" rel="noreferrer" className="group block">
+                  {t.photo ? <img src={t.photo} alt="" loading="lazy" width={75} height={75} className="h-20 w-full rounded-lg bg-surface-2 object-cover" /> : <span className="block h-20 w-full rounded-lg bg-surface-2" />}
+                  <span className="mt-1 block truncate text-xs font-medium group-hover:underline">{t.name}</span>
+                  <span className="block text-[11px] text-text-3">{c.reports(num(t.count, lang, 0))}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
 export function FaunaPanel({ place, lang }: { place: FaunaPlace; lang: Lang }) {
   const c = C[lang];
   const [where, setWhere] = useState<FaunaPlace>(place);
@@ -94,10 +151,11 @@ export function FaunaPanel({ place, lang }: { place: FaunaPlace; lang: Lang }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(false);
   const [signals, setSignals] = useState<Partial<Record<FaunaGroup, FaunaSignal>>>({});
+  const [species, setSpecies] = useState<Partial<Record<FaunaGroup, TopSpecies[]>>>({});
   const [fresh, setFresh] = useState<string[]>([]);
   const [watching, setWatching] = useState(() => { try { return localStorage.getItem(WATCH) === "1"; } catch { return false; } });
   const [prevPlace, setPrevPlace] = useState(place);
-  if (place !== prevPlace) { setPrevPlace(place); setWhere(place); setSignals({}); }
+  if (place !== prevPlace) { setPrevPlace(place); setWhere(place); setSignals({}); setSpecies({}); }
 
   const box: Box = useMemo(() => where.box ?? boxAround(where.lat, where.lon, half), [where, half]);
   const abort = useRef<AbortController | null>(null);
@@ -115,6 +173,7 @@ export function FaunaPanel({ place, lang }: { place: FaunaPlace; lang: Lang }) {
         const s = await watchFauna(g, box, { signal: ctrl.signal });
         if (ctrl.signal.aborted) return;
         setSignals((prev) => ({ ...prev, [g]: s }));
+        topSpecies(g, box, lang, ctrl.signal).then((t) => { if (!ctrl.signal.aborted) setSpecies((prev) => ({ ...prev, [g]: t })); }).catch(() => {});
         if (s.recent && s.recent.severity !== "leve") {
           const id = eventId(s, s.recent);
           if (!seen.has(id)) {
@@ -147,6 +206,8 @@ export function FaunaPanel({ place, lang }: { place: FaunaPlace; lang: Lang }) {
     return () => { window.clearInterval(id); window.clearTimeout(first); document.removeEventListener("visibilitychange", vis); };
   }, [watching, run]);
   useEffect(() => () => abort.current?.abort(), []);
+  // Open = look: the panel checks the place by itself (12 small requests, cached 6 h), no empty state to click through.
+  useEffect(() => { if (!watching) void run(false); }, [box]); // eslint-disable-line react-hooks/exhaustive-deps -- once per place
 
   const toggleWatch = async () => {
     const on = !watching;
@@ -162,44 +223,71 @@ export function FaunaPanel({ place, lang }: { place: FaunaPlace; lang: Lang }) {
     const m = draft.match(/^\s*(-?\d+(?:[.,]\d+)?)\s*[ ,;]\s*(-?\d+(?:[.,]\d+)?)\s*$/);
     const q = p ?? (m ? { name: `${m[1]}, ${m[2]}`, lat: Number(m[1].replace(",", ".")), lon: Number(m[2].replace(",", ".")) } : null);
     if (!q || !(Math.abs(q.lat) <= 90 && Math.abs(q.lon) <= 180)) { setBad(true); return; }
-    setWhere({ name: q.name, lat: q.lat, lon: q.lon }); setSignals({}); setDraft(""); setBad(false);
+    setWhere({ name: q.name, lat: q.lat, lon: q.lon }); setSignals({}); setSpecies({}); setDraft(""); setBad(false);
   };
 
   const rows = ALL.map((g) => ({ g, s: signals[g] ?? null, line: signals[g] ? faunaLine(signals[g]!, lang) : null }))
     .sort((a, b) => (b.line?.level ? RANK[b.line.level] : 0) - (a.line?.level ? RANK[a.line.level] : 0)
       || Math.abs(b.s?.change?.pct ?? 0) - Math.abs(a.s?.change?.pct ?? 0));
 
+  const done = Object.keys(signals).length;
+  const tally = { changed: 0, mild: 0, calm: 0, thin: 0 };
+  for (const r of rows) if (r.line) {
+    if (r.line.level === "media" || r.line.level === "alta") tally.changed++;
+    else if (r.line.level === "leve") tally.mild++;
+    else if (r.line.text === c.thin) tally.thin++;
+    else tally.calm++;
+  }
+  const last = Math.max(0, ...Object.values(signals).map((x) => x?.fetchedAt ?? 0));
+
   return (
     <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
       <section>
-        <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-3">{c.title}</h2>
-        <p className="mt-1 text-sm font-semibold">{where.name}</p>
-        <p className="tabular text-xs text-text-2">{num(box[1], lang, 2)}…{num(box[3], lang, 2)}°, {num(box[0], lang, 2)}…{num(box[2], lang, 2)}°</p>
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          {where.box ? null : (
-            <label className="flex items-center gap-1.5 text-xs">
-              <span className="text-text-2">{c.size}</span>
-              <select value={half} onChange={(e) => { setHalf(Number(e.target.value)); setSignals({}); }} className="rounded-lg border border-border bg-surface px-2 py-1">
-                <option value={0.25}>~55 km</option><option value={0.5}>~110 km</option><option value={1}>~220 km</option><option value={2}>~440 km</option>
-              </select>
-            </label>
-          )}
-          <button type="button" onClick={() => void run(false)} disabled={busy} className="rounded-full bg-accent px-3.5 py-1.5 text-xs font-semibold text-on-accent disabled:opacity-60">
-            {busy ? c.checking : c.check}
-          </button>
-          <button type="button" onClick={() => void toggleWatch()} aria-pressed={watching}
-            className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${watching ? "border-accent text-text" : "border-border text-text-2"}`}>
-            {watching ? <><span className="live-dot" aria-hidden="true" />{c.watching}</> : c.watch}
-          </button>
-          {watching ? <button type="button" onClick={() => void toggleWatch()} className="text-xs underline underline-offset-2">{c.stop}</button> : null}
+        <h2 className="sr-only">{c.title}</h2>
+        <div className="flex items-baseline gap-2">
+          <p className="text-lg font-semibold leading-tight">{where.name}</p>
+          <p className="tabular text-xs text-text-3">{num(box[1], lang, 2)}…{num(box[3], lang, 2)}°, {num(box[0], lang, 2)}…{num(box[2], lang, 2)}°</p>
         </div>
         <form className="mt-2 flex gap-2" onSubmit={(e) => { e.preventDefault(); use(); }}>
           <input value={draft} onChange={(e) => { setDraft(e.target.value); setBad(false); }} placeholder={c.other} aria-label={c.other}
             className="min-w-0 flex-1 rounded-xl border border-border-control bg-surface px-3 py-1.5 text-sm" />
+          {where.box ? null : (
+            <select value={half} aria-label={c.size} onChange={(e) => { setHalf(Number(e.target.value)); setSignals({}); setSpecies({}); }} className="rounded-xl border border-border bg-surface px-2 text-sm">
+              <option value={0.25}>~55 km</option><option value={0.5}>~110 km</option><option value={1}>~220 km</option><option value={2}>~440 km</option>
+            </select>
+          )}
           <button type="submit" className="rounded-xl border border-border px-3 text-sm">{c.go}</button>
         </form>
         {bad ? <p className="mt-1 text-xs text-text-2">{c.bad}</p> : null}
         {err ? <p role="alert" className="mt-2 text-sm text-text-2">{c.error}</p> : null}
+      </section>
+
+      <section aria-live="polite" className="rounded-2xl border border-border bg-surface p-3">
+        <div className="grid grid-cols-4 gap-2 text-center">
+          {(["changed", "mild", "calm", "thin"] as const).map((k) => (
+            <div key={k} className={`rounded-xl px-1 py-2 ${k === "changed" && tally.changed ? "bg-accent text-on-accent" : "bg-surface-2"}`}>
+              <p className="tabular text-xl font-semibold leading-none">{done ? tally[k] : "–"}</p>
+              <p className={`mt-1 text-[11px] leading-tight ${k === "changed" && tally.changed ? "opacity-85" : "text-text-2"}`}>{c.summary[k]}</p>
+            </div>
+          ))}
+        </div>
+        {busy ? (
+          <div className="mt-3">
+            <div className="h-1.5 overflow-hidden rounded-full bg-surface-2"><div className="h-full rounded-full bg-accent transition-[width] duration-300" style={{ width: `${(done / ALL.length) * 100}%` }} /></div>
+            <p className="mt-1 text-xs text-text-3">{c.progress(done, ALL.length)}</p>
+          </div>
+        ) : null}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => void run(false)} disabled={busy} className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
+            {busy ? c.checking : done ? c.again : c.check}
+          </button>
+          <button type="button" onClick={() => void toggleWatch()} aria-pressed={watching}
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${watching ? "bg-accent text-on-accent" : "border border-border text-text-2"}`}>
+            {watching ? <><span className="live-dot" aria-hidden="true" />{c.watching}</> : c.watch}
+          </button>
+          {watching ? <button type="button" onClick={() => void toggleWatch()} className="text-xs underline underline-offset-2">{c.stop}</button> : null}
+          {last && !busy ? <span className="ml-auto text-[11px] text-text-3">{c.seenAt(new Date(last).toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" }))}</span> : null}
+        </div>
       </section>
 
       {fresh.length ? (
@@ -210,25 +298,26 @@ export function FaunaPanel({ place, lang }: { place: FaunaPlace; lang: Lang }) {
       ) : null}
 
       <section className="space-y-3">
-        {Object.keys(signals).length === 0 && !busy ? <p className="text-sm text-text-2">{c.none}</p> : null}
-        {rows.map(({ g, s, line }) => s ? (
-          <article key={g} className="rounded-2xl border border-border p-3">
-            <div className="flex items-baseline gap-2">
-              <h3 className="font-semibold">{GROUPS[g][lang]}</h3>
-              {line?.level ? <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${line.level === "leve" ? "bg-surface-2 text-text-2" : "bg-accent text-on-accent"}`}>{c.sev[line.level]}</span> : null}
-              <span className="ml-auto tabular text-[11px] text-text-3">{c.rate}</span>
-            </div>
-            <p className="mt-1 text-sm leading-snug text-text-2">{line?.text}</p>
-            <WatchChart values={s.values} labels={s.times} events={s.events} label={`${GROUPS[g][lang]} · ${c.rate}`} height={90} />
-          </article>
-        ) : busy ? <p key={g} className="text-xs text-text-3">{GROUPS[g][lang]} …</p> : null)}
+        {rows.map(({ g, s }) => s ? (
+          <FaunaGroupCard key={g} g={g} s={s} species={species[g]} lang={lang} />
+        ) : busy ? (
+          <div key={g} className="flex items-center gap-3 rounded-2xl border border-border p-3 opacity-60">
+            <span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-xl">{ICON[g]}</span>
+            <span className="text-sm text-text-2">{GROUPS[g][lang]} …</span>
+          </div>
+        ) : null)}
       </section>
 
       <section className="space-y-2 text-xs leading-5 text-text-2">
-        <p>{c.honesty}</p>
-        <p>{c.method}</p>
-        <p className="text-text-3">{c.zon}</p>
         <p className="text-text-3">{c.source}</p>
+        <details className="rounded-xl border border-border p-3">
+          <summary className="cursor-pointer font-semibold text-text">{c.how}</summary>
+          <div className="mt-2 space-y-2">
+            <p>{c.honesty}</p>
+            <p>{c.method}</p>
+            <p className="text-text-3">{c.zon}</p>
+          </div>
+        </details>
       </section>
     </div>
   );

@@ -60,6 +60,7 @@ export const P = {
   events: has(["incendio", "tormenta", "huracan", "ciclon", "volcan", "evento", "desastre", "que esta pasando en el mundo", "iceberg",
     "wildfire", "fire", "storm", "hurricane", "cyclone", "volcano", "event", "disaster"]),
   infrared: has(["infrarroj", "nubes", "satelite", "en vivo", "tiempo real", "infrared", "clouds", "satellite", "live", "real time"]),
+  alerts: has(["alerta", "anomal", "algo raro", "algo extrano", "pasa algo", "hay algo", "algo fuera de lo comun", "alert", "anything unusual", "anything wrong", "unusual"]),
   report: has(["^reporta", "^reporte", "^quiero reportar", "^aviso", "^report ", "^i want to report"]),
   swarm: has(["red enjambre", "enjambre", "reportes de la red", "que reporta la gente", "reportes ciudadanos", "swarm", "citizen reports"]),
   scene: has(["3d", "escena", "diorama", "maqueta", "como se veria", "como se ve ahi", "paisaje", "in 3d", "scene", "what would it look like"]),

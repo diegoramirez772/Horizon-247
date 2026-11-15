@@ -4,6 +4,7 @@
 // re-reads the whole conversation without losing your place (doc 01 §5).
 
 import type { CellFinding, Verdict } from "@/contract/types";
+import type { FaunaGroup } from "@/core/live/fauna";
 import { entryWindow, siblings, type IndexEntry, type RegionGeo } from "@/core/contract/extra";
 import { cellFinding, type Layer } from "@/core/contract/loader";
 import { capitalise, count, deltaValue, digitsFor, num, shortLabel, templateValues } from "@/core/format/format";
@@ -245,6 +246,14 @@ const TOPIC_CHIPS: Record<Topic, Chip[]> = {
   astronauta: [chip(L("¿Y Marte?", "And Mars?"), { t: "topic", topic: "marte", where: null })],
   marte: [chip(L("Marte en 3D", "Mars in 3D"), { t: "scene", where: null, timeline: false, preset: "marte" }), chip(L("Otros planetas", "Other planets"), { t: "topic", topic: "planetas", where: null }), chip(L("Volver a la Tierra", "Back to Earth"), { t: "summary" })],
   planetas: [chip(L("Polvo en Marte", "Dust on Mars"), { t: "topic", topic: "marte", where: null }), chip(L("Monitoreo de astronautas", "Astronaut monitoring"), { t: "topic", topic: "astronauta", where: null })],
+  alertas: [
+    chip(L("Todas las señales de fauna", "All animal signals"), { t: "topic", topic: "fauna", where: null }),
+    chip(L("Tormentas y eventos", "Storms and events"), { t: "topic", topic: "eventos", where: null }),
+  ],
+  fauna: [
+    chip(L("¿Hay alertas aquí?", "Any alerts here?"), { t: "topic", topic: "alertas", where: null }),
+    chip(L("Abrir Señales de fauna", "Open Animal signals"), { t: "open", panel: "fauna" }),
+  ],
   red: [chip(L("Eventos naturales de la NASA", "NASA natural events"), { t: "topic", topic: "eventos", where: null })],
   eventos: [
     chip(L("Infrarrojo en vivo", "Live infrared"), { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }),
@@ -256,8 +265,8 @@ const TOPIC_CHIPS: Record<Topic, Chip[]> = {
  * An answer that builds its own interface (Plan de unión U3). For clima and ganado, when the layer on screen
  * covers the place, HORI's long-term reading is added to the text and the figure (the «now» and the «trend» together).
  */
-export function topicCard(topic: Topic, where: Where | null, ctx: Ctx, source: Source, draft: string | null = null): Card {
-  const a = topicAnswer(topic, where, draft);
+export function topicCard(topic: Topic, where: Where | null, ctx: Ctx, source: Source, draft: string | null = null, group: FaunaGroup | null = null): Card {
+  const a = topicAnswer(topic, where, draft, group);
   const r = (topic === "clima" || topic === "ganado") && ctx.state.selection?.kind === "cell" ? readSelection(ctx) : null;
   const text = { es: { sencillo: "", normal: "", tecnico: "" }, en: { sencillo: "", normal: "", tecnico: "" } } as Card["text"];
   for (const lang of LANGS) for (const reg of REGS) {

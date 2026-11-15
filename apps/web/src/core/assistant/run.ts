@@ -181,7 +181,7 @@ export function run(cmd: Command, via: Via, label: string | null, d: Deps): void
       }
       store.set(patch);
       conv.pending = null;
-      conv.answer(topicCard(i.topic, w, { ...d.ctx(), state: store.get() }, source));
+      conv.answer(topicCard(i.topic, w, { ...d.ctx(), state: store.get() }, source, null, i.group ?? null));
       return;
     }
     case "report": {

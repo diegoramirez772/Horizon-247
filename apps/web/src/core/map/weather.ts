@@ -190,7 +190,8 @@ function place(g: CanvasRenderingContext2D, m: Mosaic, W: number, H: number): vo
  */
 async function latestComplete(id: string, box: Box, z: number, signal: AbortSignal): Promise<Mosaic | null> {
   let best: Mosaic | null = null;
-  for (let k = 0; k < 6 && !signal.aborted; k++) {
+  // Start one slot back (~40 min): the newest slot is usually still being filled, and every retry costs a full round on a slow network.
+  for (let k = 1; k < 7 && !signal.aborted; k++) {
     const m = await loadMosaic(layer(id), z, box, { date: liveSlot(Date.now() - k * 600e3), signal }).catch(() => null);
     if (m && (!best || m.missing < best.missing)) best = m;
     if (m && m.missing === 0) break;

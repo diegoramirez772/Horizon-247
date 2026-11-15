@@ -116,3 +116,33 @@ export async function watchFauna(group: FaunaGroup, box: Box, opts: { since?: st
 export function boxAround(lat: number, lon: number, halfDeg = 0.5): Box {
   return [lon - halfDeg, Math.max(-90, lat - halfDeg), lon + halfDeg, Math.min(90, lat + halfDeg)];
 }
+
+/** The species reported most often in the box (what someone there actually sees), with a photo. */
+export interface TopSpecies { name: string; scientific: string; count: number; photo: string | null; url: string }
+
+export function speciesUrl(box: Box, taxonId: number, lang: "es" | "en", n = 3): string {
+  const q = new URLSearchParams({ taxon_id: String(taxonId), verifiable: "true", per_page: String(n), locale: lang,
+    swlng: box[0].toFixed(4), swlat: box[1].toFixed(4), nelng: box[2].toFixed(4), nelat: box[3].toFixed(4) });
+  return `https://api.inaturalist.org/v1/observations/species_counts?${q}`;
+}
+
+export function parseSpecies(doc: unknown): TopSpecies[] {
+  const rs = (doc as { results?: { count?: number; taxon?: { id?: number; name?: string; preferred_common_name?: string; default_photo?: { square_url?: string } } }[] })?.results ?? [];
+  return rs.filter((r) => r.taxon?.name).map((r) => ({
+    name: r.taxon!.preferred_common_name ?? r.taxon!.name!, scientific: r.taxon!.name!, count: r.count ?? 0,
+    photo: r.taxon!.default_photo?.square_url ?? null, url: `https://www.inaturalist.org/taxa/${r.taxon!.id}`,
+  }));
+}
+
+const speciesCache = new Map<string, Promise<TopSpecies[]>>();
+
+export function topSpecies(group: FaunaGroup, box: Box, lang: "es" | "en", signal?: AbortSignal): Promise<TopSpecies[]> {
+  const url = speciesUrl(box, GROUPS[group].taxonId, lang);
+  let p = speciesCache.get(url);
+  if (!p) {
+    p = fetch(url, { signal, headers: { Accept: "application/json" } }).then(async (r) => (r.ok ? parseSpecies(await r.json()) : []));
+    p.catch(() => speciesCache.delete(url));
+    speciesCache.set(url, p);
+  }
+  return p;
+}

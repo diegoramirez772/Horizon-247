@@ -2,6 +2,7 @@
 // It understands Spanish and English at the same time, whatever the interface language is.
 
 import type { Region } from "@/contract/types";
+import type { FaunaGroup } from "@/core/live/fauna";
 import type { Register } from "@/core/i18n/texts";
 import { findPlace, type Where } from "@/core/genui/places";
 import { P, normalize } from "./patterns";
@@ -9,8 +10,19 @@ import { worldRequest } from "@/core/scene/worlds";
 import { type HowKey, howtoOf, speedOf } from "./howto";
 
 /** «abre / muestra / revisa …» + a section of the product: open it directly. */
+const OPEN_PANEL = /\b(abre|abrir|open)\b/;
 const OPEN_VERB = /\b(abre|abrir|muestra|muestrame|ver|ve|revisa|vigila|vigilar|ensename|open|show|check|watch)\b/;
 const FAUNA = /\b(fauna|animales|aves|pajaros|mariposas|anfibios|insectos|mamiferos|reptiles|senales de fauna|wildlife|birds|animal signals)\b/;
+/** Which group of animals a question names (null = all six). */
+export function faunaGroupOf(text: string): FaunaGroup | null {
+  return /\b(mariposas?|polillas?|butterfl\w*|moths?)\b/.test(text) ? "mariposas"
+    : /\b(aves?|pajar\w*|birds?)\b/.test(text) ? "aves"
+    : /\b(mamifer\w*|mammals?)\b/.test(text) ? "mamiferos"
+    : /\b(anfibios?|ranas?|sapos?|amphibians?|frogs?|toads?)\b/.test(text) ? "anfibios"
+    : /\b(reptil\w*|lagart\w*|serpientes?|viboras?|snakes?|lizards?)\b/.test(text) ? "reptiles"
+    : /\b(insect\w*|abejas?|bees?)\b/.test(text) ? "insectos"
+    : null;
+}
 const PERSON = /\b(persona|ritmo cardiaco|frecuencia cardiaca|mi pulso|person|heart rate)\b/;
 const FOCI = /\b(focos?|lo significativo|significativo|foci)\b/;
 const GESTURES_ON = /\b(enciende|activa|prende|usar|turn on)\b.*\bgestos?\b|\bgestures? on\b/;
@@ -44,7 +56,7 @@ export type Intent =
   | { t: "world" }
   | { t: "undo" }
   | { t: "clear" }
-  | { t: "topic"; topic: Topic; where: Where | null }
+  | { t: "topic"; topic: Topic; where: Where | null; group?: FaunaGroup | null }
   | { t: "imagery"; layer: string }
   | { t: "evolution" }
   | { t: "variable"; v: "T2M" | "PRECTOTCORR" }
@@ -61,7 +73,7 @@ export type Intent =
   | { t: "unknown" };
 
 /** What the answer is about when it brings its own components (clima, ganado, astronauta, Marte, planetas, eventos). */
-export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos" | "red";
+export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos" | "red" | "alertas" | "fauna";
 
 /** What a command may carry besides its intent: a place to look at first. */
 export type Place = { kind: "region"; id: string } | { kind: "coord"; lat: number; lon: number } | null;
@@ -135,7 +147,11 @@ export function parse(raw: string, regions: Region[]): Command {
     : GESTURES_OFF.test(text) ? { t: "gestures", on: false }
     : GESTURES_ON.test(text) ? { t: "gestures", on: true }
     : how ? { t: "howto", key: how }
-    : OPEN_VERB.test(text) && FAUNA.test(text) ? { t: "open", panel: "fauna" }
+    // «¿hay alertas por mi casa?», «¿algo raro aquí?»: everything watched around the place, each anomaly with its component
+    : P.alerts.test(text) ? { t: "topic", topic: "alertas", where: whereOf(raw, place) }
+    // «abre señales de fauna» opens the panel; «muéstrame las aves» prints the card here
+    : (OPEN_PANEL.test(text) || /(panel|senales de fauna|animal signals)/.test(text)) && FAUNA.test(text) ? { t: "open", panel: "fauna" }
+    : (FAUNA.test(text) || faunaGroupOf(text)) && !P.livestock.test(text) ? { t: "topic", topic: "fauna", where: whereOf(raw, place), group: faunaGroupOf(text) }
     : OPEN_VERB.test(text) && PERSON.test(text) ? { t: "open", panel: "person" }
     : OPEN_VERB.test(text) && FOCI.test(text) ? { t: "open", panel: "map", tour: /(no se sabe|not known)/.test(text) ? "no_se_sabe" : "apoyado" }
     : P.help.test(text) ? { t: "help" }
