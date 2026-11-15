@@ -9,7 +9,7 @@ import { digitsFor, num } from "@/core/format/format";
 import { shownLimits } from "@/core/honesty/limits";
 import { verdictName, type Lang, type Register } from "@/core/i18n/texts";
 import { FeedbackInline } from "./FeedbackInline";
-import { MonitorCards, MonitorExtras, useSeen } from "./Home";
+import { monitorCards, MonitorExtras, useSeen } from "./Home";
 import { TrendChart } from "./charts";
 import { Widgets, type WidgetActions } from "./genui/Widgets";
 import { DeckCard, Emblem, Spark, VerdictGlyph } from "./ui";
@@ -17,7 +17,7 @@ import { useHub, useHubState } from "./interaccion/context";
 
 const T = {
   es: {
-    hello: "¿Qué quieres saber del planeta?",
+    hello: "¿Qué quieres saber?",
     sub: "Pregunta con tus palabras. HORIZON te muestra qué está cambiando, dónde, cuánto y si ya se puede saber.",
     placeholder: "Pregúntale a HORIZON…",
     send: "Enviar",
@@ -48,7 +48,7 @@ const T = {
     window: "Ventana",
   },
   en: {
-    hello: "What do you want to know about the planet?",
+    hello: "What do you want to know?",
     sub: "Ask in your own words. HORIZON shows what is changing, where, how much, and whether it is knowable yet.",
     placeholder: "Ask HORIZON…",
     send: "Send",
@@ -116,7 +116,8 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, h
     return (
       <div className="relative flex h-full flex-col overflow-y-auto overflow-x-hidden">
         <HorizonBackdrop />
-        <div className="relative mx-auto flex w-full max-w-[720px] flex-1 flex-col justify-center px-4 pb-6 pt-8">
+        <div className="relative my-auto flex w-full flex-col py-8">
+        <div className="relative mx-auto flex w-full max-w-[720px] flex-col px-4 pb-8">
           <h1 className="mb-6 text-center text-[clamp(1.75rem,3.2vw,2.5rem)] font-semibold leading-tight tracking-tight text-balance">{t.hello}</h1>
           <Composer conv={conv} lang={lang} register={register} onRegister={onRegister} simulated={simulated} onSend={(x, v) => { onHome(false); ask(x, v); }} autoFocus bare />
           {msgs.length > 0 ? (
@@ -127,6 +128,7 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, h
         </div>
         <Deck homeDoc={homeDoc} lang={lang} register={register} onAsk={(x) => { onHome(false); ask(x, "chip"); }}
           onTry={(cmd, label) => { onHome(false); onCommand(cmd, "chip", label); }} />
+        </div>
         {simulated ? <p className="relative px-4 pb-4 pt-2 text-center text-xs text-text-3">{t.simNote}</p> : null}
       </div>
     );
@@ -510,13 +512,19 @@ function Deck({ homeDoc, lang, register, onAsk, onTry }: {
   const { seen, see } = useSeen();
   return (
     <Discover lang={lang} onTry={onTry} title={homeDoc ? T[lang].deck : T[lang].discover}
-      lead={homeDoc ? <MonitorCards doc={homeDoc} lang={lang} register={register} onAsk={onAsk} seen={seen} see={see} /> : null}
+      lead={homeDoc ? monitorCards({ doc: homeDoc, lang, register, onAsk, seen, see }) : []}
       footer={homeDoc ? <MonitorExtras doc={homeDoc} lang={lang} register={register} seen={seen} see={see} /> : null} />
   );
 }
 
+function interleave<T>(a: T[], b: T[]): T[] {
+  const out: T[] = [];
+  for (let i = 0; i < Math.max(a.length, b.length); i++) { if (i < a.length) out.push(a[i]); if (i < b.length) out.push(b[i]); }
+  return out;
+}
+
 function Discover({ lang, onTry, title, lead, footer }: {
-  lang: Lang; onTry: (cmd: Command, label: string) => void; title: string; lead: React.ReactNode; footer: React.ReactNode;
+  lang: Lang; onTry: (cmd: Command, label: string) => void; title: string; lead: React.ReactNode[]; footer: React.ReactNode;
 }) {
   const t = T[lang];
   const row = useRef<HTMLUListElement>(null);
@@ -540,9 +548,9 @@ function Discover({ lang, onTry, title, lead, footer }: {
     return () => mq.removeEventListener("change", sync);
   }, []);
   // With «Mis monitores» first, the row stays put: they must be the first thing seen.
-  const auto = !holding && !reduced && !lead;
+  const auto = !holding && !reduced && lead.length === 0;
   // Scroll snap keeps the card it was on when the monitors arrive later: bring the row back to its start.
-  const hasLead = !!lead;
+  const hasLead = lead.length > 0;
   useEffect(() => { if (hasLead) { row.current?.scrollTo({ left: 0 }); update(); } }, [hasLead]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!auto) return;
@@ -566,16 +574,16 @@ function Discover({ lang, onTry, title, lead, footer }: {
         </div>
       </div>
       <ul ref={row} onScroll={update} aria-label={title}
-        className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-6 pb-3 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-6 pb-3 pt-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ maskImage: "linear-gradient(90deg, transparent, black 24px, black calc(100% - 24px), transparent)", WebkitMaskImage: "linear-gradient(90deg, transparent, black 24px, black calc(100% - 24px), transparent)" }}>
-        {lead}
-        {CARDS[lang].map((c) => (
+        {/* One and one: a monitor of yours, then something to try, so both kinds are seen without scrolling. */}
+        {interleave(lead, CARDS[lang].map((c) => (
           <li key={c.art} className="snap-start">
-            <DeckCard tag={t.tryTag} art={<CardArt art={c.art} />} title={c.title} cta={t.tryIt} onClick={() => onTry(c.cmd, c.label)}>
+            <DeckCard tag={t.tryTag} art={<CardArt art={c.art} />} title={c.title} label={`${c.title}. ${c.desc}`} onClick={() => onTry(c.cmd, c.label)}>
               {c.desc}
             </DeckCard>
           </li>
-        ))}
+        )))}
       </ul>
       {footer}
     </section>

@@ -38,36 +38,30 @@ export function useSeen(): { seen: string[]; see: (ids: string[]) => void } {
  * «Mis monitores» (doc «Modos de profundidad… v2» §5) as the first cards of the start deck: one card per monitor,
  * marked «Nuevo» when it changed since the last visit. Returns <li> items for the deck's list.
  */
-export function MonitorCards({ doc, lang, register, onAsk, seen, see }: {
+export function monitorCards({ doc, lang, register, onAsk, seen, see }: {
   doc: HomeDoc; lang: Lang; register: Register; onAsk: (text: string) => void; seen: string[]; see: (ids: string[]) => void;
-}) {
+}): React.ReactNode[] {
   const t = T[lang];
   const changes = unseen(doc.events, seen).filter((e) => e.tray === "evidencia");
   const freshBy = new Set(changes.map((e) => e.monitor));
-  return (
-    <>
-      {doc.entities.flatMap((ent) => ent.monitors.map((mon) => {
+  return doc.entities.flatMap((ent) => ent.monitors.map((mon) => {
         const v = presentMonitor(mon, register, lang, sourcesFor(mon));
         const name = monitorName(ent, mon, lang);
         const values = mon.series.values.map((x) => (x === null ? NaN : x));
         return (
           <li key={mon.id} className="snap-start">
-            <DeckCard tag={t.tag} tagTone="accent" title={name} cta={t.ask} label={`${name}. ${v.phrase}`}
+            <DeckCard tag={t.tag} tagTone="accent" title={name} label={`${name}. ${v.phrase}. ${t.ask}`}
               badge={<>
-                {freshBy.has(mon.id) ? <span className="rounded-full bg-text px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-bg">{t.fresh}</span> : null}
-                {!mon.data.data_real ? <span className="rounded-full bg-sim/70 px-2 py-0.5 text-[10px] font-semibold uppercase text-on-sim">{lang === "es" ? "Simulado" : "Simulated"}</span> : null}
+                {freshBy.has(mon.id) ? <span className="rounded-full bg-text px-1.5 py-px text-[9.5px] font-semibold uppercase tracking-[0.08em] text-bg">{t.fresh}</span> : null}
+                {!mon.data.data_real ? <span className="rounded-full bg-sim/70 px-1.5 py-px text-[9.5px] font-semibold uppercase text-on-sim">{lang === "es" ? "Simulado" : "Simulated"}</span> : null}
               </>}
-              art={<span className="mt-5 flex w-full justify-center [&>svg]:mx-auto [&>svg]:h-[52px] [&>svg]:w-[210px]"><Spark values={values} highlight={v.verdict === 1} /></span>}
+              art={<span className="mt-4 flex w-full justify-center [&>svg]:mx-auto [&>svg]:h-[36px] [&>svg]:w-[176px]"><Spark values={values} highlight={v.verdict === 1} /></span>}
               onClick={() => { see(changes.filter((e) => e.monitor === mon.id).map((e) => e.id)); onAsk(lang === "es" ? `¿Cómo cambia ${name.toLocaleLowerCase("es")}?` : `How is ${name} changing?`); }}>
-              <span className="flex items-center gap-1.5 text-xs font-semibold text-text"><VerdictGlyph v={v.verdict} />{v.phrase}</span>
-              {v.figure ? <span className="tabular mt-1 text-lg font-semibold leading-tight text-text">{v.figure}</span> : null}
-              <span className="mt-1 line-clamp-2">{v.since ?? v.sentence}</span>
+              <span className="flex items-center gap-1.5"><VerdictGlyph v={v.verdict} /><span className="truncate">{v.figure ?? v.phrase}</span></span>
             </DeckCard>
           </li>
         );
-      }))}
-    </>
-  );
+      }));
 }
 
 /** Under the deck: what changed, what needs attention, data quality and what is not known yet, as chips that open. */

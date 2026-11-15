@@ -219,31 +219,30 @@ export function VerdictGlyph({ v }: { v: number }) {
 
 /**
  * One card of the start deck (William's «Descubre» cards, shared by «Mis monitores»): art on top with a small tag,
- * title, a short body and the call to action. Same size for every card so the row reads as one deck.
+ * a title and one or two short lines. Compact and nearly square so the row reads as one deck.
  */
-export function DeckCard({ art, tag, tagTone = "plain", badge = null, title, children, cta, onClick, label }: {
+export function DeckCard({ art, tag, tagTone = "plain", badge = null, title, children, onClick, label }: {
   art: React.ReactNode; tag: string; tagTone?: "plain" | "accent"; badge?: React.ReactNode; title: string;
-  children: React.ReactNode; cta: string; onClick: () => void; label?: string;
+  children: React.ReactNode; onClick: () => void; label?: string;
 }) {
   return (
     <button type="button" onClick={onClick} aria-label={label}
-      className="group flex h-full w-[272px] flex-col overflow-hidden rounded-[20px] border border-border bg-surface text-left transition-all duration-200 hover:-translate-y-1 hover:border-text-3 hover:shadow-[0_16px_40px_rgba(16,24,40,0.10)] focus-visible:-translate-y-1">
-      <span className="relative flex h-[104px] items-center justify-center overflow-hidden border-b border-border bg-gradient-to-b from-surface-2 to-surface px-4">
+      className="group flex h-[196px] w-[228px] flex-col overflow-hidden rounded-[18px] border border-border bg-surface text-left transition-all duration-200 hover:-translate-y-1 hover:border-text-3 hover:shadow-[0_14px_34px_rgba(16,24,40,0.10)] focus-visible:-translate-y-1">
+      <span className="relative flex h-[84px] shrink-0 items-center justify-center overflow-hidden border-b border-border bg-gradient-to-b from-surface-2 to-surface px-3 [&>svg]:scale-[0.85]">
         {art}
-        <span className="absolute left-3 top-3 flex items-center gap-1.5">
-          <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${tagTone === "accent" ? "bg-accent text-on-accent" : "border border-border bg-surface/90 text-text-2"}`}>{tag}</span>
+        <span className="absolute left-2.5 top-2.5 flex items-center gap-1">
+          <span className={`rounded-full px-1.5 py-px text-[9.5px] font-semibold uppercase tracking-[0.08em] ${tagTone === "accent" ? "bg-accent text-on-accent" : "border border-border bg-surface/90 text-text-2"}`}>{tag}</span>
           {badge}
         </span>
       </span>
-      <span className="flex flex-1 flex-col p-4">
-        <span className="text-[15px] font-semibold leading-snug">{title}</span>
-        <span className="mt-1.5 flex flex-1 flex-col text-sm leading-snug text-text-2">{children}</span>
-        <span className="mt-4 flex items-center justify-between text-sm font-semibold text-text">
-          {cta}
-          <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-full border border-border transition-all group-hover:translate-x-0.5 group-hover:border-accent group-hover:bg-accent group-hover:text-on-accent">
-            <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6h7M6.5 3l3 3-3 3" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      <span className="flex min-h-0 flex-1 flex-col px-3.5 py-3">
+        <span className="flex items-start justify-between gap-2">
+          <span className="line-clamp-2 text-[14px] font-semibold leading-snug">{title}</span>
+          <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border transition-all group-hover:translate-x-0.5 group-hover:border-accent group-hover:bg-accent group-hover:text-on-accent">
+            <svg width="10" height="10" viewBox="0 0 12 12"><path d="M2.5 6h7M6.5 3l3 3-3 3" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </span>
         </span>
+        <span className="mt-1 line-clamp-2 text-[13px] leading-snug text-text-2">{children}</span>
       </span>
     </button>
   );
