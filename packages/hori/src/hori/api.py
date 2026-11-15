@@ -19,11 +19,18 @@ import numpy as np
 from . import __version__
 from .aggregate import prepare, to_annual
 from .config import Config
+from .anomaly import AnomalyResult, accumulated_z
+from .anomaly import detect as detect_anomalies
+from .anomaly import events as anomaly_events
 from .cube import Cube
+from .state import entity_state, explain
+from .swarm import classify as classify_report
+from .swarm import signals as swarm_signals
 from .detect import YEARS_CAP, mde_per_decade, years_more
 from .evalue import combine_mean, ebh, mixture_e
 from .fdr import bh_adjust
 from .longmemory import memory_scale
+from .identity import classify as _classify
 from .identity import PROFILES_VERSION, Entity, IdentityError, Profile, auto_entity, check_pair, infer_profile
 from .quality import detect_breaks
 from .result import LayerResult
@@ -31,13 +38,19 @@ from .stats import Z_CRIT, analyze, p_two
 from .verdict import (CODES, PROBADO, FLAG_BITS, F_QUIEBRE_POSIBLE, NO_CONCLUYENTE, F_AUTOCORR_ALTA, F_COBERTURA_BAJA, F_DEPENDE_METODO, F_RECONSTRUCCION,
                       F_RESOLUCION_GRUESA, F_SIMULADO, decide)
 
-__all__ = ["Config", "Cube", "Entity", "IdentityError", "LayerResult", "Profile", "cell_stats", "infer_profile", "auto_entity", "run_grid",
+__all__ = ["physical_class", "accumulated_z", "entity_state", "explain", "classify_report", "swarm_signals", "AnomalyResult", "anomaly_events", "detect_anomalies", "Config", "Cube", "Entity", "IdentityError", "LayerResult", "Profile", "cell_stats", "infer_profile", "auto_entity", "run_grid",
            "run_timeline", "summarize", "to_annual", "Timeline", "EVENT_CODES", "TIER_CODES",
            "run_layer", "write_bundle"]
 CONTRACT = "0.4"
 METHODS = ["MK-VC", "TFPW-WS", "OLS-AR1"]
 CALIBRATION_NOTE = ("Measured by simulation (AR(1) Gaussian noise, n=23): false alarms 5.2% (phi=0.3) and 6.8% (phi=0.5); "
                     "power 92% / 78% at 2 sigma per decade. Illustrates, does not prove, behaviour on real data. See sim/.")
+
+
+def physical_class(variable: dict) -> str | None:
+    """Id of the curated physical class of a variable ({name, unit, long_name...}), or None."""
+    pc, _ = _classify(variable)
+    return pc.id if pc else None
 
 
 def input_sha256(cube: Cube) -> str:
@@ -168,7 +181,9 @@ def _finish(st: dict, meta: dict, cfg: Config, delta_source: str, entity, profil
         "detectability": detectability, **({"quality": quality} if quality else {}),
         "methods": list(cfg.methods), "verdict_codes": {str(k): v for k, v in CODES.items()},
         "flag_bits": {str(k): v for k, v in FLAG_BITS.items()}, "summary": summary,
-        "calibration": {"note": CALIBRATION_NOTE if tuple(cfg.methods) == tuple(METHODS) else
+        "calibration": {"note": ("NOT calibrated: the simulations cover n >= 15 years; with n = %d the MDE and the error rates are "
+                                 "optimistic, treat PROBADO as provisional." % n) if n < 15 else CALIBRATION_NOTE
+                        if tuple(cfg.methods) == tuple(METHODS) else
                         "NOT calibrated: this method set was not simulated; treat PROBADO as provisional."},
         "honesty": {"data_real": not simulated, "simulated": simulated,
                     "label_es": "Datos simulados" if simulated else f"Datos reales: {ds.get('name', 'NASA')}",
@@ -178,7 +193,7 @@ def _finish(st: dict, meta: dict, cfg: Config, delta_source: str, entity, profil
                   "input_sha256": in_sha, "created_at": _created_at()},
     }
     if entity is not None:                                  # contract 0.4, additive: legacy keys keep their meaning
-        manifest["entity"].update({"id": entity.id, "type": entity.type, "name": entity.name, "status": entity.status,
+        manifest["entity"].update({"id": entity.id, "type": entity.type, "body": entity.body, "name": entity.name, "status": entity.status,
                                    "version": entity.version, "source": entity.source, "geometry": entity.geometry,
                                    "relations": list(entity.relations)})
         with np.errstate(invalid="ignore"), warnings.catch_warnings():

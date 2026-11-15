@@ -135,7 +135,7 @@ PHYSICAL_CLASSES = (
                   ("temperat", "t2m", "dew", "frost", "skin"), 0.3, {"k": 1.0, "kelvin": 1.0},
                   "0.3 °C/década: algo más que el calentamiento global reciente (~0.2 °C/década en superficie), para que "
                   "lo que se marque sea un cambio regional notable. Valor de trabajo del equipo, no de la literatura."),
-    PhysicalClass("flujo_de_agua", {"es": "Flujo de agua", "en": "Water flux"}, ("mm/day", "mm/d", "mmday-1", "kgm-2s-1"),
+    PhysicalClass("flujo_de_agua", {"es": "Flujo de agua", "en": "Water flux"}, ("mm/day", "mm/d", "mmday-1", "kgm-2s-1", "mm/día", "mm/dia"),
                   ("precip", "rain", "evap", "runoff", "snowfall", "water"), 0.2, {"kgm-2s-1": 1.0 / 86400.0},
                   "0.2 mm/día/década: ≈13 % por década de la lluvia media de Durango (1.52 mm/día, POWER, medido). En "
                   "zonas muy secas es grande frente a la media: el δ va siempre visible. Valor de trabajo, por revisar."),

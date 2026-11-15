@@ -34,10 +34,13 @@ class TestExport(unittest.TestCase):
         r2 = export_for_web(self.src, self.out)                                    # again: same result, no duplicates
         self.assertEqual((r1["bundles"], r2["bundles"]), (2, 2))
         idx = json.loads((self.out / "index.json").read_text())
-        by = {e["kind"]: e for e in idx["bundles"]}
-        self.assertEqual((by["layer"]["window"], by["layer"]["cells"], by["layer"]["last_month"], by["layer"]["has_events"]),
-                         ("1981-2025", 4, "2026-09", True))
-        self.assertEqual((by["timeline"]["window"], by["timeline"]["cells"]), ("1981-2025", 4))
+        self.assertIsInstance(idx, list)                                          # the web reads IndexEntry[]
+        by = {e["kind"]: e for e in idx}
+        for e in idx:
+            self.assertTrue({"id", "profile", "title", "variable", "window", "path"} <= set(e))
+        self.assertEqual((by["layer"]["window"]["start"], by["layer"]["window"]["end"], by["layer"]["cells"], by["layer"]["last_month"],
+                          by["layer"]["has_events"]), (1981, 2025, 4, "2026-09", True))
+        self.assertEqual((by["timeline"]["window"]["end"], by["timeline"]["cells"]), (2025, 4))
         sha = by["layer"]["files"]["verdict.u8"]["sha256"]
         self.assertEqual(sha, hashlib.sha256((self.out / by["layer"]["path"] / "verdict.u8").read_bytes()).hexdigest())
         self.assertTrue((self.out / "earth" / "updates.json").exists())

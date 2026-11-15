@@ -138,6 +138,52 @@ MERRA-2 se produjo en 4 «corrientes» (cambios en 1992, 2001 y 2011; UCAR Clima
 ### 3.12 e-BH en el planeta [medido]
 Con e-valores de mezcla (τ = δ/se): 1981–2025 → **89,024 descubrimientos e-BH frente a 134,531 con BH (66 %)**; 2001–2024 → 10,803 frente a 24,304 (44 %). Antes (calibrador p→e): 39 % y 0 %.
 
+### 3.13 Anomalías sobre cualquier flujo (`hori/anomaly.py`, `sim/anomaly_calibration.py`) [medido, 100 realizaciones por celda de la tabla]
+Modelo causal (cada muestra se juzga solo con el pasado): nivel = media del último ciclo; esperado = mediana de los K ciclos previos en la misma fase; z = residuo / escala robusta (MAD o IQR, encogida hacia la escala de su fase). Tres detectores: `punto` (|z| ≥ 3.5), `cambio_nivel` (CUSUM bilateral, h = 5, con inflación por autocorrelación) y `sin_datos`. Flujos de prueba: ciclo de amplitud 5σ + ruido AR(1) (φ = 0, 0.3, 0.6), ruido t de Student con 5 g.l. (colas pesadas) y ruido que cambia con la fase. **Las magnitudes están en σ del ruido del flujo** (el residuo trae más varianza, por eso un pico de +4σ no da z = 4).
+| Falsas alarmas por 1000 muestras juzgadas | Periodo 24 (horario) | Periodo 12 (mensual) |
+|---|---|---|
+| Gaussiano φ = 0 / 0.3 / 0.6 — puntos | 1.5 / 1.3 / 1.5 | 1.6 / 1.7 / 1.7 |
+| Gaussiano φ = 0 / 0.3 / 0.6 — cambios de nivel | 2.8 / 1.5 / 0.5 | 1.8 / 0.9 / 0.2 |
+| **Colas pesadas (t5)** — puntos / cambios | **7.5** / 2.4 | **9.1** / 2.2 |
+| **Ruido que cambia con la fase** — puntos / cambios | **13.1** / 5.6 | **7.0** / 1.9 |
+| Potencia | Periodo 24 | Periodo 12 |
+|---|---|---|
+| Pico de +3σ / +4σ / +5σ / +6σ / +8σ en esa muestra | 25 / 43 / 76 / 87 / 100 % | 27 / 55 / 77 / 90 / 100 % |
+| Cambio de nivel de +1σ / +2σ / +3σ durante 1.5 ciclos (detectado antes de terminar) | 18 / 79 / 99 % (retraso 7 / 6 / 2) | 17 / 46 / 84 % (retraso 6 / 4 / 3) |
+**Lectura honesta:** (1) con ruido gaussiano son ~3 falsas por 1000 muestras en total; con colas pesadas o con varianza que cambia por fase suben a 7–15: **un flujo real así dará más alarmas de las que el umbral sugiere**. (2) Un pico necesita ≥ 5σ del propio ruido para verse 3 de cada 4 veces. (3) Un cambio de nivel pequeño y corto (+1σ) casi no se ve: el detector está pensado para desviaciones claras. (4) **La línea base se adapta**: un cambio que dura más de ~1 ciclo se absorbe; por eso al terminar un cambio aparece el contrario (`retorno_probable`), y lo lento le toca a la tendencia. (5) Una anomalía es una desviación estadística, **no** prueba de falla, enfermedad ni peligro (H12).
+
+### 3.14 Tres cuerpos con el mismo núcleo (`sim/universal_demo.py`, `sim/mars_demo.py`) [medido]
+| Entidad | Datos | Qué hace el núcleo |
+|---|---|---|
+| **Tierra** (estado de Washington) | NASA POWER mensual 1981–2026 (real) | Tendencia por celda + monitor de anomalías mensual |
+| **Marte** (polvo global, 13 años marcianos) | LMD/Montabone, mapas kriging diarios (**reconstrucción**, CC BY-SA 3.0) | Tendencia por celda: 173 CANDIDATA y 7,027 NO_CONCLUYENTE, ninguna probada (n = 13 < 15: **no calibrado**, marcado). Monitor diario: **la anomalía más fuerte es la tormenta global de polvo de 2018 (MY34, sol 386–472, +60σ, severidad alta)**; también marca MY36 y otros eventos |
+| **Astronauta SIMULADO** (FC, temperatura de piel, SpO2 cada 10 min, 30 días) | Generador determinista con verdad conocida | **Encuentra los 5 eventos inyectados** (3 h de FC +22 bpm, un pico de +55 bpm, +0.9 °C durante 40 h con inicio exacto, 100 min sin datos del sensor, SpO2 −5 puntos 1 h). Alertas de más: 2 puntos leves en FC y ~8 alrededor del cambio de la temperatura de piel (la racha dentro del cambio y su retorno) |
+Cada entidad es `real`/`simulada` y las alertas lo heredan. **Lo simulado no valida nada sobre personas.** Las alertas tienen ciclo de vida (abierta → reconocida → derivada → cerrada, solo una persona nombrada cambia el estado) y una bitácora con cadena SHA-256 (editar el pasado se detecta). **Validación externa de anomalías en la Tierra:** en estados de EE. UU. con eventos conocidos el detector no se dispara a nivel mensual regional (p. ej. Washington jun-2021, z = 3.3, bajo el umbral): la media mensual de un estado suaviza los extremos.
+
+### 3.15 Enjambre (fuentes no verificadas) y estado unificado de la entidad (`hori/swarm.py`, `hori/state.py`, `sim/swarm_demo.py`)
+**Enjambre:** reportes de personas, científicos, instituciones o sensores ciudadanos. **Todo entra como fuente no verificada**; un rol (p. ej. «científico») solo pesa más si alguien lo avala (`verified_by`). Reglas explícitas (valores de trabajo, versión `enjambre-1`, por revisar): persona 1 · científico avalado 2 · institución avalada 2.5 · sensor ciudadano 1.5; evidencia foto/video ×1.3, medición ×1.6, documento ×1.2 (tope ×2), **contada una vez por huella SHA-256**; cada reportante cuenta **una vez** por señal; agrupación por tema (lista fija de palabras, sin modelo de lenguaje) y por cercanía (30 km, 21 días). Escalera: `reporte_aislado` → `senal_ciudadana` (≥ 3 reportantes o índice ≥ 3) → `senal_con_evidencia` (≥ 2 evidencias distintas o una medición) → `corroborada_por_instrumento` (un instrumento de NASA ve lo mismo, **en el mismo sentido**, ahí y entonces). Avisos de manipulación: `un_reportero_domina`, `evidencia_reutilizada_por_varios`, `rafaga` (5+ reportes en 10 min: no puede subir de nivel por sí sola). Privacidad: identificador seudónimo, coordenadas redondeadas a ~1 km, bitácora encadenada.
+**Demo honesta (Durango, primavera 2011; reportes SIMULADOS, instrumento real):** 5 reportantes independientes con 4 evidencias distintas → `senal_con_evidencia`, índice 8.1, con aviso de foto reutilizada. **El instrumento a escala del estado NO lo confirma**: lluvia acumulada de 6 meses −1.2σ a mayo de 2011 (la regla pide ≥ 1.5σ; en junio llega a −2.0σ). HORI lo dice así: «puede ser local o menor a su resolución; no lo desmiente». El cielo oscuro, los peces y el frío quedan como reportes aislados, y para fauna y atmósfera **no hay instrumento conectado** (se dice).
+**Estado unificado:** una sola respuesta por entidad a las 6 preguntas (qué observamos, identidad, qué ocurre, qué cambió, qué requiere atención, seguimiento) y **una sola lista de prioridad** para tendencias, anomalías y enjambre: P0 cambio conjunto (dos variables o instrumento + enjambre) / anomalía alta reciente · P1 evento de tendencia / anomalía media reciente / sensor enfermo / enjambre corroborado · P2 PROBADO / enjambre con evidencia · P3 por emerger / anomalía leve / señal ciudadana · P4 informativo. Cada línea se arma con plantillas y números de HORI, con origen visible; las pruebas verifican que no haya consejos ni causas.
+**Observar mejor:** rango físico (`fuera_de_rango`), sensor congelado (`congelado`, mismo valor ≥ 12 muestras, ×3 en sensores cuantizados), muestreo irregular → rejilla regular sin inventar datos (`zon.monitors.regularize`), déficit acumulado (`accumulated_z`, tipo SPI pero **no** es el SPI).
+**No medido todavía:** la tasa de error del enjambre (no hay reportes reales); el umbral de 1.5σ del instrumento de lluvia se fijó en esta demo y **no está calibrado**; la anomalía mensual de lluvia trae colas pesadas (muchos «puntos» en el registro histórico de Durango): falta transformar la lluvia (raíz o logaritmo) antes del detector.
+
+### 3.16 Enjambre calibrado con reportes ciudadanos REALES (`sim/swarm_validation_cocorahs.py`) [medido]
+**Datos:** 180,069 reportes de 8,483 personas de la red ciudadana CoCoRaHS (EE. UU., 2016–2026; condition monitoring: cada quien elige de «muy seco» a «muy húmedo» y escribe lo que ve). **Instrumento:** NASA POWER, lluvia acumulada de 3 meses en la celda del reporte (z robusto contra los mismos meses de años previos); «coincide» = |z| ≥ 1 en el mismo sentido. **Azar:** los mismos reportes contra la misma celda y mes de calendario de **otro** año.
+| | Coincide con el satélite | Por azar | Lo contradice |
+|---|---|---|---|
+| Un reporte «seco» / «húmedo» | 27.5 % / 39.6 % | 14.4 % / 19.2 % | 7.5 % / 4.4 % |
+| «Muy seco» / «muy húmedo» | 42.4 % / 58.1 % | 14.9 % / 17.6 % | 4.3 % / 1.7 % |
+| **Señal de 1 / 2 / 3–4 / 5–9 / 10+ personas independientes** (misma caja de 1° y mes) | **25 / 30 / 33 / 37 / 53 %** | **15 / 11 / 9 / 6 / 4 %** | — |
+Correlación de rangos entre la escala elegida y el satélite: **0.45** (azar 0.02). **Lectura:** la gente sí ve lo que el satélite ve, y **la señal mejora con cada persona independiente** (de 1.7× el azar con una persona a 12× con 10 o más). Eso justifica el umbral «3 o más» de la señal ciudadana, y cada señal del enjambre trae ahora esta tabla medida (`calibration`). El clasificador por palabras (sin modelo de lenguaje) lee seco/húmedo en el **61 %** de los textos y acierta el **88 %** de las veces que lee. **Límites:** solo EE. UU., solo seco/húmedo contra lluvia (otros temas sin calibrar), celda de 0.5° frente a lo que ve una persona en su patio; los pesos por rol y por evidencia siguen siendo valores de trabajo (CoCoRaHS no trae fotos ni roles).
+
+### 3.17 Lluvia en el detector de anomalías [medido]
+En 18 estados reales (México y EE. UU., 1981–2026, 7,722 meses juzgados): sin transformar, **16.8** «puntos» por 1000 meses; con raíz cuadrada **4.1**; con logaritmo 6.7. ZON aplica la raíz automáticamente a la clase física «flujo de agua».
+
+### 3.18 Identidad verificable, avisos y vigilancia continua [probado en pruebas]
+- **Firmas Ed25519** (RFC 8032, biblioteca estándar; pasa el vector de prueba 1 del RFC). Un rol del enjambre («científico») solo cuenta si una institución de un **registro de confianza** firmó la atestación para esa persona, ese rol y vigente; las firmas falsas, ajenas o vencidas se rechazan y se dice por qué. Un sensor puede firmar sus lotes de observaciones; un monitor con `require_signature` rechaza lo no firmado y lo deja en la bitácora. **Límite:** la implementación no es de tiempo constante: sirve para verificar y para llaves de demostración; para firmar en producción, una biblioteca auditada.
+- **Avisos y escalamiento:** cada alerta nueva se avisa una vez al nivel 0 (bandeja de archivo y/o webhook firmado con HMAC-SHA256); si sigue «abierta» después del plazo de su gravedad (alta 30 min, media 4 h, leve sin plazo), sube al siguiente nivel, una vez por nivel. Un canal caído no detiene a los demás. Lo simulado lo dice en el asunto.
+- **Vigilancia continua:** `zon watch --config watch.json --once` (para cron o un temporizador de systemd) o en bucle: pide solo los datos nuevos, detecta, abre alertas y avisa. No se dejó corriendo ningún servicio.
+
 ## 4 · Limitaciones conocidas
 1. **Memoria larga:** no se corrige el veredicto; se publica un marcador (`robust_mem`) y el límite medido (§3.10). La caminata aleatoria sigue engañando al consenso (12 %).
 2. Un **salto artificial** grande se lee como tendencia en la mitad de los casos; la bandera avisa en ~40 %. En T2M no se vio apilamiento en los cambios de corriente de MERRA-2 (§3.11).
@@ -147,6 +193,8 @@ Con e-valores de mezcla (τ = δ/se): 1981–2025 → **89,024 descubrimientos e
 6. δ de cada clase física es **valor de trabajo del equipo**, no de la literatura.
 7. Solo tendencias monótonas; aceleraciones o ciclos no se modelan.
 8. Fronteras de Natural Earth admin-1: algunas en disputa (advertencia del propio proveedor). Las regiones físicas («Sahara», «Andes», «Golfo de México») tienen límites aproximados; un lugar que cruza el antimeridiano funciona pero lee todas las columnas de longitud.
+10. **Anomalías:** falsas alarmas 3–15 por 1000 muestras según el ruido (§3.13); potencia baja para desviaciones < 4σ; Marte tiene solo 13 años (no calibrado); la persona es simulada y no valida nada médico.
+11. **Enjambre:** el valor de «k personas independientes» está medido con 180 mil reportes reales (§3.16); los pesos por rol y evidencia siguen siendo valores de trabajo; la clasificación por palabras se equivoca con frases que no están en la lista; nunca se presenta como prueba.
 9. La actualización incremental (Z3) re-lee los 260 trozos del planeta: un trozo de Zarr abarca todos los meses, así que «solo el mes nuevo» no existe a nivel de descarga (§Z3 en `zon/update.py`).
 
 ## 5 · Evitar mal uso

@@ -56,3 +56,24 @@ def query_place(text: str, var: str, start: int, end: int, *, index: PlaceIndex,
     regional.manifest["entity"]["kind"] = "region_mean"
     return {"place": place, "alternatives": hits[1:], "cells": cells, "regional": regional, "mask": sub,
             "chunks": cube.meta["chunks"], "notes": notes}
+
+
+def place_series(text: str, var: str, start: int, end: int, *, index: PlaceIndex, store: PowerZarr | None = None,
+                 pick: int = 0) -> dict:
+    """The MONTHLY regional series of a place (cos(lat)-weighted), for monitors: {"place", "months", "values", "info", "meta"}.
+
+    Trailing months without data (the store reserves future months) are dropped, never invented."""
+    hits = index.search(text)
+    if not hits:
+        raise PlaceError(f"no place called {text!r} in the local index")
+    place = hits[pick]
+    z = store or PowerZarr()
+    months, lat, lon = z.axes
+    mask, notes = cell_mask(place_rings(place, z.grid_step()), lat, lon)
+    iy, ix = np.nonzero(mask.any(axis=1))[0], np.nonzero(mask.any(axis=0))[0]
+    cube = z.region_cube(var, (float(lat[iy[0]]), float(lon[ix[0]]), float(lat[iy[-1]]), float(lon[ix[-1]])), start, end)
+    sub = mask[iy[0]:iy[-1] + 1, ix[0]:ix[-1] + 1][::-1]
+    series, info = regional_series(cube.values, cube.lat, sub)
+    last = int(np.nonzero(np.isfinite(series))[0][-1]) + 1 if np.isfinite(series).any() else 0
+    return {"place": place, "months": [t[:7] for t in cube.time[:last]], "values": series[:last], "info": {**info, "notes": notes},
+            "meta": cube.meta}

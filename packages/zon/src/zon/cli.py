@@ -2,6 +2,7 @@
     python -m zon build-power --bbox S W N E --param T2M --start 2001 --end 2024 --region durango --out data
     python -m zon update-planet --param T2M --start 1981 --out data       # Z3: new month? recompute + events
     python -m zon export-web --src data/bundles --out apps/web/public/bundles   # Z7: static files + index.json
+    python -m zon watch --config watch.json --once                               # vigilancia: datos nuevos -> alertas -> avisos
 """
 import argparse
 import sys
@@ -31,7 +32,27 @@ def main() -> None:
     w.add_argument("--src", default="data/bundles")
     w.add_argument("--out", default="apps/web/public/bundles")
     w.add_argument("--include", nargs="*", help="only bundle paths starting with these prefixes")
+    wt = sub.add_parser("watch", help="continuous watching: new data -> detectors -> alerts -> notices/escalation")
+    wt.add_argument("--config", required=True, help='JSON: {"store": dir, "inbox": file, "webhooks": [{"url","secret"}], '
+                    '"levels": [[..],[..]], "ack_minutes": {..}, "sources": [{"monitor","place","var","start"}]}')
+    wt.add_argument("--every", type=float, default=3600)
+    wt.add_argument("--once", action="store_true", help="one pass (for cron or a systemd timer)")
     args = ap.parse_args()
+    if args.cmd == "watch":
+        import json
+        from pathlib import Path
+        from .monitors import MonitorStore
+        from .notify import EscalationPolicy, FileSink, WebhookSink, power_place_source, watch
+        from .places import PlaceIndex
+        c = json.loads(Path(args.config).read_text(encoding="utf-8"))
+        idx = PlaceIndex.from_natural_earth(c.get("admin0"), c.get("admin1"))
+        sinks = [FileSink(c.get("inbox", Path(c["store"]) / "bandeja.jsonl"))] + \
+                [WebhookSink(w["url"], w["secret"].encode()) for w in c.get("webhooks", [])]
+        pol = EscalationPolicy(c["levels"], c.get("ack_minutes", {"alta": 30, "media": 240, "leve": None}))
+        srcs = [power_place_source(s["monitor"], s["place"], s["var"], s.get("start", 1981), index=idx) for s in c.get("sources", [])]
+        for t in watch(MonitorStore(c["store"]), srcs, sinks, pol, every_s=args.every, once=args.once):
+            print(json.dumps(t, ensure_ascii=False))
+        return
     if args.cmd == "export-web":
         import json
         from .serve import export_for_web
