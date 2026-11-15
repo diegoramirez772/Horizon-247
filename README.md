@@ -12,7 +12,7 @@ Built by **AETHRA** for NASA Space Apps Challenge 2026
 
 Challenge: *Be an Earth System Trend Detective!*
 
-[Real-data example](#a-real-data-example) · [Quick start](#quick-start) · [Architecture](#architecture) · [Scientific evidence](#evidence-and-limitations)
+[What you can do](#what-you-can-do-in-the-web) · [Real-data example](#a-real-data-example) · [Quick start](#quick-start) · [Architecture](#architecture) · [Scientific evidence](#evidence-and-limitations) · [Contribute](#license-and-contributing)
 
 </div>
 
@@ -28,7 +28,19 @@ For every location and time window, it asks three questions:
 
 The result is a portable evidence bundle: numerical findings, quality flags, and provenance that can be inspected independently of the interface.
 
-> **Private research preview.** The Python pipeline and real-data examples are implemented. The web application is an initial scaffold. Built for challenge evaluation; source use is governed by the current [license](LICENSE).
+> **Source-available, non-commercial.** Read it, run it for non-commercial purposes and contribute to it; monetizing it or republishing copies is not allowed ([LICENSE](LICENSE)). Contributions are welcome ([CONTRIBUTING.md](CONTRIBUTING.md)).
+
+## What you can do in the web
+
+| | |
+| --- | --- |
+| **Ask the assistant** | Natural-language answers **without an LLM**: a deterministic generator turns HORI's numbers into sentences («la temperatura sube medio grado cada diez años, unas dos veces más rápido que el planeta»). Three reading levels (Simple · Normal · Experto) chosen inside the question box; follow-ups keep the context («¿y en Chihuahua?», «¿y la lluvia?»). |
+| **Generated components** | The answer brings what its topic needs: latest NASA POWER conditions, livestock heat stress (THI), NASA EONET events, Mars dust from HORI, planets, simulated astronaut vitals (always labelled), trend charts with HORI's line and interval. |
+| **Monitoring** | 3D globe or flat map of HORI's verdicts; NASA imagery under the data (Blue Marble, **live infrared every 10 minutes** from GOES-East/West and Himawari, daily layers) with a sharper patch as you zoom; «La evolución de la Tierra» plays 1981→2025. |
+| **3D scenes** | A diorama of any place generated from **real NASA POWER data**, with a timeline by day (POWER) or by year (HORI's series); open it from a zone on the map, from the assistant («Durango en 3D con línea de tiempo») or for Mars and the Moon. Generated, never presented as a photo. |
+| **Swarm (red enjambre)** | Signed-in people send reports («el arroyo se secó») to a separate public team in the database; they stay *unverified* until a reviewer decides. |
+| **Voice, gestures, keys** | Microphone, hands-free, numbered targets, camera gestures (pinch, palm, thumbs up, fist), gamepad and keyboard. |
+| **PWA** | Installable; works offline with what you already saw. |
 
 ## Start here
 
@@ -97,13 +109,17 @@ flowchart LR
     Z -->|Cube| H[HORI · Statistical engine]
     H -->|Analysis result| Z
     Z -->|Static bundle| W[Web · Presentation]
+    Z -->|Light rows| D[(Supabase · catalog, runs, findings, monitors, reports)]
+    D -->|RLS · publishable key| W
+    N[NASA POWER · GIBS · EONET] -->|live, in the browser| W
 ```
 
 | Component | Responsibility | Boundary |
 | --- | --- | --- |
 | **[ZON](packages/zon/)** | Fetch, cache, normalize, preserve provenance, orchestrate analysis, and assemble bundles. | Calls HORI through its public `hori.api` interface. |
 | **[HORI](packages/hori/)** | Estimate trends, combine evidence, assess detectability, and assign verdicts. | Depends on NumPy; imports neither ZON nor the web. |
-| **[Web](apps/web/)** | Present findings from static bundles. | Next.js static-export scaffold; the analytical interface is still to be built. |
+| **[Web](apps/web/)** | Assistant, monitoring (globe/map), 3D scenes, swarm reports, PWA. | Next.js static export; reads bundles as files, live NASA services from the browser, the database only through RLS. |
+| **[Database](supabase/)** | Catalog, analysis runs, selected findings, monitors, context cards, swarm reports, feedback. | Supabase (free tier): only light rows; arrays stay in files. `python -m zon db-push` fills it idempotently. |
 | **[Contract](contract/)** | Define the cube input, bundle output, and shared TypeScript types. | Keeps data acquisition, inference, and presentation separable. |
 
 A bundle contains a JSON manifest and typed binary arrays. Analysis runs in Python; the intended browser interface consumes the resulting files. Each Python package has its own packaging and tests. See [modularity rules](docs/MODULARITY.md).
@@ -199,7 +215,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. The current page displays the project title; an interactive map and finding explorer are not implemented yet. The configured static build uses `npm run build` and writes to `out/`. See the [web guide](apps/web/README.md) for contract synchronization and frontend conventions.
+Open `http://localhost:3000`. Copy `apps/web/.env.example` to `apps/web/.env.local` to connect the database (publishable key only); without it the web still works from the bundles and live NASA services. The static build uses `npm run build` and writes to `out/`. See the [web guide](apps/web/README.md) for contract synchronization and frontend conventions.
 
 </details>
 
@@ -244,8 +260,16 @@ The golden tests compare generated binary arrays against the committed real-data
 
 ## Data, attribution, and license
 
-Real observations, analyses, reconstructions, and simulations must remain distinguishable. Findings carry their source context; simulated studies are labeled as simulations. Dataset attribution and reuse terms travel with the data and are separate from the source-code license.
+Real observations, analyses, reconstructions, and simulations must remain distinguishable. Findings carry their source context; simulated studies are labeled as simulations. Dataset attribution and reuse terms travel with the data and are separate from the source-code license — see [LICENSE-DATA](LICENSE-DATA) and [NOTICE](NOTICE).
 
-HORIZON 247 is built by **team AETHRA**. See [AUTHORS](AUTHORS) for authorship and [CONTRIBUTING.md](CONTRIBUTING.md) for the team's workflow. External contributions are currently closed during the private challenge phase.
+## License and contributing
 
-**Source code: all rights reserved under the current [LICENSE](LICENSE).** An open-source release is intended after the event; no open-source permissions are granted by that intention. See [LICENSE-DATA](LICENSE-DATA) and [NOTICE](NOTICE) for the current draft data terms and third-party credits.
+HORIZON 247 is built by **team AETHRA** ([AUTHORS](AUTHORS)) and released under the **[HORIZON 247 Source-Available License, No Commercial Use](LICENSE)**:
+
+| Allowed | Not allowed (without written permission) |
+| --- | --- |
+| Read, study and cite the code | Selling it, or offering it as a paid or ad-supported service |
+| Run it for personal, educational, research or evaluation use | Republishing or re-hosting copies or derived projects |
+| Fork it **to send contributions** back to this repository | Using the names or logos for other projects |
+
+This is *source-available*, not OSI open source. **Contributions are welcome**: read [CONTRIBUTING.md](CONTRIBUTING.md), sign off your commits (`git commit -s`) and open a pull request.

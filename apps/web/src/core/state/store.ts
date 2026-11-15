@@ -56,7 +56,7 @@ export interface AppState {
   scene: SceneTarget | null;
 }
 
-export interface SceneTarget { name: string; lat: number; lon: number; timeline: boolean }
+export interface SceneTarget { name: string; lat: number; lon: number; timeline: boolean; /** A ready-made scene instead of a place (Marte, Luna). */ preset?: string }
 
 /** Server and first client render use this; the URL is read after hydration. */
 export const DEFAULT_STATE: AppState = {

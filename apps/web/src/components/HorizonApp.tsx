@@ -195,6 +195,8 @@ export function HorizonApp() {
     windowEnd: (y: number) => { store.set({ windowEnd: y }); conv.answer(compose("accumulated", { ...ctxRef.current, state: store.get() }, "controls")); },
   }), [store, conv, deps, actions]);
 
+  // The sidebar's «Escena 3D» follows what is selected now (not an older scene).
+  const openPanel = (p: PanelTab | null) => { if (p === "scene") store.set({ scene: null }); setPanel(p); };
   const goHome = () => { setHome(true); setPanel(null); setFull(false); };
 
   // Camera: commands bump `camera`; the map flies to whatever the answer is about. Map taps do not move it.
@@ -223,7 +225,7 @@ export function HorizonApp() {
   return (
     <HubProvider value={hub}>
     <div className="flex h-dvh overflow-x-hidden bg-bg">
-      <Sidebar lang={s.lang} setLang={(l) => store.set({ lang: l })} panel={panel} setPanel={setPanel} home={home}
+      <Sidebar lang={s.lang} setLang={(l) => store.set({ lang: l })} panel={panel} setPanel={openPanel} home={home}
         onHome={goHome} onLogin={() => setLogin(true)} dark={theme.pref !== "light"} toggleTheme={() => theme.setPref(theme.pref === "light" ? "dark" : "light")} />
       <div className="flex min-w-0 flex-1 flex-col">
       <a href="#ask" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-surface focus:p-2">{c.skip}</a>

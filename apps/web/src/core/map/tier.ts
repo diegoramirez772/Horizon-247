@@ -38,7 +38,10 @@ export function detectTier(): TierInfo {
   let gl: WebGLRenderingContext | null = null;
   try {
     const c = document.createElement("canvas");
-    gl = (c.getContext("webgl", { failIfMajorPerformanceCaveat: true }) as WebGLRenderingContext | null);
+    // Chrome on Linux often flags a real GPU as «major performance caveat» (blocklisted driver): try that first,
+    // then without the flag, so the GPU globe (with NASA imagery) is used whenever WebGL really works.
+    gl = (c.getContext("webgl", { failIfMajorPerformanceCaveat: true }) as WebGLRenderingContext | null)
+      ?? (c.getContext("webgl") as WebGLRenderingContext | null);
     if (gl) {
       const ext = gl.getExtension("WEBGL_debug_renderer_info");
       renderer = String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
@@ -51,7 +54,9 @@ export function detectTier(): TierInfo {
 
   let tier: Tier;
   let reason: string;
-  if (!gl || SOFTWARE.test(renderer)) { tier = 0; reason = gl ? "gráfica emulada por CPU" : "sin WebGL"; }
+  // Software WebGL (llvmpipe, SwiftShader) still draws the GPU globe well at the lowest quality: tier 1.
+  if (!gl) { tier = 0; reason = "sin WebGL"; }
+  else if (SOFTWARE.test(renderer)) { tier = 1; reason = "gráfica emulada por CPU (calidad baja)"; }
   else if (cores <= 2 || mem <= 4 || maxTex < 4096) { tier = 1; reason = `${cores} núcleos, ${mem} GB`; }
   else { tier = 2; reason = `${cores} núcleos, ${mem} GB`; }
   const f = forced();

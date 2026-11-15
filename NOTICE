@@ -1,13 +1,25 @@
-HORIZON 247 — third-party notices (draft; complete as dependencies are added)
-============================================================================
-Software (planned/used):
-  - NumPy — BSD-3-Clause
-  (add each new dependency with its license and keep its copyright notice)
+HORIZON 247 — third-party notices
+=================================
+HORIZON 247's own code is under LICENSE (source-available, no commercial use). The components and data
+below keep their own licenses; nothing in LICENSE restricts the rights they grant.
 
-Data credits:
-  - Montabone, L. et al. (2015). Eight-year climatology of dust optical depth on Mars.
-    Icarus 251, 65-95. doi:10.1016/j.icarus.2014.12.034
-  - Montabone, L. et al. (2020). JGR Planets. doi:10.1029/2019JE006111
-    (Mars Climate Database dust climatology, v2.x — CC BY-SA 3.0)
+Software
+  - NumPy — BSD-3-Clause (HORI, ZON)
+  - Next.js, React, React DOM — MIT (web)
+  - Tailwind CSS — MIT (web)
+  - Geist font — SIL Open Font License 1.1 (web)
+  - world-atlas / topojson-client — ISC (web, country outlines)
+  - MediaPipe Tasks Vision (hand landmarks, loaded on demand from a CDN) — Apache-2.0
+  - Vitest, TypeScript — MIT (development)
+
+Data and services (fetched at run time or shipped as derived bundles)
+  - NASA POWER (MERRA-2 based), NASA Langley Research Center — NASA open-data policy; cite POWER.
+  - NASA GIBS imagery (GOES-East/West ABI, Himawari AHI, MODIS, VIIRS, Blue Marble) — NASA open data.
+  - NASA EONET natural events — NASA open data; each event keeps its original source link.
+  - NASA NSSDC planetary fact sheets — public domain (US Government work).
+  - Mars Climate Database dust climatology, Montabone et al. (2015, 2020) — CC BY-SA 3.0.
+      Montabone, L. et al. (2015). Icarus 251, 65-95. doi:10.1016/j.icarus.2014.12.034
+      Montabone, L. et al. (2020). JGR Planets. doi:10.1029/2019JE006111
   - NASA GISS Surface Temperature Analysis (GISTEMP) v4 — cite per NASA GISS instructions.
-  - NASA GES DISC GPM IMERG; NASA LP DAAC MODIS — cite DOI and version of each product used.
+  - Natural Earth boundaries — public domain.
+  - Livestock Temperature-Humidity Index: NRC (1971); LCI thresholds.

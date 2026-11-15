@@ -178,9 +178,11 @@ export function run(cmd: Command, via: Via, label: string | null, d: Deps): void
     }
     case "imagery": store.set({ ...patch, imagery: i.layer }); answerWhenReady(d, "imagery", source, correctable, null); return;
     case "evolution": {
-      // The playback needs a layer with its yearly series: the 2° planet layer has one even when the 0.5° does not.
-      const years = m?.series?.years ?? [];
-      const yearly = years.length ? null : ctx.entries.find((e) => /annual2deg/.test(e.id)) ?? null;
+      // «La evolución de la Tierra» is the whole planet: always the 2° planet layer (it has the yearly series),
+      // never a regional box that happened to be on screen.
+      const planet = ctx.entries.find((e) => /annual2deg/.test(e.id)) ?? null;
+      const yearly = planet && planet.id !== before.layerId ? planet : null;
+      const years = yearly ? [] : m?.series?.years ?? [];
       if (yearly) {
         store.set({ ...patch, layerId: yearly.id, selection: null, timeMode: "anual", year: null, windowEnd: null, evolution: true });
         answerWhenReady(d, "evolution", source, correctable, yearly.id);
@@ -210,7 +212,7 @@ export function run(cmd: Command, via: Via, label: string | null, d: Deps): void
       const sel = patch.selection ?? before.selection;
       const fromSel = sel?.kind === "cell" && m ? { ...cellLatLon(m, sel.index), name: "" } : null;
       const w = i.where ?? (fromSel ? { name: fromSel.name || `${fromSel.lat.toFixed(1)}°, ${fromSel.lon.toFixed(1)}°`, lat: fromSel.lat, lon: fromSel.lon } : { name: "Durango", lat: 24.02, lon: -104.67 });
-      store.set({ ...patch, scene: { name: w.name, lat: w.lat, lon: w.lon, timeline: i.timeline } });
+      store.set({ ...patch, scene: { name: w.name, lat: w.lat, lon: w.lon, timeline: i.timeline, preset: i.preset ?? undefined } });
       answerWhenReady(d, "scene", source, correctable, null);
       return;
     }

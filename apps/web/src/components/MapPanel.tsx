@@ -12,6 +12,7 @@ import { shownLimits } from "@/core/honesty/limits";
 import { allowedMetrics, type Metric, type SceneTarget, type TimeMode } from "@/core/state/store";
 import { EvidenceDetails } from "./Evidence";
 import { LivePanel } from "./LivePanel";
+import { LAYERS } from "@/core/map/imagery";
 import { LegendBar } from "./Legend";
 import { MapCanvas, type HoverInfo, type MapFocus, type Projection } from "./MapCanvas";
 import { SeriesChart } from "./SeriesChart";
@@ -25,6 +26,7 @@ const C = {
     full: "Pantalla completa", exitFull: "Salir de pantalla completa (Esc)", view: "Vista", globe: "Globo 3D", flat: "Plano",
     years: "Datos", mode: { completa: "Tendencia", anual: "Año a año", acumulada: "Cómo crece la evidencia" },
     hint: "Pasa el cursor o toca una zona", simulated: "Simulado", viewMenu: "Vista del mapa",
+    picture: "Imagen de la NASA bajo los datos", base: "Blue Marble (base)", liveGroup: "En vivo · cada 10 min", dayGroup: "Del día", scene3d: "Abrir una escena 3D (toca una zona para la suya)",
     noSel: "Toca una zona del mapa o pregunta por una región para ver su evidencia.",
     play: "Reproducir los años", pause: "Pausar",
     metric: "Métrica", metrics: { verdict: "Veredicto", effect: "Efecto", mde: "MDE", years: "Años que faltan" },
@@ -41,6 +43,7 @@ const C = {
     full: "Full screen", exitFull: "Exit full screen (Esc)", view: "View", globe: "3D globe", flat: "Flat",
     years: "Data", mode: { completa: "Trend", anual: "Year by year", acumulada: "How evidence grows" },
     hint: "Hover or tap an area", simulated: "Simulated", viewMenu: "Map view",
+    picture: "NASA picture under the data", base: "Blue Marble (base)", liveGroup: "Live · every 10 min", dayGroup: "Of the day", scene3d: "Open a 3D scene (tap an area for its own)",
     noSel: "Tap an area on the map or ask about a region to see its evidence.",
     play: "Play the years", pause: "Pause",
     metric: "Metric", metrics: { verdict: "Verdict", effect: "Effect", mde: "MDE", years: "Years needed" },
@@ -132,7 +135,7 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
             ) : (
               <MapCanvas data={data} theme={theme} selected={sel?.kind === "cell" ? sel.index : -1}
                 filter={s.timeMode === "anual" ? null : s.filter} region={region} focus={focus} lang={s.lang}
-                label={T.mapLabel(m ? m.title[s.lang] : "")} onPick={onPick} describe={describe} onHoverCell={expert ? setHover : undefined} projection={expert ? projection : "globe"}
+                label={T.mapLabel(m ? m.title[s.lang] : "")} onPick={onPick} describe={describe} onHoverCell={expert ? setHover : undefined} projection={projection}
                 imageryId={s.imagery} onImagery={controls.imagery} />
             )}
             {loading && !error ? (
@@ -153,11 +156,26 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
               </button>
             ) : null}
             {m ? (
-              <ViewMenu label={c.viewMenu} summary={[c.mode[s.timeMode], siblings.length > 1 && entry ? T.years(entryWindow(entry)!.n) : null].filter(Boolean).join(" · ")}>
-              {expert ? (
-                    <Segmented<Projection> label={c.view} value={projection} onChange={setProjection} compact
-                      options={[{ value: "globe", label: c.globe }, { value: "flat", label: c.flat }]} />
-                  ) : null}
+              <ViewMenu label={c.viewMenu} summary={[projection === "flat" ? c.flat : c.globe, s.imagery ? imageryShort(s.imagery) : null, c.mode[s.timeMode], siblings.length > 1 && entry ? T.years(entryWindow(entry)!.n) : null].filter(Boolean).join(" · ")}>
+                  <Segmented<Projection> label={c.view} value={projection} onChange={setProjection} compact
+                    options={[{ value: "globe", label: c.globe }, { value: "flat", label: c.flat }]} />
+                  <label className="block w-full">
+                    <span className="mb-1 block text-xs font-medium text-text-2">{c.picture}</span>
+                    <select value={s.imagery ?? ""} onChange={(e) => controls.imagery(e.target.value || null)}
+                      className="w-full rounded-xl border border-border bg-surface px-2.5 py-2 text-sm">
+                      <option value="">{c.base}</option>
+                      <optgroup label={c.liveGroup}>
+                        {LAYERS.filter((l) => l.body === "earth" && l.live).map((l) => <option key={l.id} value={l.id}>{l.title}</option>)}
+                      </optgroup>
+                      <optgroup label={c.dayGroup}>
+                        {LAYERS.filter((l) => l.body === "earth" && !l.live && l.role !== "base" && l.role !== "night").map((l) => <option key={l.id} value={l.id}>{l.title}</option>)}
+                      </optgroup>
+                    </select>
+                  </label>
+                  {sel && m.profile === "earth" ? null : (
+                    <button type="button" onClick={() => controls.scene({ name: "Durango", lat: 24.02, lon: -104.67, timeline: true })}
+                      className="text-sm font-medium underline underline-offset-4">{c.scene3d}</button>
+                  )}
                   {siblings.length > 1 ? (
                     <Segmented label={c.years} value={entry?.id ?? ""} onChange={controls.window} compact
                       options={siblings.map((e) => ({ value: e.id, label: T.years(entryWindow(e)!.n), title: `${entryWindow(e)!.start}–${entryWindow(e)!.end}` }))} />
@@ -209,6 +227,11 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
 }
 
 /** All the map's view options behind one small button over the map (instead of rows of toggles above it). */
+function imageryShort(id: string): string {
+  const l = LAYERS.find((x) => x.id === id);
+  return l ? l.title.replace(/^Infrarrojo en vivo · /, "IR · ") : id;
+}
+
 function ViewMenu({ label, summary, children }: { label: string; summary: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
@@ -243,8 +266,11 @@ function ViewMenu({ label, summary, children }: { label: string; summary: string
  * timeline); the frame gets the place, and the yearly series of the zone when the layer on screen has one.
  */
 function SceneFrame({ ctx }: { ctx: Ctx }) {
-  const sc = ctx.state.scene ?? { name: "Durango", lat: 24.02, lon: -104.67, timeline: true };
   const m = ctx.layer?.manifest;
+  // Opened from the sidebar: the zone selected on the map; otherwise Durango.
+  const selPt = ctx.state.selection?.kind === "cell" && m && m.profile === "earth" ? cellLatLon(m, ctx.state.selection.index) : null;
+  const sc = ctx.state.scene ?? (selPt ? { name: `${selPt.lat.toFixed(1)}°, ${selPt.lon.toFixed(1)}°`, lat: selPt.lat, lon: selPt.lon, timeline: true } : { name: "Durango", lat: 24.02, lon: -104.67, timeline: true });
+  if (sc.preset) return <iframe key={sc.preset} title={sc.preset} src={`escena?embed=1&escena=${sc.preset}&lang=${ctx.state.lang}`} className="min-h-0 w-full flex-1 border-0 bg-bg" allow="camera; microphone" />;
   const q = new URLSearchParams({ embed: "1", lat: sc.lat.toFixed(3), lon: sc.lon.toFixed(3), name: sc.name, lang: ctx.state.lang });
   if (sc.timeline) q.set("t", "anos");
   // The zone's yearly temperature from HORI (anomalies), when the layer on screen is temperature with a series.

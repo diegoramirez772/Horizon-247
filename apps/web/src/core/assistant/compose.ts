@@ -240,7 +240,7 @@ const TOPIC_CHIPS: Record<Topic, Chip[]> = {
     chip(L("Eventos cerca", "Events nearby"), { t: "topic", topic: "eventos", where: null }),
   ],
   astronauta: [chip(L("¿Y Marte?", "And Mars?"), { t: "topic", topic: "marte", where: null })],
-  marte: [chip(L("Otros planetas", "Other planets"), { t: "topic", topic: "planetas", where: null }), chip(L("Volver a la Tierra", "Back to Earth"), { t: "summary" })],
+  marte: [chip(L("Marte en 3D", "Mars in 3D"), { t: "scene", where: null, timeline: false, preset: "marte" }), chip(L("Otros planetas", "Other planets"), { t: "topic", topic: "planetas", where: null }), chip(L("Volver a la Tierra", "Back to Earth"), { t: "summary" })],
   planetas: [chip(L("Polvo en Marte", "Dust on Mars"), { t: "topic", topic: "marte", where: null }), chip(L("Monitoreo de astronautas", "Astronaut monitoring"), { t: "topic", topic: "astronauta", where: null })],
   red: [chip(L("Eventos naturales de la NASA", "NASA natural events"), { t: "topic", topic: "eventos", where: null })],
   eventos: [
@@ -472,6 +472,15 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
     }
     case "scene": {
       const sc = ctx.state.scene;
+      if (sc?.preset) {
+        const what = sc.preset === "marte" ? L("Marte", "Mars") : L("la Luna", "the Moon");
+        return {
+          ...base, origin: "zon", evidence: null, action: L("Monitoreo · escena 3D", "Monitoring · 3D scene"),
+          text: allRegs(L(`Abrí la escena 3D de ${what.es}. Mueve las barras (polvo, viento, hora) y la escena se rehace al momento; es una ilustración, no una foto.`,
+            `I opened the 3D scene of ${what.en}. Move the sliders (dust, wind, hour) and it rebuilds right away; it illustrates, it is not a photo.`)),
+          chips: [chip(L("Polvo en Marte (HORI)", "Dust on Mars (HORI)"), { t: "topic", topic: "marte", where: null })],
+        };
+      }
       const name = sc?.name ?? "Durango";
       return {
         ...base, origin: "zon", evidence: null,
