@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { ContextCard } from "@/contract/types";
+import type { ContextCard, HomeDoc } from "@/contract/types";
 import type { IndexEntry, RegionGeo } from "@/core/contract/extra";
-import { loadContext, loadIndex, loadLayer, loadRegions, loadSeries, loadWindow, type Layer } from "@/core/contract/loader";
+import { loadContext, loadHome, loadIndex, loadLayer, loadRegions, loadSeries, loadWindow, type Layer } from "@/core/contract/loader";
 import type { MapData } from "@/core/map/MapView";
 import { moreIsBlue, robustRange, robustScale } from "@/core/map/palette";
 import type { AppState } from "@/core/state/store";
@@ -23,7 +23,7 @@ export function useIndex(): { index: Load<IndexEntry[]>; regions: RegionGeo[]; c
   useEffect(() => {
     let live = true;
     loadIndex(BUNDLES)
-      .then((v) => { if (live) setIndex({ status: "ready", value: Array.isArray(v) ? v : [] }); })
+      .then((v) => { if (live) setIndex({ status: "ready", value: Array.isArray(v) ? v.filter((e) => (e.kind ?? "layer") === "layer") : [] }); })
       .catch((e: Error) => { if (live) setIndex({ status: "error", message: e.message }); });
     // Optional files (SPEC §8.2, §8.4): their absence is not an error.
     loadRegions(BUNDLES).then((r) => { if (live) setRegions(r); }).catch(() => {});
@@ -31,6 +31,17 @@ export function useIndex(): { index: Load<IndexEntry[]>; regions: RegionGeo[]; c
     return () => { live = false; };
   }, []);
   return { index, regions, context };
+}
+
+/** home.json (SPEC §15) is optional: without it the start screen is the usual one. */
+export function useHome(): HomeDoc | null {
+  const [doc, setDoc] = useState<HomeDoc | null>(null);
+  useEffect(() => {
+    let live = true;
+    loadHome(BUNDLES).then((d) => { if (live) setDoc(d); }).catch(() => {});
+    return () => { live = false; };
+  }, []);
+  return doc;
 }
 
 export function useLayer(entry: IndexEntry | null, attempt: number): Load<Layer> {

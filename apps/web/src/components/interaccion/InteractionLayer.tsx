@@ -6,7 +6,7 @@
 // (data-h247-overlay: never a control, never take the pointer); the dock, dialogs and palette are normal controls,
 // so they too can be reached by number, d-pad or hand.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { targets, type Target } from "@/core/interaction/dom";
 import type { Lang } from "@/core/i18n/texts";
 import { useHub, useHubState } from "./context";
@@ -48,7 +48,8 @@ export function InteractionLayer({ lang }: { lang: Lang }) {
       {s.choose ? <Choose lang={lang} /> : null}
       {s.reportDraft && !s.pending ? <ReportDraft lang={lang} /> : null}
       {s.pending ? <Confirm lang={lang} /> : null}
-      {s.hand.visible ? <HandCursor /> : null}
+      {s.hand.visible ? <HandCursor lang={lang} /> : null}
+      {s.hand.status === "on" || s.hand.status === "loading" ? <CameraPreview lang={lang} /> : null}
       <Notice />
       <Dock lang={lang} />
       {s.palette ? <Palette lang={lang} /> : null}
@@ -63,51 +64,75 @@ function Dock({ lang }: { lang: Lang }) {
   const s = useHubState();
   const t = T[lang];
   const v = s.voice;
+  // Speech support is only known in the browser: disabled on the server render, enabled right after hydration.
+  const speech = useSyncExternalStore(noSub, () => v.supported, () => false);
   const hf = hub.isHandsFree();
   const camOn = s.hand.status === "on" || s.hand.status === "loading";
   const status = v.listening ? (s.mode === "dictation" ? t.modes.dictation : hf ? t.handsFree : t.listening) : t.off;
+  const [open, setOpen] = useState(false);
+  const wrap = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const off = (e: PointerEvent) => { if (!wrap.current?.contains(e.target as Node)) setOpen(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    addEventListener("pointerdown", off);
+    addEventListener("keydown", esc);
+    return () => { removeEventListener("pointerdown", off); removeEventListener("keydown", esc); };
+  }, [open]);
+  const busy = v.listening || camOn || s.numbers;
   return (
-    <nav aria-label={t.dock}
-      className="pointer-events-none fixed bottom-3 left-3 z-[60] flex max-w-[calc(100vw-1.5rem)] items-end gap-2 max-sm:bottom-auto max-sm:top-[4.25rem]">
-      <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-border bg-surface/95 p-1 shadow-[0_6px_24px_rgba(16,24,40,0.12)] backdrop-blur">
-        <DockButton label={v.listening ? t.stopTalk : t.talk} keys="Alt+V" active={v.listening} onClick={() => hub.talk()} disabled={!v.supported}>
-          <path d="M8 2.5a2 2 0 0 1 2 2v3a2 2 0 0 1-4 0v-3a2 2 0 0 1 2-2zM4.5 7.5a3.5 3.5 0 0 0 7 0M8 11v2.5" />
-        </DockButton>
-        <DockButton label={t.handsFreeBtn} keys="Alt+M" active={hf} onClick={() => hub.setHandsFree(!hf)} disabled={!v.supported}>
-          <path d="M3 8a5 5 0 0 1 10 0M5.5 8a2.5 2.5 0 0 1 5 0M8 8v5" />
-        </DockButton>
-        <DockButton label={t.numbers} keys="Alt+N" active={s.numbers} onClick={() => hub.meta(s.numbers ? "numbersOff" : "numbersOn")}>
-          <path d="M5 3 4 13M11 3l-1 10M2.5 6h11M2 10h11" />
-        </DockButton>
-        {s.level.level >= 2 ? (
-          <DockButton label={t.gestures} keys="Alt+G" active={camOn} onClick={() => (camOn ? hub.stopGestures() : void hub.startGestures())}>
-            <path d="M5.5 8V3.5a1 1 0 0 1 2 0V7m0-3.5v-.5a1 1 0 0 1 2 0V7m0-3a1 1 0 0 1 2 0v4.5a4.5 4.5 0 0 1-9 0V7a1 1 0 0 1 2 0v1" />
-          </DockButton>
-        ) : null}
-        <DockButton label={t.palette} keys="Ctrl+K" active={s.palette} onClick={() => hub.meta("palette")}>
-          <path d="M3 4.5h10M3 8h10M3 11.5h6" />
-        </DockButton>
-      </div>
-      <div className="pointer-events-none hidden flex-col gap-0.5 rounded-xl bg-surface/90 px-2.5 py-1.5 text-[11px] leading-4 text-text-2 shadow-sm backdrop-blur sm:flex" aria-live="polite">
-        <span className="flex items-center gap-1.5 font-medium text-text">
-          <span className={`h-2 w-2 rounded-full ${v.listening ? "animate-pulse bg-[#e5484d]" : "bg-text-3"}`} aria-hidden="true" />
-          {status}{v.listening && s.mode !== "dictation" ? ` · ${t.modes.commands}` : ""}
-        </span>
-        {v.listening && v.destination !== "none" ? <span>{t.dest[v.destination]}</span> : null}
-        {s.hand.status !== "off" ? <span>{t.cam[s.hand.status]}{s.hand.status === "on" && s.hand.perSecond ? ` · ${s.hand.perSecond}/s` : ""}</span> : null}
-      </div>
+    <nav ref={wrap} aria-label={t.dock}
+      className="pointer-events-none fixed bottom-4 right-4 z-[60] flex flex-col items-end gap-2 max-md:bottom-auto max-md:right-3 max-md:top-3 max-md:flex-col-reverse">
+      {open ? (
+        <div className="widget-in pointer-events-auto w-64 rounded-2xl border border-border bg-surface p-1.5 shadow-[0_16px_44px_rgba(16,24,40,0.18)]">
+          <p className="flex items-center gap-1.5 px-2.5 pb-1.5 pt-1 text-xs text-text-2" aria-live="polite">
+            <span className={`h-2 w-2 rounded-full ${v.listening ? "animate-pulse bg-[#e5484d]" : "bg-text-3"}`} aria-hidden="true" />
+            {status}{v.listening && s.mode !== "dictation" ? ` · ${t.modes.commands}` : ""}
+            {s.hand.status !== "off" ? ` · ${t.cam[s.hand.status]}` : ""}
+          </p>
+          <MenuItem label={v.listening ? t.stopTalk : t.talk} keys="Alt+V" active={v.listening} onClick={() => hub.talk()} disabled={!speech}>
+            <path d="M8 2.5a2 2 0 0 1 2 2v3a2 2 0 0 1-4 0v-3a2 2 0 0 1 2-2zM4.5 7.5a3.5 3.5 0 0 0 7 0M8 11v2.5" />
+          </MenuItem>
+          <MenuItem label={t.handsFreeBtn} keys="Alt+M" active={hf} onClick={() => hub.setHandsFree(!hf)} disabled={!speech}>
+            <path d="M3 8a5 5 0 0 1 10 0M5.5 8a2.5 2.5 0 0 1 5 0M8 8v5" />
+          </MenuItem>
+          <MenuItem label={t.numbers} keys="Alt+N" active={s.numbers} onClick={() => hub.meta(s.numbers ? "numbersOff" : "numbersOn")}>
+            <path d="M5 3 4 13M11 3l-1 10M2.5 6h11M2 10h11" />
+          </MenuItem>
+          {s.level.level >= 1 ? (
+            <MenuItem label={t.gestures} keys="Alt+G" active={camOn} onClick={() => (camOn ? hub.stopGestures() : void hub.startGestures())}>
+              <path d="M5.5 8V3.5a1 1 0 0 1 2 0V7m0-3.5v-.5a1 1 0 0 1 2 0V7m0-3a1 1 0 0 1 2 0v4.5a4.5 4.5 0 0 1-9 0V7a1 1 0 0 1 2 0v1" />
+            </MenuItem>
+          ) : null}
+          <MenuItem label={t.palette} keys="Ctrl+K" active={s.palette} onClick={() => { setOpen(false); hub.meta("palette"); }}>
+            <path d="M3 4.5h10M3 8h10M3 11.5h6" />
+          </MenuItem>
+        </div>
+      ) : null}
+      <button type="button" onClick={() => setOpen((x) => !x)} aria-expanded={open} aria-label={t.dock} title={`${t.dock} · ${status}`}
+        className={`pointer-events-auto relative flex h-12 w-12 items-center justify-center rounded-full shadow-[0_8px_24px_rgba(16,24,40,0.18)] transition-all hover:scale-105 ${open || busy ? "bg-accent text-on-accent" : "border border-border bg-surface text-text"}`}>
+        {v.listening ? <span aria-hidden="true" className="absolute inset-0 animate-ping rounded-full bg-[#e5484d]/30" /> : null}
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          {open ? <path d="M4 4l8 8M12 4l-8 8" /> : <path d="M5.5 8V3.5a1 1 0 0 1 2 0V7m0-3.5v-.5a1 1 0 0 1 2 0V7m0-3a1 1 0 0 1 2 0v4.5a4.5 4.5 0 0 1-9 0V7a1 1 0 0 1 2 0v1" />}
+        </svg>
+      </button>
     </nav>
   );
 }
 
-function DockButton({ label, keys, active, onClick, disabled, children }: { label: string; keys: string; active: boolean; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+function MenuItem({ label, keys, active, onClick, disabled, children }: { label: string; keys: string; active: boolean; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onClick} disabled={disabled} aria-label={label} aria-pressed={active} title={`${label} (${keys})`}
-      className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors disabled:opacity-30 ${active ? "bg-accent text-on-accent" : "text-text-2 hover:bg-surface-2 hover:text-text"}`}>
-      <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
+    <button type="button" onClick={onClick} disabled={disabled} aria-pressed={active}
+      className={`flex h-10 w-full items-center gap-3 rounded-xl px-2.5 text-left text-sm transition-colors disabled:opacity-40 ${active ? "bg-accent text-on-accent" : "text-text hover:bg-surface-2"}`}>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
+      <span className="flex-1">{label}</span>
+      <kbd className={`text-[11px] ${active ? "opacity-80" : "text-text-3"}`}>{keys}</kbd>
     </button>
   );
 }
+
+const noSub = () => () => {};
+
 
 // ---------------------------------------------------------------- subtitles (top centre)
 
@@ -249,9 +274,16 @@ function ReportDraft({ lang }: { lang: Lang }) {
 
 // ---------------------------------------------------------------- hand cursor
 
-function HandCursor() {
+const POSE: Record<Lang, Record<string, string>> = {
+  es: { palm: "Regresar…", thumb: "Confirmar…", fist: "Puntero en pausa", pinch: "" },
+  en: { palm: "Going back…", thumb: "Confirming…", fist: "Pointer paused", pinch: "" },
+};
+
+function HandCursor({ lang }: { lang: Lang }) {
   const s = useHubState();
   const h = s.hand;
+  const hold = h.hold ?? 0;
+  const label = h.pose ? POSE[lang][h.pose] : "";
   return (
     <div data-h247-overlay="" aria-hidden="true" className="pointer-events-none fixed inset-0 z-[70]">
       {h.snap ? (
@@ -259,8 +291,76 @@ function HandCursor() {
           style={{ left: h.snap.x - 4, top: h.snap.y - 4, width: h.snap.w + 8, height: h.snap.h + 8 }} />
       ) : null}
       <div className="absolute left-0 top-0" style={{ transform: `translate(${h.x}px, ${h.y}px)` }}>
-        <div className={`-translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white shadow-[0_0_0_2px_rgba(0,0,0,0.35),0_4px_16px_rgba(0,0,0,0.3)] transition-[width,height,background] duration-100 ${h.pinching ? "h-5 w-5 bg-accent" : "h-8 w-8 bg-accent/30"}`} />
+        <div className="relative -translate-x-1/2 -translate-y-1/2">
+          {/* The ring fills while a pose is held still: when it closes, the action happens. */}
+          {hold > 0 ? (
+            <span className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{ background: `conic-gradient(var(--accent) ${hold * 360}deg, transparent 0)`, WebkitMask: "radial-gradient(circle, transparent 52%, black 54%)", mask: "radial-gradient(circle, transparent 52%, black 54%)" }} />
+          ) : null}
+          <div className={`rounded-full border-[3px] border-white shadow-[0_0_0_2px_rgba(0,0,0,0.35),0_4px_16px_rgba(0,0,0,0.3)] transition-[width,height,background] duration-100 ${h.pinching ? "h-5 w-5 bg-accent" : h.pose === "fist" ? "h-6 w-6 bg-text-3/60" : "h-8 w-8 bg-accent/30"}`} />
+        </div>
+        {label ? <span className="absolute left-5 top-4 whitespace-nowrap rounded-full bg-[#0b1220]/85 px-2.5 py-1 text-xs font-medium text-white">{label}</span> : null}
       </div>
+    </div>
+  );
+}
+
+const GUIDE: Record<Lang, { g: string; what: string }[]> = {
+  es: [
+    { g: "☝️ Mueve el índice", what: "Mover el puntero" },
+    { g: "🤏 Pellizco rápido", what: "Tocar / abrir" },
+    { g: "🤏 Pellizca y mueve", what: "Girar el globo · mover la barra de años · desplazar" },
+    { g: "🤏🤏 Dos manos", what: "Separar = acercar · juntar = alejar" },
+    { g: "✋ Palma quieta 1 s", what: "Regresar" },
+    { g: "👍 Pulgar arriba 1 s", what: "Confirmar" },
+    { g: "✊ Puño", what: "Pausa: recoloca la mano sin mover el puntero" },
+  ],
+  en: [
+    { g: "☝️ Move your index", what: "Move the pointer" },
+    { g: "🤏 Quick pinch", what: "Tap / open" },
+    { g: "🤏 Pinch and move", what: "Spin the globe · move the year bar · scroll" },
+    { g: "🤏🤏 Two hands", what: "Apart = zoom in · together = zoom out" },
+    { g: "✋ Still palm 1 s", what: "Go back" },
+    { g: "👍 Thumbs up 1 s", what: "Confirm" },
+    { g: "✊ Fist", what: "Pause: re-centre your hand without moving the pointer" },
+  ],
+};
+
+/** While gestures are on: a small mirrored view of the camera (you see what it sees) and the list of gestures. */
+function CameraPreview({ lang }: { lang: Lang }) {
+  const hub = useHub();
+  const s = useHubState();
+  const box = useRef<HTMLDivElement>(null);
+  const [guide, setGuide] = useState(true);
+  useEffect(() => {
+    const v = hub.cameraVideo();
+    const el = box.current;
+    if (!v || !el) return;
+    v.className = "h-full w-full -scale-x-100 object-cover";
+    el.appendChild(v);
+    return () => { if (v.parentElement === el) el.removeChild(v); };
+  }, [hub, s.hand.status]);
+  const es = lang === "es";
+  return (
+    <div data-h247-overlay="" className="fixed bottom-20 right-4 z-[61] w-56 overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_14px_40px_rgba(16,24,40,0.2)] max-md:bottom-auto max-md:top-16">
+      <div ref={box} className="relative h-32 bg-black">
+        {s.hand.status === "loading" ? <p className="absolute inset-0 flex items-center justify-center text-xs text-white/80">{es ? "Encendiendo la cámara…" : "Starting the camera…"}</p> : null}
+        <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-semibold ${s.hand.visible ? "bg-[#16a34a] text-white" : "bg-black/60 text-white/80"}`}>
+          {s.hand.visible ? (es ? "Mano detectada" : "Hand detected") : (es ? "Muestra tu mano" : "Show your hand")}
+        </span>
+      </div>
+      <button type="button" onClick={() => setGuide((x) => !x)} aria-expanded={guide}
+        className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold text-text hover:bg-surface-2">
+        {es ? "Gestos" : "Gestures"}<span className="text-text-3">{guide ? "▾" : "▸"}</span>
+      </button>
+      {guide ? (
+        <ul className="max-h-60 space-y-1.5 overflow-y-auto px-3 pb-3 text-xs">
+          {GUIDE[lang].map((x) => (
+            <li key={x.g}><span className="font-medium text-text">{x.g}</span><span className="block text-text-2">{x.what}</span></li>
+          ))}
+          <li className="pt-1 text-text-3">{es ? "Alt+G enciende o apaga la cámara. La imagen no sale de tu equipo." : "Alt+G turns the camera on or off. The image never leaves your device."}</li>
+        </ul>
+      ) : null}
     </div>
   );
 }

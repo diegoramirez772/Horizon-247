@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { registerView } from "@/core/interaction/manipulate";
 import { GlobeView } from "@/core/map/GlobeView";
 import { GlobeGL } from "@/core/map/GlobeGL";
-import { LAYERS } from "@/core/map/imagery";
+import { LAYERS, liveSlot } from "@/core/map/imagery";
 import { detectTier } from "@/core/map/tier";
 import { MapView, type BBox, type MapData } from "@/core/map/MapView";
 import type { MapTheme } from "@/core/map/palette";
@@ -20,7 +19,8 @@ export interface HoverInfo { title: string; line: string; where: string }
 
 export type Projection = "globe" | "flat";
 
-export function MapCanvas({ data, theme, selected, filter, region, focus, label, lang, onPick, describe, onHoverCell, projection = "globe", minimal = false }: {
+export function MapCanvas({ data, theme, selected, filter, region, focus, label, lang, onPick, describe, onHoverCell, projection = "globe", minimal = false,
+  imageryId = null, onImagery }: {
   data: MapData | null;
   theme: MapTheme;
   selected: number;
@@ -38,14 +38,26 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
   projection?: Projection;
   /** Preview (start screen): no zoom buttons. */
   minimal?: boolean;
+  /** NASA layer under the data (shared state, so the assistant and «En vivo» can change it); null = Blue Marble. */
+  imageryId?: string | null;
+  onImagery?: (id: string | null) => void;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<MapView | GlobeView | GlobeGL | null>(null);
   // Real NASA imagery under the data (GPU globe only): null = Blue Marble base; otherwise a dated layer.
-  const [imagery, setImagery] = useState<{ layer: string; date: string } | null>(null);
+  // Live layers (geostationary infrared) ask for the latest 10-minute image and refresh themselves.
+  const [day, setDay] = useState(yesterday);
+  const [slot, setSlot] = useState(liveSlot);
+  const def = imageryId ? LAYERS.find((l) => l.id === imageryId) ?? null : null;
+  const imagery = def ? { layer: def.id, date: def.live ? slot : day } : null;
+  const imageryKey = imagery ? `${imagery.layer}@${imagery.date}` : "";
+  useEffect(() => {
+    if (!def?.live) return;
+    const id = window.setInterval(() => setSlot(liveSlot()), 60e3);
+    return () => window.clearInterval(id);
+  }, [def?.live]);
   const [imageryLabel, setImageryLabel] = useState("");
   const [gpuLost, setGpuLost] = useState(false);
-  const [imgOpen, setImgOpen] = useState(false);
   const [isGL, setIsGL] = useState(false);
   // Latest props, so a view re-created for another projection starts with the same state.
   const latest = useRef({ data, theme, selected, filter, region, label, focus });
@@ -64,17 +76,17 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
     const L = latest.current;
     // Globe on the GPU when there is a real one (N1/N2); the Canvas globe otherwise or if the GPU goes away.
     let v: MapView | GlobeView | GlobeGL;
-    if (projection !== "globe") v = new MapView(host.current!, L.theme, L.label);
+    if (projection !== "globe") { const mv = new MapView(host.current!, L.theme, L.label); mv.onImagery = setImageryLabel; v = mv; }
     else if (!gpuLost && detectTier().tier > 0) {
       try {
         const g = new GlobeGL(host.current!, L.theme, L.label);
         g.onImagery = setImageryLabel;
         g.onLost = () => setGpuLost(true);
         v = g;
-      } catch { v = new GlobeView(host.current!, L.theme, L.label); }
+      } catch (e) { console.warn("[h247] GPU globe failed, canvas globe instead:", e); v = new GlobeView(host.current!, L.theme, L.label); }
     } else v = new GlobeView(host.current!, L.theme, L.label);
     setImageryLabel("");
-    setIsGL(v instanceof GlobeGL);
+    setIsGL(v instanceof GlobeGL || v instanceof MapView);
     v.onCellClick = (i) => pick.current(i);
     v.onHover = (i, x, y) => {
       hoverCell.current?.(i);
@@ -98,8 +110,14 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
 
   useEffect(() => {
     const v = view.current;
-    if (v instanceof GlobeGL) v.setImagery(imagery);
-  }, [imagery, projection, gpuLost]);
+    if (v instanceof MapView) v.setImagery(imagery);
+    if (v instanceof GlobeGL) {
+      v.setImagery(imagery);
+      // A live satellite picture must be seen: the trend colours step back to a faint veil while it is on.
+      v.setDataOpacity(def?.live ? 0.12 : null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the key says when the layer or its date really changed
+  }, [imageryKey, projection, gpuLost]);
 
   useEffect(() => { view.current?.setTheme(theme); }, [theme]);
   useEffect(() => { view.current?.setLabel(label); }, [label]);
@@ -135,40 +153,13 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
           {imageryLabel}
         </p>
       ) : null}
-      {isGL && !minimal ? (
-        <div className="absolute right-4 top-[156px] z-10 flex flex-col items-end gap-2">
-          <Link href="/escena" title="Escena 3D generada a partir de los datos"
-            className="flex h-11 items-center rounded-xl border border-border bg-surface px-3 text-sm shadow-md hover:bg-surface-2">
-            Escena 3D
-          </Link>
-          <button type="button" onClick={() => setImgOpen((o) => !o)} aria-expanded={imgOpen} title="Imagen satelital real bajo los datos"
-            className="flex h-11 items-center rounded-xl border border-border bg-surface px-3 text-sm shadow-md hover:bg-surface-2">
-            Imagen
-          </button>
-          {imgOpen ? (
-            <div className="glass w-[248px] space-y-2 rounded-xl p-3 text-sm">
-              <label className="block">
-                <span className="text-xs text-text-3">Capa</span>
-                <select className="mt-1 w-full rounded-lg border border-border-control bg-surface px-2 py-1"
-                  value={imagery?.layer ?? ""}
-                  onChange={(e) => setImagery(e.target.value ? { layer: e.target.value, date: imagery?.date ?? yesterday() } : null)}>
-                  <option value="">Blue Marble (ilustrativa)</option>
-                  {LAYERS.filter((l) => l.body === "earth" && l.role !== "base" && l.role !== "night").map((l) => (
-                    <option key={l.id} value={l.id}>{l.title}</option>
-                  ))}
-                </select>
-              </label>
-              {imagery ? (
-                <label className="block">
-                  <span className="text-xs text-text-3">Fecha</span>
-                  <input type="date" className="mt-1 w-full rounded-lg border border-border-control bg-surface px-2 py-1" value={imagery.date} max={yesterday()}
-                    onChange={(e) => e.target.value && setImagery({ layer: imagery.layer, date: e.target.value })} />
-                </label>
-              ) : null}
-              <p className="text-xs text-text-3">Acerca el globo para ver más detalle. Las franjas rayadas son zonas sin observación ese día.</p>
-            </div>
-          ) : null}
-        </div>
+      {/* Imagery, view and the 3D scene are chosen in «Vista del mapa» (MapPanel), not here. */}
+      {isGL && def && !def.live && !minimal ? (
+        <label className="glass absolute right-4 top-[156px] z-10 rounded-xl px-3 py-2 text-xs">
+          <span className="block text-text-3">Fecha de la imagen</span>
+          <input type="date" className="mt-1 rounded-lg border border-border-control bg-surface px-2 py-1 text-sm" value={day} max={yesterday()}
+            onChange={(e) => e.target.value && setDay(e.target.value)} />
+        </label>
       ) : null}
       {minimal ? null : <div className="absolute right-4 top-4 z-10 flex flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-md">
         <MapButton label={T.zoomIn} onClick={() => view.current?.zoomBy(1.4)}>+</MapButton>

@@ -8,7 +8,7 @@ export type Message =
   | { role: "user"; id: number; text: string; via: Via }
   | { role: "assistant"; id: number; card: Card };
 
-export interface Pending { kind: CardKind; source: Source; correctable: boolean; waitLayer: string }
+export interface Pending { kind: CardKind; source: Source; correctable: boolean; waitLayer: string; /** Re-select this point on the new layer (its grid may differ). */ point?: { lat: number; lon: number } }
 
 export interface ConversationSnapshot {
   messages: Message[];

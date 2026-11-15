@@ -1,0 +1,299 @@
+{
+  "contract": "0.4",
+  "id": "mars_cdod610_annual_MY24-MY36",
+  "profile": "mars",
+  "variable": {
+    "name": "cdod610",
+    "unit": "Pa/Pa",
+    "unit_per_decade": "Pa/Pa/década"
+  },
+  "entity": {
+    "kind": "region_cell",
+    "body": "mars",
+    "count": 7200,
+    "valid": 7200,
+    "id": "mars-bbox-88-5s-180w-88-5n-177e",
+    "type": "planet_region",
+    "name": {
+      "es": "Recuadro [-88.5, -180.0, 88.5, 177.0]",
+      "en": "Box [-88.5, -180.0, 88.5, 177.0]"
+    },
+    "status": "real",
+    "version": "1",
+    "source": {
+      "place": {
+        "name": "recuadro de la consulta"
+      },
+      "dataset": "Mars Climate Database dust climatology (Montabone et al.), kriged daily maps",
+      "dataset_url": "https://www-mars.lmd.jussieu.fr/mars/dust_climatology/",
+      "dataset_version": "MY24:2-0,MY25:2-0,MY26:2-0,MY27:2-0,MY28:2-0,MY29:2-0,MY30:2-0,MY31:2-0,MY32:2-0,MY33:2-1,MY34:2-5,MY35:2-5,MY36:2-5",
+      "variable": "cdod610",
+      "input_sha256": "876c3b461c3c01786d74892df0400ba8518bc97193721f131cf2b50f0cbb2fb1",
+      "card_sha256": "6d09f76436c3d4c4fe4a0ba81efe79ac8798a440abff794f4d25f25964ac9649"
+    },
+    "geometry": {
+      "type": "bbox",
+      "bbox": [
+        -88.5,
+        -180.0,
+        88.5,
+        177.0
+      ]
+    },
+    "relations": []
+  },
+  "grid": {
+    "type": "latlon",
+    "nlat": 60,
+    "nlon": 120,
+    "lat0": 88.5,
+    "dlat": -3.0,
+    "lon0": -180.0,
+    "dlon": 3.0,
+    "native_resolution_deg": 6.0
+  },
+  "dataset": {
+    "name": "Mars Climate Database dust climatology (Montabone et al.), kriged daily maps",
+    "kind": "reconstruction",
+    "version": "MY24:2-0,MY25:2-0,MY26:2-0,MY27:2-0,MY28:2-0,MY29:2-0,MY30:2-0,MY31:2-0,MY32:2-0,MY33:2-1,MY34:2-5,MY35:2-5,MY36:2-5",
+    "url": "https://www-mars.lmd.jussieu.fr/mars/dust_climatology/",
+    "licence": "CC BY-SA 3.0",
+    "citation": "Montabone, L., et al. (2015) Eight-year climatology of dust optical depth on Mars, Icarus 251, 65-95; Montabone, L., et al. (2020) Martian Year 34 column dust climatology from MCS observations, JGR Planets. Data CC BY-SA 3.0, LMD / Mars Climate Database.",
+    "time_standard": "Martian years (669 sols)"
+  },
+  "window": {
+    "start": 24,
+    "end": 36,
+    "n": 13,
+    "step": "annual",
+    "aggregation": "annual input"
+  },
+  "params": {
+    "alpha": 0.05,
+    "fdr_q": 0.1,
+    "delta_sigma_per_decade": 2.0,
+    "delta_per_decade": null,
+    "delta_source": "sigma",
+    "memory_hurst": 0.7,
+    "min_valid_years": 10,
+    "min_months": 9
+  },
+  "detectability": {
+    "cells": 7200,
+    "n_years": 13,
+    "share_detectable_now": 0.0,
+    "share_needs_more_than_60_years": 0.0,
+    "years_more_p50": 5.0,
+    "years_more_p90": 20.0,
+    "not_yet_knowable": 7027,
+    "note": "MDE <= delta: a change of size delta would have been detected with >= 80 % power (noise model)."
+  },
+  "methods": [
+    "MK-VC",
+    "TFPW-WS",
+    "OLS-AR1"
+  ],
+  "verdict_codes": {
+    "0": "INSUFICIENTE",
+    "1": "PROBADO",
+    "2": "CANDIDATA",
+    "3": "NO_CONCLUYENTE",
+    "4": "SIN_CAMBIO_MAYOR_QUE_DELTA"
+  },
+  "flag_bits": {
+    "1": "depende_del_metodo",
+    "2": "cambio_de_version",
+    "4": "cobertura_baja",
+    "8": "resolucion_gruesa",
+    "16": "reconstruccion",
+    "32": "simulado",
+    "64": "autocorrelacion_alta",
+    "128": "quiebre_posible"
+  },
+  "summary": {
+    "cells_valid": 7200,
+    "naive_marked": 443,
+    "ebh_discoveries": 0,
+    "probado_robusto_memoria": 0,
+    "bh_discoveries": 0,
+    "quiebre_posible": 2511,
+    "insuficiente": 0,
+    "probado": 0,
+    "candidata": 173,
+    "no_concluyente": 7027,
+    "sin_cambio_mayor_que_delta": 0
+  },
+  "calibration": {
+    "note": "NOT calibrated: the simulations cover n >= 15 years; with n = 13 the MDE and the error rates are optimistic, treat PROBADO as provisional."
+  },
+  "honesty": {
+    "data_real": true,
+    "simulated": false,
+    "label_es": "Datos reales: Mars Climate Database dust climatology (Montabone et al.), kriged daily maps",
+    "label_en": "Real data: Mars Climate Database dust climatology (Montabone et al.), kriged daily maps"
+  },
+  "warnings": [
+    "El eje de tiempo son AÑOS MARCIANOS: «por década» = por 10 años marcianos (≈ 18.8 años terrestres).",
+    "Mapas reconstruidos (kriging) a partir de TES, THEMIS y MCS: el dato no es una medición directa de cada celda.",
+    "Solo 13 años marcianos: menos de los 15 con que se midió la tabla del MDE (se usa el factor de n = 15, optimista).",
+    "MY24 es parcialmente un escenario (promedio de MY25-26 en Ls 0-105)."
+  ],
+  "build": {
+    "hori": "0.0.1",
+    "python": "3.14.8",
+    "numpy": "2.5.4",
+    "seed": 247,
+    "input_sha256": "876c3b461c3c01786d74892df0400ba8518bc97193721f131cf2b50f0cbb2fb1",
+    "created_at": "2026-11-15T04:44:36Z"
+  },
+  "profile_spec": {
+    "id": "auto.desconocida.cdod610",
+    "version": "auto-1",
+    "body": "mars",
+    "mode": "trend",
+    "variables": [
+      "cdod610"
+    ],
+    "unit": "Pa/Pa",
+    "aggregation": {
+      "step": "annual",
+      "method": "mean_monthly_anomaly",
+      "min_months": 9
+    },
+    "delta_per_decade": null,
+    "delta_rationale": "Automático: δ = 2 σ por década, porque la variable no está en la tabla de clases físicas.",
+    "review": "automatico",
+    "methods": [
+      "MK-VC",
+      "TFPW-WS",
+      "OLS-AR1"
+    ],
+    "name": {
+      "es": "IR absorption CDOD normalized to the reference pressure of 610 Pa",
+      "en": "IR absorption CDOD normalized to the reference pressure of 610 Pa"
+    },
+    "physical_class": null,
+    "decisions": [
+      "Clase física desconocida (units = 'Pa/Pa' no corresponde a ninguna clase física curada): δ = 2·σ interanual de cada celda (DELTA_AUTOMATICO).",
+      "Agregación anual = media de anomalías mensuales (≥ 9 de 12 meses), coherente con cell_methods = 'time: mean'.",
+      "Medido en los datos: 0.0% de meses en cero, 0.0% en los límites válidos, 0.0% de años con media cero.",
+      "Tras correr: σ interanual mediana 0.0383, φ̂ mediana 0.0435, MDE mediano 0.1448 Pa/Pa/década frente a δ 0.0766."
+    ],
+    "flags": [
+      "DELTA_AUTOMATICO",
+      "CLASE_DESCONOCIDA"
+    ],
+    "measured": {
+      "sigma_median": 0.0383,
+      "r1_median": 0.0435,
+      "mde_median": 0.1448,
+      "delta_used_median": 0.0766
+    },
+    "catalog_version": "auto-1"
+  },
+  "title": {
+    "es": "cdod610",
+    "en": "cdod610"
+  },
+  "arrays": {
+    "effect": {
+      "file": "effect.f32",
+      "dtype": "f32"
+    },
+    "ci_lo": {
+      "file": "ci_lo.f32",
+      "dtype": "f32"
+    },
+    "ci_hi": {
+      "file": "ci_hi.f32",
+      "dtype": "f32"
+    },
+    "sigma": {
+      "file": "sigma.f32",
+      "dtype": "f32"
+    },
+    "r1": {
+      "file": "r1.f32",
+      "dtype": "f32"
+    },
+    "p_cons": {
+      "file": "p_cons.f32",
+      "dtype": "f32"
+    },
+    "q_cons": {
+      "file": "q_cons.f32",
+      "dtype": "f32"
+    },
+    "mde": {
+      "file": "mde.f32",
+      "dtype": "f32"
+    },
+    "years_more": {
+      "file": "years_more.f32",
+      "dtype": "f32"
+    },
+    "verdict": {
+      "file": "verdict.u8",
+      "dtype": "u8"
+    },
+    "flags": {
+      "file": "flags.u8",
+      "dtype": "u8"
+    },
+    "nvalid": {
+      "file": "nvalid.u8",
+      "dtype": "u8"
+    },
+    "nsig_methods": {
+      "file": "nsig_methods.u8",
+      "dtype": "u8"
+    },
+    "naive_sig": {
+      "file": "naive_sig.u8",
+      "dtype": "u8"
+    },
+    "delta": {
+      "file": "delta.f32",
+      "dtype": "f32"
+    },
+    "e_cons": {
+      "file": "e_cons.f32",
+      "dtype": "f32"
+    },
+    "ebh_sig": {
+      "file": "ebh_sig.u8",
+      "dtype": "u8"
+    },
+    "robust_mem": {
+      "file": "robust_mem.u8",
+      "dtype": "u8"
+    },
+    "break_year": {
+      "file": "break_year.f32",
+      "dtype": "f32"
+    }
+  },
+  "series": {
+    "file": "series.f32",
+    "dtype": "f32",
+    "shape": [
+      "cells",
+      "n"
+    ],
+    "years": [
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36
+    ]
+  }
+}

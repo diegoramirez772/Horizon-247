@@ -9,7 +9,7 @@ Hamed (2008) keeps the Mann-Kendall statistic S and replaces its variance by the
 
 H = 0.5 reproduces the classical n(n-1)(2n+5)/18 exactly (checked in the tests).
 
-What HORI does with it, and why (measured in sim/, see docs/MODEL_CARD.md):
+What HORI does with it, and why (measured in sim/, see the team model card):
   * H is NOT estimated per cell. Maximum likelihood on 24-45 annual values is biased LOW when the memory is real
     (true H = 0.8 gave a mean estimate of 0.60 at n = 24 and 0.67 at n = 45: the Sen detrending absorbs the slow wander), so
     an estimated-H test barely changes the verdict. Trend and long memory are not separable with so few years.

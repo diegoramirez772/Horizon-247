@@ -151,6 +151,39 @@ describe("hand state machine", () => {
     expect(all.some((e) => e.type === "dragEnd")).toBe(true);
     expect(all.some((e) => e.type === "tap")).toBe(false);
   });
+  // Open palm: every finger straight up from the wrist, thumb out to the side. `dx` shifts the whole hand.
+  function palm(dx: number): Hand {
+    const h: Hand = Array.from({ length: 21 }, () => ({ x: 0.5 + dx, y: 0.6 }));
+    h[0] = { x: 0.5 + dx, y: 0.9 }; h[9] = { x: 0.5 + dx, y: 0.7 }; h[5] = { x: 0.46 + dx, y: 0.7 };
+    for (const [tip, pip, x] of [[8, 6, 0.46], [12, 10, 0.5], [16, 14, 0.54], [20, 18, 0.58]] as const) {
+      h[pip] = { x: x + dx, y: 0.6 }; h[tip] = { x: x + dx, y: 0.45 };
+    }
+    h[2] = { x: 0.4 + dx, y: 0.8 }; h[3] = { x: 0.35 + dx, y: 0.76 }; h[4] = { x: 0.3 + dx, y: 0.72 };
+    return h;
+  }
+  function fist(dx: number): Hand {
+    const h: Hand = Array.from({ length: 21 }, () => ({ x: 0.5 + dx, y: 0.75 }));
+    h[0] = { x: 0.5 + dx, y: 0.9 }; h[9] = { x: 0.5 + dx, y: 0.7 }; h[5] = { x: 0.46 + dx, y: 0.7 };
+    for (const [tip, pip] of [[8, 6], [12, 10], [16, 14], [20, 18]] as const) { h[pip] = { x: 0.5 + dx, y: 0.66 }; h[tip] = { x: 0.5 + dx, y: 0.76 }; }
+    h[2] = { x: 0.46 + dx, y: 0.8 }; h[3] = { x: 0.47 + dx, y: 0.75 }; h[4] = { x: 0.49 + dx, y: 0.72 };
+    return h;
+  }
+  it("a still open palm held 1 s goes back; a moving palm never does", () => {
+    const still = new GestureMachine(undefined, false);
+    let ev = [] as ReturnType<GestureMachine["step"]>;
+    for (let t = 0; t <= 1200; t += 100) ev = ev.concat(still.step([palm(0)], t));
+    expect(ev.some((e) => e.type === "back")).toBe(true);
+    const moving = new GestureMachine(undefined, false);
+    let ev2 = [] as ReturnType<GestureMachine["step"]>;
+    for (let t = 0, i = 0; t <= 3000; t += 100, i++) ev2 = ev2.concat(moving.step([palm(-0.15 + i * 0.012)], t)); // the hand travels across the image
+    expect(ev2.some((e) => e.type === "back")).toBe(false);
+  });
+  it("a fist freezes the pointer and the hand continues from there", () => {
+    const g = new GestureMachine(undefined, false);
+    const p0 = g.step([hand(0.5, 0.4, false)], 0).find((e) => e.type === "pointer");
+    const f = g.step([fist(0.2)], 100).find((e) => e.type === "pointer");
+    expect(f && p0 && f.type === "pointer" && p0.type === "pointer" ? [f.x, f.pose] : null).toEqual([p0 && p0.type === "pointer" ? p0.x : -1, "fist"]);
+  });
   it("losing the hand ends a drag", () => {
     const g = new GestureMachine(undefined, false);
     g.step([hand(0.5, 0.4, true)], 0);

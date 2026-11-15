@@ -4,7 +4,7 @@
 Data: data/cocorahs/cm_all.csv (public CSV of the CoCoRaHS condition-monitoring map; volunteers pick a scale from
 «Severely Dry» to «Severely Wet» and write what they see). Instrument: NASA POWER PRECTOTCORR (cache, offline), rain
 accumulated over the 3 months ending in the report's month, as a robust z against the same months of previous years.
-Questions answered with numbers (docs/MODEL_CARD.md 3.16):
+Questions answered with numbers (the team model card 3.16):
   1. How often does ONE citizen report agree with the satellite record? (and how often by pure chance?)
   2. Does agreement grow with the number of INDEPENDENT reporters in the same place and month? -> the swarm thresholds
   3. How good is the keyword classifier (no language model) at reading «dry / wet» from the free text?

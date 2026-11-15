@@ -2,7 +2,7 @@
 
     PYTHONPATH=packages/hori/src python3 sim/longmemory_marker.py
 Per-cell rates at alpha = 0.05 (no FDR): `all3` = the three voting tests agree; `robust(H)` = all3 AND Mann-Kendall z shrunk to the
-variance of fGn(H) is still significant. Numbers are in docs/MODEL_CARD.md section 3.10.
+variance of fGn(H) is still significant. Numbers are in the team model card section 3.10.
 """
 import numpy as np
 from hori.longmemory import mk_variance, fgn_acf

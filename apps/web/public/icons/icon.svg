@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <radialGradient id="sphere" cx="36%" cy="30%" r="78%"><stop offset="0" stop-color="#B9C3D3"/><stop offset="0.28" stop-color="#5B6577"/><stop offset="0.62" stop-color="#1A1E27"/><stop offset="1" stop-color="#05060A"/></radialGradient>
+    <radialGradient id="atmo" cx="50%" cy="50%" r="50%"><stop offset="0.78" stop-color="#8FB8FF" stop-opacity="0"/><stop offset="0.9" stop-color="#8FB8FF" stop-opacity="0.55"/><stop offset="1" stop-color="#8FB8FF" stop-opacity="0"/></radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.15"/><stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.95"/><stop offset="1" stop-color="#CFE0FF" stop-opacity="0.5"/></linearGradient>
+    <clipPath id="ball"><circle cx="32" cy="32" r="19"/></clipPath>
+    <clipPath id="front"><rect x="-10" y="32" width="84" height="40" transform="rotate(-16 32 32)"/></clipPath>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6"/></filter>
+  </defs>
+  <rect width="64" height="64" fill="#0A0A0A"/>
+  <g transform="translate(32 32) scale(0.78) translate(-32 -32)">
+    <circle cx="32" cy="32" r="23.5" fill="url(#atmo)"/>
+    <ellipse cx="32" cy="32" rx="29" ry="9" transform="rotate(-16 32 32)" stroke="#9AA6BA" stroke-opacity="0.45" stroke-width="1.4"/>
+    <circle cx="32" cy="32" r="19" fill="url(#sphere)"/>
+    <g clip-path="url(#ball)" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="0.8">
+      <ellipse cx="32" cy="32" rx="19" ry="6"/><ellipse cx="32" cy="24" rx="16" ry="4.2"/><ellipse cx="32" cy="40" rx="16" ry="4.2"/><ellipse cx="32" cy="32" rx="7" ry="19"/><ellipse cx="32" cy="32" rx="14" ry="19"/>
+    </g>
+    <ellipse cx="25" cy="22" rx="6" ry="3.6" transform="rotate(-30 25 22)" fill="#FFFFFF" opacity="0.28" filter="url(#glow)"/>
+    <ellipse cx="32" cy="32" rx="29" ry="9" transform="rotate(-16 32 32)" stroke="url(#ring)" stroke-width="1.8" clip-path="url(#front)"/>
+    <circle cx="54.5" cy="31.2" r="4" fill="#CFE0FF" opacity="0.7" filter="url(#glow)"/>
+    <circle cx="54.5" cy="31.2" r="2.3" fill="#FFFFFF"/>
+  </g>
+</svg>

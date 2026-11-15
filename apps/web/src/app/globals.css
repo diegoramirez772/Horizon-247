@@ -24,6 +24,13 @@
   --glass: rgba(255, 255, 255, 0.86);
   --shadow: 0 10px 40px rgba(16, 24, 40, 0.14);
   --horizon-glow: rgba(96, 140, 210, 0.28);
+  /* Data colours for charts inside the conversation (never for buttons): warmer / cooler than normal, and levels. */
+  --warm: #C8323F;
+  --cool: #2F6FD0;
+  --lvl-ok: #2E8B57;
+  --lvl-watch: #C98A00;
+  --lvl-danger: #D9541E;
+  --lvl-critical: #B0122B;
   color-scheme: light;
 }
 
@@ -47,6 +54,12 @@
   --glass: rgba(20, 20, 20, 0.82);
   --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   --horizon-glow: rgba(150, 180, 230, 0.16);
+  --warm: #FF6B6B;
+  --cool: #6FA8FF;
+  --lvl-ok: #4CC38A;
+  --lvl-watch: #F2B632;
+  --lvl-danger: #FF8A4C;
+  --lvl-critical: #FF5470;
   color-scheme: dark;
 }
 
@@ -66,6 +79,12 @@
   --color-no-change: var(--no-change);
   --color-sim: var(--sim);
   --color-on-sim: var(--on-sim);
+  --color-warm: var(--warm);
+  --color-cool: var(--cool);
+  --color-lvl-ok: var(--lvl-ok);
+  --color-lvl-watch: var(--lvl-watch);
+  --color-lvl-danger: var(--lvl-danger);
+  --color-lvl-critical: var(--lvl-critical);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -127,4 +146,34 @@ body {
 /* Range input in the accent colour. */
 input[type="range"] {
   accent-color: var(--accent);
+}
+
+/* «En vivo»: a small pulsing dot next to anything fetched right now. */
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 4px;
+  border-radius: 999px;
+  background: var(--lvl-critical);
+  vertical-align: 1px;
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-dot { animation: none; }
+}
+/* Generative components appear with a short rise, one after the other. */
+.widget-in {
+  animation: widget-rise 0.38s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes widget-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .widget-in { animation: none; }
 }

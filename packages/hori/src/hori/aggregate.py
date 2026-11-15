@@ -1,4 +1,4 @@
-"""Steps 1-2: aggregation to annual anomalies and per-cell filtering (docs/SPEC.md section 2)."""
+"""Steps 1-2: aggregation to annual anomalies and per-cell filtering (the team method spec section 2)."""
 from __future__ import annotations
 
 import warnings

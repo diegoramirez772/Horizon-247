@@ -2,7 +2,7 @@
 
     PYTHONPATH=packages/hori/src python3 sim/anomaly_calibration.py [reps]
 Streams: seasonal cycle (amplitude 5 sigma) + AR(1) noise (phi 0, 0.3, 0.6) or Student-t(5) noise (heavy tails).
-Everything is measured on the pipeline exactly as hori.anomaly.detect runs it. Results -> docs/MODEL_CARD.md 3.13.
+Everything is measured on the pipeline exactly as hori.anomaly.detect runs it. Results -> the team model card 3.13.
 """
 import sys
 

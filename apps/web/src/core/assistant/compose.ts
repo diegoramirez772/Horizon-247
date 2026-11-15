@@ -1,15 +1,21 @@
 // Builds the assistant's answer cards (doc 01 §4: action → narration ≤ 2 sentences → origin + «Ver evidencia» → 2–3 chips).
 // Every number comes from the bundle; verdict sentences are the contract's (SPEC §5, §8.5) through verdictText.
-// Each card is written in both languages and both registers, so switching ES/EN or Sencillo/Experto
+// Each card is written in both languages and all three registers, so switching ES/EN or Simple/Normal/Experto
 // re-reads the whole conversation without losing your place (doc 01 §5).
 
 import type { CellFinding, Verdict } from "@/contract/types";
 import { entryWindow, siblings, type IndexEntry, type RegionGeo } from "@/core/contract/extra";
 import { cellFinding, type Layer } from "@/core/contract/loader";
-import { capitalise, count, digitsFor, num, shortLabel, templateValues } from "@/core/format/format";
-import { LEGEND, UI, verdictName, verdictText, type Lang, type Register } from "@/core/i18n/texts";
+import { capitalise, count, deltaValue, digitsFor, num, shortLabel, templateValues } from "@/core/format/format";
+import { narrateTrend, planetAverage, type TrendFacts } from "@/core/nlg/realize";
+import { topicAnswer, type Widget } from "@/core/genui/topic";
+import type { Where } from "@/core/genui/places";
+import { LAYERS } from "@/core/map/imagery";
+import { certaintyText } from "@/core/honesty/calibration";
+import { limitsFor, type Limit } from "@/core/honesty/limits";
+import { LEGEND, REGISTERS, UI, verdictName, verdictText, type Lang, type Register } from "@/core/i18n/texts";
 import type { AppState, Selection } from "@/core/state/store";
-import type { Command } from "./parse";
+import type { Command, Topic } from "./parse";
 
 /** «zon»: a record or an operation of the ZON runtime (monitors, alerts, reports), not a HORI calculation (H20). */
 export type Origin = "hori" | "sim" | "ui" | "zon";
@@ -34,6 +40,10 @@ export interface Card {
    * the layer on screen changes): verdict, effect per decade and the yearly series for a sparkline.
    */
   figure?: Figure;
+  /** What the answer cannot tell, in the fixed order of doc v2 §3.1 (the screen shows 1 / 3 / all by level). */
+  limits?: Limit[];
+  /** Generative interface: components built for the topic of the question (clima, ganado, astronauta, Marte…). */
+  widgets?: Widget[];
 }
 
 export interface Figure {
@@ -68,17 +78,17 @@ export interface Ctx {
 export type CardKind =
   | "greet" | "area" | "summary" | "detect" | "compare" | "contrast" | "legend" | "provenance" | "help"
   | "advice" | "cause" | "unknown1" | "unknown2" | "unknown3" | "noSelection" | "year" | "accumulated"
-  | "undo" | "profile" | "noWindow" | "loading" | "done" | "filter" | "world";
+  | "undo" | "profile" | "noWindow" | "loading" | "done" | "filter" | "world" | "level" | "certainty" | "imagery" | "evolution" | "scene" | "zone";
 
 const LANGS: Lang[] = ["es", "en"];
-const REGS: Register[] = ["sencillo", "tecnico"];
+const REGS: Register[] = REGISTERS;
 
 let nextId = 1;
 
 type Txt = { action?: string | null; text: string };
 
 function both(f: (lang: Lang, reg: Register) => Txt): Pick<Card, "action" | "text"> {
-  const text = { es: { sencillo: "", tecnico: "" }, en: { sencillo: "", tecnico: "" } } as Card["text"];
+  const text = { es: { sencillo: "", normal: "", tecnico: "" }, en: { sencillo: "", normal: "", tecnico: "" } } as Card["text"];
   let action: Card["action"] = null;
   for (const lang of LANGS) for (const reg of REGS) {
     const r = f(lang, reg);
@@ -107,6 +117,7 @@ const C = {
   summary: chip(L("Resumen del mapa", "Map summary"), { t: "summary" }),
   contrast: chip(L("Ingenuo vs. corregido", "Naive vs. corrected"), { t: "contrast" }),
   accumulated: chip(L("Ver la evidencia acumulada", "Show accumulated evidence"), { t: "accumulated", end: null }),
+  certainty: chip(L("¿Qué tan seguro es?", "How sure is it?"), { t: "certainty" }),
   help: chip(L("¿Qué puedes hacer?", "What can you do?"), { t: "help" }),
 };
 
@@ -133,7 +144,7 @@ function coord(lat: number, lon: number, lang: Lang): string {
   return `${num(Math.abs(lat), lang, 1)}° ${ns}, ${num(Math.abs(lon), lang, 1)}° ${ew}`;
 }
 
-interface Reading { finding: CellFinding; nvalid: number | null; N: number; name: Record<Lang, string>; selection: Exclude<Selection, null> }
+export interface Reading { finding: CellFinding; nvalid: number | null; N: number; name: Record<Lang, string>; selection: Exclude<Selection, null>; nCells: number }
 
 export function readSelection(ctx: Ctx, sel: Selection = ctx.state.selection): Reading | null {
   const layer = ctx.layer;
@@ -144,7 +155,7 @@ export function readSelection(ctx: Ctx, sel: Selection = ctx.state.selection): R
     const f = cellFinding(layer, sel.index);
     const nv = layer.arrays.nvalid;
     return {
-      finding: f, nvalid: nv ? nv[sel.index] : null, N: m.summary.cells_valid ?? NaN, selection: sel,
+      finding: f, nvalid: nv ? nv[sel.index] : null, N: m.summary.cells_valid ?? NaN, selection: sel, nCells: 1,
       name: { es: `la zona ${coord(f.lat, f.lon, "es")}`, en: `the area ${coord(f.lat, f.lon, "en")}` },
     };
   }
@@ -152,13 +163,22 @@ export function readSelection(ctx: Ctx, sel: Selection = ctx.state.selection): R
   const rl = region?.layers[m.id];
   if (!region || !rl) return null;
   return {
-    selection: sel, nvalid: null, N: ctx.regions.length,
+    selection: sel, nvalid: null, N: ctx.regions.length, nCells: rl.n_cells,
     name: { es: short(region.name.es), en: short(region.name.en) },
     finding: {
       index: -1, lat: NaN, lon: NaN, effect: rl.effect, ci: rl.ci, sigma: NaN, r1: NaN, p: rl.pCons, q: rl.qRegions,
       mde: rl.mde, yearsMore: rl.yearsMore, verdict: rl.verdict, flags: rl.flags, nSig: 0, naiveSig: false, series: rl.series,
     },
   };
+}
+
+/** The limits of one reading (doc v2 §3): flags of the finding + source facts + scale. */
+export function readingLimits(ctx: Ctx, r: Reading): Limit[] {
+  const m = ctx.layer!.manifest;
+  return limitsFor({
+    flags: r.finding.flags, verdict: r.finding.verdict, simulated: m.honesty.simulated, resolutionDeg: m.grid.native_resolution_deg,
+    nCells: r.nCells, lat: r.selection.kind === "cell" ? r.finding.lat : undefined, datasetName: m.dataset.name,
+  });
 }
 
 function originOf(ctx: Ctx): Origin {
@@ -171,23 +191,93 @@ function showing(ctx: Ctx, lang: Lang, place?: string): string {
   return [capitalise(shortLabel(m, lang)), place ? capitalise(place) : null, `${m.window.start}–${m.window.end}`].filter(Boolean).join(" · ");
 }
 
+// Planet average of a grid layer, computed once per layer (it does not change while the layer is on screen).
+const planetMemo = new WeakMap<Layer, number | null>();
+function planetOf(layer: Layer): number | null {
+  if (!planetMemo.has(layer)) {
+    const g = layer.manifest.grid;
+    // Only a layer that covers the planet has a «planet average»; a box over one state does not.
+    const global = g.nlat * Math.abs(g.dlat) > 150 && g.nlon * Math.abs(g.dlon) > 300;
+    const { effect, verdict } = layer.arrays;
+    planetMemo.set(layer, global && effect && verdict ? planetAverage(effect, verdict, g.lat0, g.dlat, g.nlat, g.nlon) : null);
+  }
+  return planetMemo.get(layer)!;
+}
+
+/** The facts of one reading, as the language generator needs them (every value from the bundle). */
+export function trendFacts(ctx: Ctx, r: Reading, lang: Lang): TrendFacts {
+  const layer = ctx.layer!;
+  const m = layer.manifest;
+  const f = r.finding;
+  return {
+    place: r.name[lang], variable: m.variable.name, unit: m.variable.unit, verdict: f.verdict, effect: f.effect,
+    lo: f.ci[0] ?? NaN, hi: f.ci[1] ?? NaN, mde: f.mde, delta: deltaValue(m, f), yearsMore: f.yearsMore ?? NaN,
+    nYears: r.nvalid ?? m.window.n, start: m.window.start, end: m.window.end,
+    planet: r.selection.kind === "cell" ? planetOf(layer) : null,
+  };
+}
+
 function sentence(ctx: Ctx, r: Reading, lang: Lang, reg: Register, v: Verdict = r.finding.verdict): string {
+  // Simple and Normal: the generator writes it in plain words (Plan de unión D4). Experto keeps the contract wording.
+  if (reg !== "tecnico" && v === r.finding.verdict) return narrateTrend(trendFacts(ctx, r, lang), lang, reg === "normal");
   const tv = templateValues(ctx.layer!.manifest, r.finding, r.nvalid, lang, reg, r.N);
   return capitalise(verdictText(v, reg, lang, tv));
 }
 
 // ---------------------------------------------------------------- the cards
 
+function allRegs(t: Record<Lang, string>): Card["text"] {
+  return { es: { sencillo: t.es, normal: t.es, tecnico: t.es }, en: { sencillo: t.en, normal: t.en, tecnico: t.en } };
+}
+
+const TOPIC_CHIPS: Record<Topic, Chip[]> = {
+  clima: [
+    chip(L("¿Cómo está el ganado aquí?", "How is the livestock here?"), { t: "topic", topic: "ganado", where: null }),
+    chip(L("Infrarrojo en vivo", "Live infrared"), { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }),
+  ],
+  ganado: [
+    chip(L("¿Qué cambió en el clima de aquí?", "What changed in the climate here?"), { t: "area" }),
+    chip(L("Eventos cerca", "Events nearby"), { t: "topic", topic: "eventos", where: null }),
+  ],
+  astronauta: [chip(L("¿Y Marte?", "And Mars?"), { t: "topic", topic: "marte", where: null })],
+  marte: [chip(L("Marte en 3D", "Mars in 3D"), { t: "scene", where: null, timeline: false, preset: "marte" }), chip(L("Otros planetas", "Other planets"), { t: "topic", topic: "planetas", where: null }), chip(L("Volver a la Tierra", "Back to Earth"), { t: "summary" })],
+  planetas: [chip(L("Polvo en Marte", "Dust on Mars"), { t: "topic", topic: "marte", where: null }), chip(L("Monitoreo de astronautas", "Astronaut monitoring"), { t: "topic", topic: "astronauta", where: null })],
+  red: [chip(L("Eventos naturales de la NASA", "NASA natural events"), { t: "topic", topic: "eventos", where: null })],
+  eventos: [
+    chip(L("Infrarrojo en vivo", "Live infrared"), { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }),
+    chip(L("Clima en Durango", "Weather in Durango"), { t: "topic", topic: "clima", where: { name: "Durango", lat: 24.02, lon: -104.67 } }),
+  ],
+};
+
+/**
+ * An answer that builds its own interface (Plan de unión U3). For clima and ganado, when the layer on screen
+ * covers the place, HORI's long-term reading is added to the text and the figure (the «now» and the «trend» together).
+ */
+export function topicCard(topic: Topic, where: Where | null, ctx: Ctx, source: Source, draft: string | null = null): Card {
+  const a = topicAnswer(topic, where, draft);
+  const r = (topic === "clima" || topic === "ganado") && ctx.state.selection?.kind === "cell" ? readSelection(ctx) : null;
+  const text = { es: { sencillo: "", normal: "", tecnico: "" }, en: { sencillo: "", normal: "", tecnico: "" } } as Card["text"];
+  for (const lang of LANGS) for (const reg of REGS) {
+    const trend = r ? ` ${lang === "es" ? "Y a largo plazo:" : "And in the long run:"} ${narrateTrend({ ...trendFacts(ctx, r, lang), place: where?.name ?? r.name[lang] }, lang, reg !== "sencillo")}` : "";
+    text[lang][reg] = a.text[lang] + trend;
+  }
+  return {
+    id: nextId++, kind: `topic:${topic}`, source, correctable: source === "user", action: a.action, text, origin: a.origin,
+    evidence: r ? { layerId: ctx.layer!.manifest.id, selection: r.selection } : null,
+    figure: r ? figureOf(ctx, r) : undefined, widgets: a.widgets, chips: TOPIC_CHIPS[topic],
+  };
+}
+
 export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { correctable?: boolean } = {}): Card {
   const base = { id: nextId++, kind, source, correctable: !!extra.correctable && source === "user" };
   const ui = (es: string, en: string, list: Chip[], action: Record<Lang, string> | null = null): Card => ({
     ...base, origin: "ui", evidence: null, chips: list, action,
-    text: { es: { sencillo: es, tecnico: es }, en: { sencillo: en, tecnico: en } },
+    text: { es: { sencillo: es, normal: es, tecnico: es }, en: { sencillo: en, normal: en, tecnico: en } },
   });
   const m = ctx.layer?.manifest;
   const sib = hasSiblings(ctx);
 
-  if (!m && !["help", "advice", "cause", "profile", "done"].includes(kind) && !kind.startsWith("unknown")) {
+  if (!m && !["help", "advice", "cause", "profile", "done", "level", "certainty"].includes(kind) && !kind.startsWith("unknown")) {
     return ui("Cargando capa…", "Loading layer…", []);
   }
 
@@ -198,9 +288,10 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
       if (!r) return compose("summary", ctx, source, extra);
       return {
         ...base, origin: originOf(ctx), evidence: { layerId: m!.id, selection: r.selection }, figure: figureOf(ctx, r),
+        limits: readingLimits(ctx, r),
         ...both((lang, reg) => ({ action: showing(ctx, lang, r.name[lang]), text: sentence(ctx, r, lang, reg) })),
         chips: r.finding.verdict === 1
-          ? chips(ctx, sib && C.compare, C.data, C.legend)
+          ? chips(ctx, sib && C.compare, C.certainty, C.data)
           : chips(ctx, C.detect, sib && C.compare, C.legend),
       };
     }
@@ -224,6 +315,7 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
       const n = m!.window.n;
       return {
         ...base, origin: originOf(ctx), evidence: { layerId: m!.id, selection: r.selection }, figure: figureOf(ctx, r),
+        limits: readingLimits(ctx, r),
         ...both((lang, reg) => {
           const mde = Number.isFinite(f.mde) ? `${num(f.mde, lang, digitsFor(reg, f.mde))} ${m!.variable.unit}` : "—";
           let text: string;
@@ -298,16 +390,17 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
         ...base, origin: originOf(ctx), evidence: null,
         ...both((lang, reg) => ({
           action: showing(ctx, lang),
-          text: `${lang === "es" ? m!.honesty.label_es : m!.honesty.label_en}. ${d.name} · ${d.provider} · ${d.version}${reg === "tecnico" ? ` · ${m!.grid.native_resolution_deg}° · ${m!.methods.join(", ")} · α = ${m!.params.alpha} · FDR q = ${m!.params.fdr_q}` : ""}.`,
+          text: `${lang === "es" ? m!.honesty.label_es : m!.honesty.label_en}. ${d.name} · ${d.provider} · ${d.version}${reg === "sencillo" ? ""
+            : ` · ${m!.grid.native_resolution_deg}° (~${Math.round(m!.grid.native_resolution_deg * 111.32)} km)`}${reg === "tecnico" ? ` · ${m!.methods.join(", ")} · α = ${m!.params.alpha} · FDR q = ${m!.params.fdr_q}` : ""}.`,
         })),
         chips: chips(ctx, C.contrast, C.summary, C.legend),
       };
     }
     case "help":
       return ui(
-        "Muestro qué cambia, dónde, cuánto y si ya se puede saber, con datos de la NASA. No doy consejos ni explico por qué ocurre un cambio. Puedes escribir, hablar o tocar el mapa.",
-        "I show what changes, where, how much and whether it is knowable yet, with NASA data. I don't give advice or explain why a change happens. You can type, speak or tap the map.",
-        chips(ctx, placeChip(ctx) ?? C.summary, C.detect, C.legend),
+        "Muestro qué cambia, dónde, cuánto y si ya se puede saber, con datos de la NASA. No doy consejos ni explico por qué ocurre un cambio. También te muestro lo último que midió la NASA en un lugar, el estrés por calor del ganado, los eventos naturales abiertos, el infrarrojo en vivo, el polvo de Marte y un monitoreo de astronautas (simulado). Puedes escribir, hablar o tocar el globo.",
+        "I show what changes, where, how much and whether it is knowable yet, with NASA data. I don't give advice or explain why a change happens. I can also show the latest NASA measurements at a place, livestock heat stress, open natural events, live infrared, Mars dust and a (simulated) astronaut monitor. You can type, speak or tap the globe.",
+        [chip(L("La evolución de la Tierra", "How Earth has changed"), { t: "evolution" }), chip(L("Durango en 3D", "Durango in 3D"), { t: "scene", where: null, timeline: true }), chip(L("¿Cómo está el ganado en Durango?", "How is the livestock in Durango?"), { t: "topic", topic: "ganado", where: null }), chip(L("¿Qué está pasando en el mundo?", "What is happening in the world?"), { t: "topic", topic: "eventos", where: null })],
       );
     case "advice":
       return ui("No doy consejos. Sí puedo mostrar qué cambió en tu zona y con qué datos.", "I don't give advice. I can show what changed in your area and with what data.",
@@ -361,6 +454,86 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
     }
     case "world":
       return compose("summary", ctx, source, extra);
+    case "imagery": {
+      const l = LAYERS.find((x) => x.id === ctx.state.imagery);
+      const others = LAYERS.filter((x) => x.live && x.id !== l?.id);
+      return {
+        ...base, origin: "zon", evidence: null,
+        action: L("Monitoreo · imagen en vivo", "Monitoring · live imagery"),
+        text: allRegs(l
+          ? L(`Puse en el globo: ${l.title}. Es la imagen más reciente de la NASA (cada 10 minutos, con unos 30 de retraso). ${l.caveat ?? ""}`.trim(),
+            `On the globe now: ${l.title}. It is NASA's latest image (every 10 minutes, about 30 behind). ${l.caveat ?? ""}`.trim())
+          : L("Volví a la vista base (Blue Marble).", "Back to the base view (Blue Marble).")),
+        chips: [
+          ...others.slice(0, 2).map((x) => chip(L(x.title.replace("Infrarrojo en vivo · ", "Infrarrojo · "), x.title), { t: "imagery", layer: x.id })),
+          chip(L("¿Qué está pasando en el mundo?", "What is happening in the world?"), { t: "topic", topic: "eventos", where: null }),
+        ],
+      };
+    }
+    case "zone": {
+      const z = ctx.state.zone ?? { name: "Durango", lat: 24.02, lon: -104.67 };
+      return {
+        ...base, origin: "zon", evidence: null, action: L("Monitoreo · zona en 3D real", "Monitoring · real 3D zone"),
+        text: allRegs(L(
+          `Abrí ${z.name} en 3D real: el relieve medido y la imagen de satélite Sentinel-2 (10 m), 12 × 12 km. No es generado. Gíralo arrastrando; si quieres ver cómo se vería con sus datos de clima, abre la escena generada.`,
+          `I opened ${z.name} in real 3D: measured relief and Sentinel-2 satellite imagery (10 m), 12 × 12 km. Nothing is generated. Drag to turn it; to see it with its climate data, open the generated scene.`)),
+        chips: [chip(L("Escena generada con línea de tiempo", "Generated scene with timeline"), { t: "scene", where: { name: z.name, lat: z.lat, lon: z.lon }, timeline: true })],
+      };
+    }
+    case "scene": {
+      const sc = ctx.state.scene;
+      if (sc?.preset) {
+        const what = sc.preset === "marte" ? L("Marte", "Mars") : L("la Luna", "the Moon");
+        return {
+          ...base, origin: "zon", evidence: null, action: L("Monitoreo · escena 3D", "Monitoring · 3D scene"),
+          text: allRegs(L(`Abrí la escena 3D de ${what.es}. Mueve las barras (polvo, viento, hora) y la escena se rehace al momento; es una ilustración, no una foto.`,
+            `I opened the 3D scene of ${what.en}. Move the sliders (dust, wind, hour) and it rebuilds right away; it illustrates, it is not a photo.`)),
+          chips: [chip(L("Polvo en Marte (HORI)", "Dust on Mars (HORI)"), { t: "topic", topic: "marte", where: null })],
+        };
+      }
+      const name = sc?.name ?? "Durango";
+      return {
+        ...base, origin: "zon", evidence: null,
+        action: L("Monitoreo · escena 3D", "Monitoring · 3D scene"),
+        text: allRegs(L(
+          `Abrí la escena 3D de ${name}. Está hecha con lo último que midió la NASA (POWER) en ese punto${sc?.timeline ? ", y la línea de tiempo recorre los años con la serie de HORI" : ""}. Es una ilustración de los datos, no una foto.`,
+          `I opened the 3D scene of ${name}. It is built from NASA POWER's latest values at that point${sc?.timeline ? ", and the timeline walks through the years with HORI's series" : ""}. It illustrates the data; it is not a photo.`)),
+        chips: [
+          chip(L("Con línea de tiempo", "With timeline"), { t: "scene", where: sc ? { name, lat: sc.lat, lon: sc.lon } : null, timeline: true }),
+          chip(L("¿Mis vacas tienen calor?", "Is my cattle too hot?"), { t: "topic", topic: "ganado", where: sc ? { name, lat: sc.lat, lon: sc.lon } : null }),
+        ],
+      };
+    }
+    case "evolution": {
+      const ys = m?.series?.years ?? [];
+      return {
+        ...base, origin: originOf(ctx), evidence: null, action: L(showing(ctx, "es"), showing(ctx, "en")),
+        text: allRegs(ys.length
+          ? L(`Así ha cambiado la Tierra, año por año de ${ys[0]} a ${ys.at(-1)}: cada año pinta su diferencia con lo normal de cada zona. El globo lo reproduce solo; puedes pausarlo o moverlo.`,
+            `This is how Earth has changed, year by year from ${ys[0]} to ${ys.at(-1)}: each year paints its difference from what is normal for each area. The globe plays it by itself; you can pause or move it.`)
+          : L("Esta capa no tiene serie por año para reproducir.", "This layer has no yearly series to play.")),
+        chips: chips(ctx, C.summary, placeChip(ctx), C.legend),
+      };
+    }
+    case "level": {
+      const lv = ctx.state.register;
+      return {
+        ...base, origin: "ui", evidence: null,
+        ...both((lang) => ({
+          text: lang === "es"
+            ? `Listo, modo ${UI.es.register[lv]}. Mismos datos, ${lv === "sencillo" ? "lo esencial" : lv === "normal" ? "con gráficas y comparación" : "con método y procedencia completos"}.`
+            : `Done, ${UI.en.register[lv]} mode. Same data, ${lv === "sencillo" ? "just the essentials" : lv === "normal" ? "with charts and comparison" : "with full method and provenance"}.`,
+        })),
+        chips: chips(ctx, placeChip(ctx) ?? (m ? C.summary : null), C.certainty, C.help),
+      };
+    }
+    case "certainty":
+      // How often HORI is wrong, as measured (doc v2 §3.4). The same numbers in every level, more of them as you go deeper.
+      return {
+        ...base, origin: "hori", evidence: null,
+        ...both((lang, reg) => ({ text: certaintyText(reg, lang) })),
+        chips: chips(ctx, m && C.detect, m && C.contrast, C.help),
+      };
     case "done":
       return ui("Listo.", "Done.", chips(ctx, placeChip(ctx) ?? C.summary, C.help));
     case "undo":

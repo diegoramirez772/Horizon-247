@@ -29,7 +29,5 @@ dist/
 .DS_Store
 .idea/
 .vscode/
-# generated bundles: keep only small samples, commit them explicitly if needed
-apps/web/public/bundles/*
-!apps/web/public/bundles/.gitkeep
-!apps/web/public/bundles/index.json
+# web bundles (40 MB, real HORI results) ARE committed for the delivery so any clone/deploy has data;
+# regenerate with `zon export-web` + `zon home`. Move to CI/LFS later if the repo grows.

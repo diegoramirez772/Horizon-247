@@ -187,3 +187,63 @@ export function Button({ children, onClick, title, ariaLabel, pressed }: {
     </button>
   );
 }
+
+/** Sparkline of a yearly series (no axes): the shape, for the plain reading. */
+export function Spark({ values, highlight }: { values: number[]; highlight: boolean }) {
+  const pts = values.map((v, i) => [i, v] as const).filter(([, v]) => Number.isFinite(v));
+  if (pts.length < 3) return null;
+  const W = 150, H = 44;
+  const ys = pts.map(([, v]) => v);
+  const lo = Math.min(...ys), hi = Math.max(...ys), span = hi - lo || 1;
+  const x = (i: number) => (i / (values.length - 1)) * (W - 4) + 2;
+  const y = (v: number) => H - 3 - ((v - lo) / span) * (H - 6);
+  const path = pts.map(([i, v], k) => `${k ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join("");
+  const [li, lv] = pts[pts.length - 1];
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true" className="ml-auto shrink-0">
+      <path d={path} fill="none" stroke={highlight ? "var(--accent)" : "var(--text-3)"} strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={x(li)} cy={y(lv)} r="3" fill={highlight ? "var(--accent)" : "var(--text-3)"} />
+    </svg>
+  );
+}
+
+export function VerdictGlyph({ v }: { v: number }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" className="shrink-0">
+      <rect x="0.75" y="0.75" width="14.5" height="14.5" rx="3.5" fill={v === 1 ? "currentColor" : v === 4 ? "var(--no-change)" : "none"} stroke="currentColor" strokeWidth="1.5" />
+      {v === 3 ? <path d="M3 13L13 3M0 8L8 0M8 16L16 8" stroke="currentColor" strokeWidth="1.3" /> : null}
+      {v === 2 ? <g fill="currentColor"><circle cx="5" cy="5" r="1.2" /><circle cx="11" cy="5" r="1.2" /><circle cx="5" cy="11" r="1.2" /><circle cx="11" cy="11" r="1.2" /></g> : null}
+    </svg>
+  );
+}
+
+/**
+ * One card of the start deck (William's «Descubre» cards, shared by «Mis monitores»): art on top with a small tag,
+ * a title and one or two short lines. Compact and nearly square so the row reads as one deck.
+ */
+export function DeckCard({ art, tag, tagTone = "plain", badge = null, title, children, onClick, label }: {
+  art: React.ReactNode; tag: string; tagTone?: "plain" | "accent"; badge?: React.ReactNode; title: string;
+  children: React.ReactNode; onClick: () => void; label?: string;
+}) {
+  return (
+    <button type="button" onClick={onClick} aria-label={label}
+      className="group flex h-[196px] w-[228px] flex-col overflow-hidden rounded-[18px] border border-border bg-surface text-left transition-all duration-200 hover:-translate-y-1 hover:border-text-3 hover:shadow-[0_14px_34px_rgba(16,24,40,0.10)] focus-visible:-translate-y-1">
+      <span className="relative flex h-[84px] shrink-0 items-center justify-center overflow-hidden border-b border-border bg-gradient-to-b from-surface-2 to-surface px-3 [&>svg]:scale-[0.85]">
+        {art}
+        <span className="absolute left-2.5 top-2.5 flex items-center gap-1">
+          <span className={`rounded-full px-1.5 py-px text-[9.5px] font-semibold uppercase tracking-[0.08em] ${tagTone === "accent" ? "bg-accent text-on-accent" : "border border-border bg-surface/90 text-text-2"}`}>{tag}</span>
+          {badge}
+        </span>
+      </span>
+      <span className="flex min-h-0 flex-1 flex-col px-3.5 py-3">
+        <span className="flex items-start justify-between gap-2">
+          <span className="line-clamp-2 text-[14px] font-semibold leading-snug">{title}</span>
+          <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border transition-all group-hover:translate-x-0.5 group-hover:border-accent group-hover:bg-accent group-hover:text-on-accent">
+            <svg width="10" height="10" viewBox="0 0 12 12"><path d="M2.5 6h7M6.5 3l3 3-3 3" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </span>
+        </span>
+        <span className="mt-1 line-clamp-2 text-[13px] leading-snug text-text-2">{children}</span>
+      </span>
+    </button>
+  );
+}

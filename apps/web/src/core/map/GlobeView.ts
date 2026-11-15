@@ -215,7 +215,8 @@ export class GlobeView {
     if (!d) return -1;
     const row = Math.round((lat - d.lat0) / d.dlat);
     let col = Math.round((lon - d.lon0) / d.dlon);
-    col = ((col % d.nlon) + d.nlon) % d.nlon;
+    if (d.nlon * Math.abs(d.dlon) > 359) col = ((col % d.nlon) + d.nlon) % d.nlon; // only a global grid wraps
+    else if (col < 0 || col >= d.nlon) return -1;
     if (row < 0 || row >= d.nlat) return -1;
     return row * d.nlon + col;
   }
@@ -271,8 +272,9 @@ export class GlobeView {
         if (d) {
           const row = Math.round((lat - d.lat0) / d.dlat);
           let col = Math.round((lon - d.lon0) / d.dlon);
-          col = ((col % d.nlon) + d.nlon) % d.nlon;
-          if (row >= 0 && row < d.nlat) {
+          const wraps = d.nlon * Math.abs(d.dlon) > 359;
+          if (wraps) col = ((col % d.nlon) + d.nlon) % d.nlon;
+          if (row >= 0 && row < d.nlat && col >= 0 && col < d.nlon) {
             const i = row * d.nlon + col, p4 = i * 4, a = fill[p4 + 3] / 255;
             if (a > 0) { r += (fill[p4] - r) * a; gg += (fill[p4 + 1] - gg) * a; b += (fill[p4 + 2] - b) * a; }
             else if (tex[i] === 3) {

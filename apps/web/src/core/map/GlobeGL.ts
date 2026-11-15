@@ -85,8 +85,10 @@ void main(){
   if (uHasData > 0.5) {
     float row = floor((latD - uGrid.x) / uGrid.y + 0.5);
     float cc = floor((lonD - uGrid.z) / uGrid.w + 0.5);
-    cc = mod(cc, uGridN.y);
-    if (row >= 0.0 && row < uGridN.x) {
+    // Only a global grid wraps around the planet; a regional box (Durango) stays inside its own columns.
+    bool wraps = uGridN.y * abs(uGrid.w) > 359.0;
+    if (wraps) cc = mod(cc, uGridN.y);
+    if (row >= 0.0 && row < uGridN.x && cc >= 0.0 && cc < uGridN.y) {
       vec2 tuv = vec2((cc + 0.5) / uGridN.y, (row + 0.5) / uGridN.x);
       vec4 f = texture2D(uFill, tuv);
       float code = floor(texture2D(uCode, tuv).r * 255.0 + 0.5);
@@ -375,7 +377,8 @@ export class GlobeGL {
     if (!d) return -1;
     const row = Math.round((lat - d.lat0) / d.dlat);
     let col = Math.round((lon - d.lon0) / d.dlon);
-    col = ((col % d.nlon) + d.nlon) % d.nlon;
+    if (d.nlon * Math.abs(d.dlon) > 359) col = ((col % d.nlon) + d.nlon) % d.nlon;
+    else if (col < 0 || col >= d.nlon) return -1;
     if (row < 0 || row >= d.nlat) return -1;
     return row * d.nlon + col;
   }

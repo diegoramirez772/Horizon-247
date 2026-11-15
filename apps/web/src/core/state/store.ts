@@ -2,13 +2,32 @@
 // It is mirrored in the URL, so switching register keeps your place, a link can be shared and the demo
 // video can start from an exact state (web-diseno §4.1). The register preference is also remembered.
 
-import type { Lang, Register } from "@/core/i18n/texts";
+import { REGISTERS, type Lang, type Register } from "@/core/i18n/texts";
 
 export type Profile = "earth" | "mars" | "person";
 export type Tab = "cambio" | "contraste" | "detectabilidad" | "evidencia";
 export type TimeMode = "completa" | "anual" | "acumulada";
-/** What the map paints in the full window. Only Experto offers anything but the verdict. */
+/** What the map paints in the full window. Simple: the verdict; Normal adds the effect; Experto adds MDE and years. */
 export type Metric = "verdict" | "effect" | "mde" | "years";
+
+const METRICS_BY_REGISTER: Record<Register, Metric[]> = {
+  sencillo: ["verdict"], normal: ["verdict", "effect"], tecnico: ["verdict", "effect", "mde", "years"],
+};
+
+export function allowedMetrics(reg: Register): Metric[] {
+  return METRICS_BY_REGISTER[reg];
+}
+
+/** The metric actually painted: one the level does not offer falls back to the verdict (doc v2 §2.4). */
+export function effectiveMetric(reg: Register, metric: Metric): Metric {
+  return METRICS_BY_REGISTER[reg].includes(metric) ? metric : "verdict";
+}
+
+/** «más detalle» / «más simple»: one level up or down, clamped. */
+export function stepRegister(reg: Register, dir: 1 | -1): Register {
+  const i = REGISTERS.indexOf(reg) + dir;
+  return REGISTERS[Math.max(0, Math.min(REGISTERS.length - 1, i))];
+}
 export type Selection = { kind: "cell"; index: number } | { kind: "region"; id: string } | null;
 
 export interface AppState {
@@ -29,7 +48,17 @@ export interface AppState {
   camera: number;
   /** True once the URL has been read on the client (never written to the URL). */
   hydrated: boolean;
+  /** NASA imagery under the data on the GPU globe (imagery.ts layer id); null = Blue Marble. */
+  imagery: string | null;
+  /** «Evolución de la Tierra»: the globe plays the years of the layer on screen. */
+  evolution: boolean;
+  /** The generated 3D scene open in the panel (place + whether its timeline starts playing); null = none. */
+  scene: SceneTarget | null;
+  /** The real place open in 3D (relief + satellite); null = none. */
+  zone: { name: string; lat: number; lon: number } | null;
 }
+
+export interface SceneTarget { name: string; lat: number; lon: number; timeline: boolean; /** A ready-made scene instead of a place (Marte, Luna). */ preset?: string }
 
 /** Server and first client render use this; the URL is read after hydration. */
 export const DEFAULT_STATE: AppState = {
@@ -47,6 +76,10 @@ export const DEFAULT_STATE: AppState = {
   metric: "verdict",
   camera: 0,
   hydrated: false,
+  imagery: null,
+  evolution: false,
+  scene: null,
+  zone: null,
 };
 
 type Listener = () => void;
@@ -81,7 +114,7 @@ function same(a: unknown, b: unknown): boolean {
 }
 
 // ---- URL ⇄ state ----
-// ?p=earth&tab=cambio&l=<layer>&sel=c:123|r:mx-dgo&reg=sencillo|experto&lang=es&t=anual&y=2019&w=2015&ev=1
+// ?p=earth&tab=cambio&l=<layer>&sel=c:123|r:mx-dgo&reg=sencillo|normal|experto&lang=es&t=anual&y=2019&w=2015&ev=1
 
 const TABS: Tab[] = ["cambio", "contraste", "detectabilidad", "evidencia"];
 const MODES: TimeMode[] = ["completa", "anual", "acumulada"];
@@ -120,7 +153,7 @@ export function fromSearch(search: string, base: AppState, browserLang?: string)
     ...base,
     // doc 02 F0: browser language; anything that is not es/en → Spanish.
     lang: lang === "en" || lang === "es" ? lang : browserLang?.toLowerCase().startsWith("en") ? "en" : "es",
-    register: reg === "experto" ? "tecnico" : reg === "sencillo" ? "sencillo" : base.register,
+    register: reg === "experto" ? "tecnico" : reg === "normal" ? "normal" : reg === "sencillo" ? "sencillo" : base.register,
     profile: p && PROFILES.includes(p) ? p : base.profile,
     tab: tab && TABS.includes(tab) ? tab : base.tab,
     layerId: q.get("l") || base.layerId,
@@ -131,6 +164,7 @@ export function fromSearch(search: string, base: AppState, browserLang?: string)
     evidenceOpen: q.get("ev") === "1" || base.evidenceOpen,
     filter: parseFilter(q.get("f")) ?? base.filter,
     metric: (["verdict", "effect", "mde", "years"] as Metric[]).includes(q.get("m") as Metric) ? (q.get("m") as Metric) : base.metric,
+    imagery: q.get("img") || base.imagery,
   };
 }
 
@@ -138,9 +172,10 @@ export function toSearch(s: AppState): string {
   const q = new URLSearchParams();
   if (s.profile !== DEFAULT_STATE.profile) q.set("p", s.profile);
   if (s.tab !== DEFAULT_STATE.tab) q.set("tab", s.tab);
+  if (s.imagery) q.set("img", s.imagery);
   if (s.layerId) q.set("l", s.layerId);
   if (s.selection) q.set("sel", s.selection.kind === "cell" ? `c:${s.selection.index}` : `r:${s.selection.id}`);
-  q.set("reg", s.register === "tecnico" ? "experto" : "sencillo");
+  q.set("reg", s.register === "tecnico" ? "experto" : s.register);
   q.set("lang", s.lang);
   if (s.timeMode !== "completa") q.set("t", s.timeMode);
   if (s.timeMode === "anual" && s.year !== null) q.set("y", String(s.year));

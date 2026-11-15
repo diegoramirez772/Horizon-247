@@ -250,7 +250,7 @@ def _detectability(usable, mde, delta, years_more, verdict, n) -> dict:
 
 def run_layer(cube: Cube, config: Config | None = None, *, entity: Entity | None = None,
               profile: Profile | str | None = None, place: dict | None = None) -> LayerResult:
-    """cube -> findings per cell (effect, tests, FDR, MDE, verdict, flags). See docs/SPEC.md sections 2-5.
+    """cube -> findings per cell (effect, tests, FDR, MDE, verdict, flags). See the team method spec sections 2-5.
 
     With profile="auto" (L0) HORI infers the profile from the metadata and the data and creates the entity card for
     this query (`place` = {"name": {...}, "geometry": ..., "source": ...} if the caller knows the place). The pair is

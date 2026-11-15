@@ -1,10 +1,69 @@
-Copyright (c) 2026 AETHRA founding team. All rights reserved.
+HORIZON 247 — Source-Available License, No Commercial Use (HSAL-NC) v1.0
+=========================================================================
 
-This source code is made visible for evaluation in NASA Space Apps
-Challenge 2026. No permission is granted to copy, modify, distribute
-or use it commercially without written permission from the team.
+Copyright (c) 2026 AETHRA (the HORIZON 247 team: Diego, William, Estela, Carolina).
+All rights not expressly granted below are reserved.
 
-The team intends to release it as open source after the event.
+The source code of HORIZON 247 is published so that anyone can read it, learn from it, check its
+science and help improve it. It is NOT open source in the OSI sense: it may not be monetized, and it
+may not be copied into other projects or republished.
 
-Third-party components and data keep their own licenses (see NOTICE
-and LICENSE-DATA).
+1. Definitions
+   "Software"      — everything in this repository except third-party components and data (section 6).
+   "Official repository" — https://github.com/diegoramirez772/Horizon-247 and any repository the
+                     team designates in writing.
+   "Contribution"  — any code, documentation, data, design or other material you submit to the
+                     Official repository (pull request, issue, patch, comment with code).
+   "Commercial use" — any use intended for, or directed toward, commercial advantage or monetary
+                     compensation, including: selling or licensing the Software or a work based on it;
+                     offering it, or a work based on it, as a paid or ad-supported service (SaaS,
+                     API, app, consulting deliverable); embedding it in a product or service that is
+                     sold, rented or monetized; or using it to obtain grants, prizes or contracts
+                     for anyone other than the team.
+
+2. What you MAY do (free of charge)
+   a. Read and study the Software, and cite it.
+   b. Download it and run it on your own devices for personal, educational, research, journalistic
+      or evaluation purposes that are not Commercial use.
+   c. Make changes in a fork hosted on the same platform as the Official repository, ONLY to prepare
+      and submit Contributions back to the Official repository.
+   d. Share links to the Official repository and quote short excerpts with attribution.
+
+3. What you may NOT do
+   a. Any Commercial use of the Software or of any work based on it.
+   b. Copy, redistribute, publish, re-host or sublicense the Software, or works based on it (in whole
+      or in substantial part), outside the Official repository and the forks allowed in 2.c.
+   c. Present the Software, or a work based on it, as your own, or remove these notices.
+   d. Use the names "HORIZON 247", "HORI", "ZON" or "AETHRA", or the project's logos, for anything
+      other than referring to this project.
+   Any of the above requires prior written permission from the team.
+
+4. Contributions
+   a. Contributions are welcome under CONTRIBUTING.md.
+   b. By submitting a Contribution you confirm that you have the right to do so (Developer
+      Certificate of Origin 1.1, signed with `git commit -s`), and you grant AETHRA a perpetual,
+      worldwide, non-exclusive, royalty-free, irrevocable license to use, modify, publish and
+      relicense your Contribution as part of HORIZON 247, under these or other terms.
+   c. You keep the copyright of your Contribution and will be credited in AUTHORS or the changelog.
+
+5. Termination
+   Any breach of sections 3 terminates the rights granted in section 2 automatically. They are
+   restored if you cure the breach within 30 days of becoming aware of it, unless it is repeated.
+
+6. Third-party components and data
+   Dependencies (listed in NOTICE and in the package manifests) and datasets (LICENSE-DATA) keep their
+   own licenses. Nothing in this license limits the rights those licenses give you over those
+   components or data. Derived data that must stay under a share-alike license (for example the Mars
+   dust climatology, CC BY-SA 3.0) remains under that license.
+
+7. No warranty
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. HORIZON 247 reports
+   statistical evidence; it does not give advice, forecasts or warnings. IN NO EVENT SHALL THE AUTHORS
+   BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
+
+8. Contact
+   For permissions beyond this license, open an issue in the Official repository titled
+   "Permission request".
+
+Este texto no es asesoría legal. / This text is not legal advice.

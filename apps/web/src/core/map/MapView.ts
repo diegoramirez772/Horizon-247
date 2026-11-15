@@ -9,6 +9,10 @@
 import { type MapTheme, effectStep, hexToRgb, seqStep, stepColor } from "./palette";
 import { pattern } from "./textures";
 import { landPath } from "./world";
+import { DETAIL_EARTH, type LayerDef, type Mosaic, baseLayer, degPerPx, layer as layerById, levelFor, loadMosaic } from "./imagery";
+
+/** NASA imagery on the flat map: same plate carrée (EPSG:4326) as the GIBS tiles, so a mosaic is drawn as is. */
+export interface FlatImagery { layer: string; date?: string }
 
 export interface GridSpec { nlat: number; nlon: number; lat0: number; dlat: number; lon0: number; dlon: number }
 
@@ -58,6 +62,17 @@ export class MapView {
   private lastSize = "";
   private userMoved = false;
   lastTiming: Timing = { buildMs: 0, drawMs: 0 };
+  // real imagery: Blue Marble under everything, an optional dated/live layer, and a sharp patch of what is on screen
+  private base: Mosaic | null = null;
+  private img: Mosaic | null = null;
+  private patch: Mosaic | null = null;
+  private imagery: FlatImagery | null = null;
+  private patchKey = "";
+  private lastBox = "";
+  private settle = 0;
+  private aborts: Record<"base" | "img" | "patch", AbortController | null> = { base: null, img: null, patch: null };
+  /** Called with a short line saying what picture is under the data (for the caption). */
+  onImagery: (label: string) => void = () => {};
   onCellClick: (index: number) => void = () => {};
   onHover: (index: number, x: number, y: number) => void = () => {};
 
@@ -75,9 +90,84 @@ export class MapView {
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(parent);
     this.resize();
+    void this.loadBase();
+  }
+
+  // ---- imagery ----
+
+  private async loadBase(): Promise<void> {
+    const l = baseLayer("earth");
+    const ctrl = new AbortController(); this.aborts.base = ctrl;
+    let z = 0;
+    while (z < l.maxLevel && 360 / degPerPx(l.provider, z + 1) <= 4096) z++;
+    try {
+      const m = await loadMosaic(l, z, [-180, -90, 180, 90], { signal: ctrl.signal });
+      if (ctrl.signal.aborted || m.missing === m.total) return;
+      this.base = m; this.requestDraw();
+    } catch { /* offline: land and ocean colours stay */ }
+  }
+
+  /** Dated or live NASA layer under the data (null = Blue Marble only). */
+  setImagery(choice: FlatImagery | null): void {
+    if (choice?.layer === this.imagery?.layer && choice?.date === this.imagery?.date) return;
+    this.imagery = choice; this.img = null; this.patch = null; this.patchKey = "";
+    this.aborts.img?.abort(); this.aborts.patch?.abort();
+    if (!choice) { this.onImagery(""); this.requestDraw(); return; }
+    const l = layerById(choice.layer);
+    const ctrl = new AbortController(); this.aborts.img = ctrl;
+    this.onImagery(`${l.title} · cargando…`);
+    loadMosaic(l, Math.min(2, l.maxLevel), [-180, -90, 180, 90], { date: choice.date, signal: ctrl.signal }).then((m) => {
+      if (ctrl.signal.aborted) return;
+      if (m.missing === m.total) { this.onImagery(`Sin imagen de ${l.title} para ${choice.date ?? "esa fecha"}`); return; }
+      this.img = m;
+      this.onImagery(`${l.title}${m.servedDate ? ` · ${m.servedDate}` : ""} · NASA GIBS`);
+      this.requestDraw();
+      this.schedulePatch();
+    }).catch(() => this.onImagery(`No se pudo cargar ${l.title}`));
+  }
+
+  /** After the view stops, fetch a sharper mosaic of exactly what is on screen («mapa de calidad»). */
+  private schedulePatch(): void {
+    clearTimeout(this.settle);
+    this.settle = window.setTimeout(() => void this.loadPatch(), 300);
+  }
+
+  private visibleBox(): [number, number, number, number] {
+    const w = this.canvas.width / this.dpr, h = this.canvas.height / this.dpr;
+    const lon0 = -this.tx / this.k, lon1 = (w - this.tx) / this.k;
+    const lat1 = this.ty / this.k, lat0 = -(h - this.ty) / this.k;
+    return [Math.max(-180, lon0), Math.max(-90, lat0), Math.min(180, lon1), Math.min(90, lat1)];
+  }
+
+  private async loadPatch(): Promise<void> {
+    const box = this.visibleBox();
+    // Without a chosen layer, close views read Sentinel-2 (10 m) instead of Blue Marble: a map you can recognise.
+    const l: LayerDef = this.imagery ? layerById(this.imagery.layer) : box[2] - box[0] <= 60 ? DETAIL_EARTH : baseLayer("earth");
+    if (box[2] - box[0] > 200 || document.hidden) { if (this.patch) { this.patch = null; this.requestDraw(); } return; }
+    const want = 1 / (this.k * this.dpr); // degrees per screen pixel
+    let z = levelFor(l, want);
+    // Keep the patch to at most ~4 × 4 tiles of 512 px.
+    while (z > 0 && ((box[2] - box[0]) / degPerPx(l.provider, z)) * ((box[3] - box[1]) / degPerPx(l.provider, z)) > 2048 * 2048) z--;
+    const key = `${l.id}|${this.imagery?.date ?? ""}|${z}|${box.map((v) => Math.round(v)).join(",")}`;
+    if (key === this.patchKey) return;
+    this.patchKey = key;
+    this.aborts.patch?.abort();
+    const ctrl = new AbortController(); this.aborts.patch = ctrl;
+    try {
+      const m = await loadMosaic(l, z, box, { date: this.imagery?.date, signal: ctrl.signal });
+      if (ctrl.signal.aborted || m.missing === m.total) return;
+      this.patch = m; this.requestDraw();
+    } catch { /* keep the coarse picture */ }
+  }
+
+  private drawMosaic(g: CanvasRenderingContext2D, m: Mosaic): void {
+    const [x0, y0, x1, y1] = m.bbox;
+    g.drawImage(m.canvas, x0, -y1, x1 - x0, y1 - y0);
   }
 
   destroy(): void {
+    clearTimeout(this.settle);
+    for (const a of Object.values(this.aborts)) a?.abort();
     cancelAnimationFrame(this.raf);
     cancelAnimationFrame(this.anim);
     this.ro.disconnect();
@@ -287,16 +377,22 @@ export class MapView {
     g.fillStyle = th.ocean;
     g.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Land first, so places are recognisable even where the data is pale.
+    // The real Earth first (Blue Marble, then the chosen NASA layer and its sharp patch); flat land when offline.
     this.setWorldTransform(g);
-    g.fillStyle = th.land;
-    g.fill(landPath());
+    g.imageSmoothingEnabled = true;
+    if (this.base) this.drawMosaic(g, this.base); else { g.fillStyle = th.land; g.fill(landPath()); }
+    if (this.img) this.drawMosaic(g, this.img);
+    if (this.patch && (this.imagery ? this.patch.layer.id === this.imagery.layer : this.patch.layer.role !== "live")) this.drawMosaic(g, this.patch);
     this.drawGraticule(g);
+    const live = this.imagery ? layerById(this.imagery.layer).live : false;
 
     if (this.data) {
       g.imageSmoothingEnabled = false;
       this.setWorldTransform(g);
+      // Over a live satellite picture the trend colours step back to a veil, so the clouds can be seen.
+      g.globalAlpha = live ? 0.15 : this.base ? 0.88 : 1;
       this.drawGridImage(g, this.fill);
+      g.globalAlpha = 1;
       if (this.data.mode !== "descriptive" && this.data.mode !== "sequential") {
         this.drawTexture(this.maskNC, "fog");
         this.drawTexture(this.maskCand, "dots");
@@ -311,6 +407,12 @@ export class MapView {
     this.drawCell(this.hovered, 1.25, 0.8);
     this.drawCell(this.selected, 2.5, 1);
     this.lastTiming.drawMs = performance.now() - t0;
+    // A changed view asks for a sharper picture of what is now on screen.
+    const box = this.visibleBox();
+    if (box[2] - box[0] <= 200 && `${Math.round(box[0])},${Math.round(box[1])},${Math.round(this.k)}` !== this.lastBox) {
+      this.lastBox = `${Math.round(box[0])},${Math.round(box[1])},${Math.round(this.k)}`;
+      this.schedulePatch();
+    }
   }
 
   private drawGraticule(g: CanvasRenderingContext2D): void {

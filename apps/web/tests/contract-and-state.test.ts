@@ -24,9 +24,10 @@ describe("contract loader", () => {
     expect(cellIndexAt(m, 95, 0)).toBe(-1);
   });
 
-  it("accepts contract 0.1 and 0.2, rejects others", () => {
+  it("accepts contracts 0.1 to 0.4 (additive), rejects others", () => {
     const base = { grid, arrays: { verdict: {}, effect: {} }, honesty: {} } as unknown as Manifest;
     expect(() => checkManifest({ ...base, contract: "0.2" })).not.toThrow();
+    expect(() => checkManifest({ ...base, contract: "0.4" })).not.toThrow();
     expect(() => checkManifest({ ...base, contract: "0.9" as "0.1" })).toThrow(/versión de contrato/);
     expect(() => checkManifest({ ...base, contract: "0.1", honesty: undefined as unknown as Manifest["honesty"] })).toThrow(/honesty/);
   });
@@ -50,6 +51,10 @@ describe("state ⇄ URL (A4: switching register keeps your place)", () => {
   it("round-trips layer, selection, register, language and time", () => {
     const s = { ...DEFAULT_STATE, layerId: "temp_45", selection: { kind: "cell" as const, index: 123 }, register: "tecnico" as const,
       lang: "en" as const, timeMode: "anual" as const, year: 2019 };
+    expect(fromSearch(toSearch(s), DEFAULT_STATE)).toEqual(s);
+  });
+  it("normal round-trips through the URL", () => {
+    const s = { ...DEFAULT_STATE, register: "normal" as const, layerId: "L" };
     expect(fromSearch(toSearch(s), DEFAULT_STATE)).toEqual(s);
   });
   it("changing only the register leaves everything else as it was", () => {

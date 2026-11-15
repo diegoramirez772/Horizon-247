@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, "..", "src");
 // Same list as FORBIDDEN in src/core/i18n/texts.ts. «no hay cambio» is allowed only next to δ.
-const FORBIDDEN = [/prueba/i, /causa/i, /predic/i, /recomend/i, /debería/i, /peligro/i, /diagnós/i, /no hay cambio(?![^"'`]*δ)/i];
+const FORBIDDEN = [/prueba/i, /causa/i, /predic/i, /recomend/i, /debería/i, /peligro/i, /diagnós/i, /no hay cambio(?![^"'`]*δ)/i, /riesgo(?!_potencial)/i, /urgente/i];
 // Files that hold the list itself.
 const SKIP = new Set(["core/i18n/texts.ts"].map((p) => join(SRC, p)));
 // INPUT vocabulary of the assistant (what people may type or say; never shown on screen).

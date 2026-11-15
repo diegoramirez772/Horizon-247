@@ -2,7 +2,7 @@
 
     PYTHONPATH=packages/hori/src python3 sim/longmemory_hurst_bias.py
 Simulates fGn with known H (n = 24 and 45), estimates H on the grid 0.50-0.95 (never below 0.5) as Hamed (2008) does, and prints
-the mean estimate. Result in docs/MODEL_CARD.md section 3.10.
+the mean estimate. Result in the team model card section 3.10.
 """
 from statistics import NormalDist
 

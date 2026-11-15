@@ -9,8 +9,8 @@
 // Zooming past `maxLevel` never invents detail.
 
 export type Body = "earth" | "mars" | "moon";
-export type Provider = "gibs" | "trek";
-export type LayerRole = "base" | "evidence" | "variable" | "night";
+export type Provider = "gibs" | "trek" | "eox";
+export type LayerRole = "base" | "evidence" | "variable" | "night" | "live" | "detail";
 
 export interface LayerDef {
   id: string;
@@ -31,6 +31,8 @@ export interface LayerDef {
   start?: string;
   attribution: string;
   caveat?: string;
+  /** Geostationary layer every 10 minutes: the "date" is a UTC time slot (see liveSlot), never a day. */
+  live?: true;
 }
 
 const GIBS = "NASA EOSDIS GIBS";
@@ -44,6 +46,10 @@ export const LAYERS: LayerDef[] = [
   { id: "VIIRS_SNPP_CorrectedReflectance_TrueColor", body: "earth", provider: "gibs", role: "evidence", title: "VIIRS · color real", kind: "observacion", tms: "250m", ext: "jpg", maxLevel: 8, resolution_m: 250, daily: true, start: "2015-11-24", attribution: GIBS },
   { id: "HLS_S30_Nadir_BRDF_Adjusted_Reflectance", body: "earth", provider: "gibs", role: "evidence", title: "Sentinel-2 (HLS) · 30 m", kind: "observacion", tms: "31.25m", ext: "png", maxLevel: 11, resolution_m: 30, daily: true, start: "2015-11-28", attribution: GIBS, caveat: "Solo hay imagen algunos días; puede tener nubes" },
   { id: "HLS_L30_Nadir_BRDF_Adjusted_Reflectance", body: "earth", provider: "gibs", role: "evidence", title: "Landsat (HLS) · 30 m", kind: "observacion", tms: "31.25m", ext: "png", maxLevel: 11, resolution_m: 30, daily: true, start: "2013-03-22", attribution: GIBS, caveat: "Solo hay imagen algunos días; puede tener nubes" },
+  // In real time (every 10 min, ~30 min behind): thermal infrared = cloud tops, storms and night, from three geostationary satellites
+  { id: "GOES-East_ABI_Band13_Clean_Infrared", body: "earth", provider: "gibs", role: "live", title: "Infrarrojo en vivo · América (GOES-Este)", kind: "observacion", tms: "2km", ext: "png", maxLevel: 5, resolution_m: 2000, daily: true, live: true, start: "2019-01-01", attribution: GIBS, caveat: "Brillo = nubes frías y altas (tormentas); cubre América y el Atlántico" },
+  { id: "GOES-West_ABI_Band13_Clean_Infrared", body: "earth", provider: "gibs", role: "live", title: "Infrarrojo en vivo · Pacífico (GOES-Oeste)", kind: "observacion", tms: "2km", ext: "png", maxLevel: 5, resolution_m: 2000, daily: true, live: true, start: "2019-01-01", attribution: GIBS, caveat: "Cubre el Pacífico oriental y el oeste de América" },
+  { id: "Himawari_AHI_Band13_Clean_Infrared", body: "earth", provider: "gibs", role: "live", title: "Infrarrojo en vivo · Asia y Oceanía (Himawari)", kind: "observacion", tms: "2km", ext: "png", maxLevel: 5, resolution_m: 2000, daily: true, live: true, start: "2019-01-01", attribution: GIBS, caveat: "Cubre Asia oriental, Oceanía y el Pacífico occidental" },
   { id: "MODIS_Terra_Cloud_Fraction_Day", body: "earth", provider: "gibs", role: "variable", title: "Nubes · fracción", kind: "observacion", tms: "2km", ext: "png", maxLevel: 5, resolution_m: 2000, daily: true, start: "2000-02-24", attribution: GIBS },
   { id: "IMERG_Precipitation_Rate", body: "earth", provider: "gibs", role: "variable", title: "Lluvia · IMERG", kind: "observacion", tms: "2km", ext: "png", maxLevel: 5, resolution_m: 10000, daily: true, start: "2000-06-01", attribution: GIBS, caveat: "Resolución real ≈ 10 km" },
   { id: "MODIS_Terra_L3_NDVI_Monthly", body: "earth", provider: "gibs", role: "variable", title: "Vegetación · NDVI mensual", kind: "observacion", tms: "1km", ext: "png", maxLevel: 6, resolution_m: 1000, daily: false, start: "2000-03-01", attribution: GIBS },
@@ -59,6 +65,25 @@ export const LAYERS: LayerDef[] = [
   // ---- Moon ----
   { id: "LRO_WAC_Mosaic_Global_303ppd_v02", body: "moon", provider: "trek", role: "base", title: "Luna · LRO WAC", kind: "compuesto", tms: "Moon/EQ", ext: "jpg", maxLevel: 6, resolution_m: 100, daily: false, attribution: TREK, caveat: "Mosaico sin fecha" },
 ];
+
+/**
+ * Sharp Earth for close views (flat map patches, real 3D zones): Sentinel-2 cloudless 2020, ~10 m, by EOX
+ * (CC BY-NC-SA 4.0 — non-commercial, like this project; contains modified Copernicus Sentinel data 2020).
+ * Same plate carrée grid as Trek (180° / 2^z per 256 px tile).
+ */
+export const DETAIL_EARTH: LayerDef = {
+  id: "s2cloudless-2020", body: "earth", provider: "eox", role: "detail", title: "Sentinel-2 sin nubes 2020 (EOX)", kind: "compuesto",
+  tms: "", ext: "jpg", maxLevel: 13, resolution_m: 10, daily: false, attribution: "Sentinel-2 cloudless by EOX IT Services GmbH (Copernicus Sentinel data 2020)",
+};
+
+/**
+ * Latest 10-minute slot GIBS already has for a geostationary layer, as the time GIBS expects in the tile URL
+ * (e.g. "2026-11-15T07:40:00Z"). 30 minutes of margin: GIBS publishes each image ~20 min after it is taken.
+ */
+export function liveSlot(now = Date.now()): string {
+  const t = new Date(Math.floor((now - 30 * 60e3) / 600e3) * 600e3);
+  return t.toISOString().slice(0, 16) + ":00Z";
+}
 
 export function layer(id: string): LayerDef {
   const l = LAYERS.find((x) => x.id === id);
@@ -101,6 +126,7 @@ export function tileUrl(l: LayerDef, z: number, row: number, col: number, date?:
     const d = l.daily || l.start ? `${date ?? "default"}/` : "";
     return `https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/${l.id}/default/${d}${l.tms}/${z}/${row}/${col}.${l.ext}`;
   }
+  if (l.provider === "eox") return `https://tiles.maps.eox.at/wmts/1.0.0/${l.id}/default/WGS84/${z}/${row}/${col}.${l.ext}`;
   return `https://trek.nasa.gov/tiles/${l.tms}/${l.id}/1.0.0/default/default028mm/${z}/${row}/${col}.${l.ext}`;
 }
 
@@ -167,6 +193,7 @@ function openCache(): Promise<Cache | null> {
 
 /** Past dates and undated mosaics never change, so they are kept on disk even though GIBS says no-store. */
 function immutable(l: LayerDef, date?: string): boolean {
+  if (l.live) return false;
   if (!l.daily) return true;
   if (!date) return false;
   return date < new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10);
@@ -187,7 +214,8 @@ async function fetchTile(url: string, keep: boolean, signal?: AbortSignal): Prom
     return null;
   }
   const t = res.headers.get("layer-time-actual");
-  if (t) served.set(url, t.slice(0, 10));
+  // live layers keep the time of the image (HH:MM UTC); daily layers the day
+  if (t) served.set(url, /T\d\d:\d\d/.test(t) && !t.includes("T00:00:00") ? `${t.slice(0, 10)} ${t.slice(11, 16)} UTC` : t.slice(0, 10));
   let blob: Blob;
   try { blob = await res.blob(); } catch { return null; }
   // Store a fresh copy after reading (a cloned body would make the read wait on a slow cache write).
