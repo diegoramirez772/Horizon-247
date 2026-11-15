@@ -1,25 +1,130 @@
 @import "tailwindcss";
 
-/* Brand tokens: Estela defines them (design/ and brand/); William wires them here. */
+/*
+  HORIZON 247 · visual system v3 (2026-11-14): light, clean, conversation-first (Diego's brief: "como ChatGPT",
+  fondo blanco, ventana principal centrada, panel lateral que divide la pantalla). Dark stays available.
+  The accent is neutral (black on light, white on dark, like ChatGPT) and only for things you can press, never for data. Contrasts are tested (tests/palette.test.ts).
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-2: #F4F6FA;
+  --border: #DCE3EE;
+  --border-control: #7D889E;
+  --text: #0D1526;
+  --text-2: #445066;
+  --text-3: #5A6579;
+  --accent: #111111;
+  --accent-strong: #000000;
+  --on-accent: #FFFFFF;
+  --focus: #111111;
+  --no-change: #727E96;
+  --sim: #FFC857;
+  --on-sim: #1A1300;
+  --glass: rgba(255, 255, 255, 0.86);
+  --shadow: 0 10px 40px rgba(16, 24, 40, 0.14);
+  --horizon-glow: rgba(96, 140, 210, 0.28);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  /* Neutral black (no blue tint), as William asked. */
+  --bg: #0A0A0A;
+  --surface: #141414;
+  --surface-2: #1F1F1F;
+  --border: #2A2A2A;
+  --border-control: #5E5E5E;
+  --text: #F2F2F2;
+  --text-2: #B5B5B5;
+  --text-3: #949494;
+  --accent: #F2F2F2;
+  --accent-strong: #FFFFFF;
+  --on-accent: #0A0A0A;
+  --focus: #F2F2F2;
+  --no-change: #6E6E6E;
+  --sim: #FFC857;
+  --on-sim: #1A1300;
+  --glass: rgba(20, 20, 20, 0.82);
+  --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  --horizon-glow: rgba(150, 180, 230, 0.16);
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-control: var(--border-control);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-on-accent: var(--on-accent);
+  --color-focus: var(--focus);
+  --color-no-change: var(--no-change);
+  --color-sim: var(--sim);
+  --color-on-sim: var(--on-sim);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Floating panels over the map. */
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+
+@keyframes h247-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.enter {
+  animation: h247-enter 200ms ease-out both;
+}
+@keyframes h247-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fade {
+  animation: h247-fade 150ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Range input in the accent colour. */
+input[type="range"] {
+  accent-color: var(--accent);
 }
