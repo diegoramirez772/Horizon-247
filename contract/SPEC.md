@@ -166,9 +166,20 @@ Las plantillas del §5 son el registro **técnico**. Registro **sencillo** (mism
 | PROBADO | «Aquí sí hay un cambio real: {variable} {sube/baja} unos {efecto} {unidad} cada 10 años. Es muy poco probable que sea casualidad.» | "There is a real change here: {variable} is {rising/falling} about {effect} {unit} every 10 years. It is very unlikely to be chance." |
 | CANDIDATA | «Parece haber un cambio, pero aún no estamos seguros: podría ser casualidad o depender de cómo se calcule.» | "There seems to be a change, but we are not sure yet: it could be chance or depend on how it is calculated." |
 | NO_CONCLUYENTE | «Todavía no se puede saber. Con {n} años de datos solo notaríamos cambios de {mde} o más cada 10 años. Habría que esperar unos {años} años más.» | "We cannot tell yet. With {n} years of data we could only notice changes of {mde} or more per 10 years. We would need about {years} more years." |
-| SIN_CAMBIO | «No vemos cambios grandes (de {δ} o más cada 10 años). Si los hubiera, lo habríamos notado.» | "We see no large changes ({δ} or more per 10 years). If there were, we would likely have noticed." |
+| SIN_CAMBIO | «No vemos cambios grandes (de {δ} o más cada 10 años). Si los hubiera, muy probablemente los habríamos notado.» | "We see no large changes ({δ} or more per 10 years). If there were, we would likely have noticed." |
 | INSUFICIENTE | «No hay datos suficientes en esta zona.» | "Not enough data in this area." |
 El selector **[Técnico | Sencillo]** cambia solo el texto; los números y la evidencia son los mismos.
+*(Corregido 2026-11-15: SIN_CAMBIO decía «lo habríamos notado»; la potencia medida es ~80–92 % según φ, no 100 %. Ahora coincide con §5.)*
+
+#### 8.5b Registro **normal** (v0.9, aditivo) — doc «Modos de profundidad… v2» §2.3
+Tres niveles sobre los mismos números: **Simple** = §8.5 · **Normal** = esta tabla · **Experto** = §5. Normal muestra gráfica, comparación, «desde cuándo se sabe» e intervalo, **sin** p/q a la vista. En URL: `reg=sencillo|normal|experto`.
+| Veredicto | Español (normal) | English (normal) |
+|---|---|---|
+| PROBADO | «{Variable} {sube/baja} {efecto} {unidad} por década (entre {lo} y {hi}). El cambio aparece con los tres métodos y se mantiene al revisar {N} zonas a la vez.» | "{Variable} is {rising/falling} {effect} {unit} per decade (between {lo} and {hi}). All three methods see it, and it holds when {N} areas are checked at once." |
+| CANDIDATA | «Hay una señal de {efecto} {unidad} por década, pero no pasa todos los filtros ({k} de 3 métodos la ven). Puede ser real o casualidad.» | "There is a signal of {effect} {unit} per decade, but it does not pass every check ({k} of 3 methods see it). It may be real or chance." |
+| NO_CONCLUYENTE | «Con {n} años de datos solo se distinguen cambios de {mde} o más por década, y lo que buscamos es {δ}. Con ~{años} años más se podría saber.» | "With {n} years of data only changes of {mde} or more per decade stand out, and we are looking for {δ}. About {years} more years would tell." |
+| SIN_CAMBIO | «No aparece un cambio de {δ} o más por década. Con estos datos, uno así se habría visto en la gran mayoría de los casos.» | "No change of {δ} or more per decade shows up. With these data, one like that would have been seen in most cases." |
+| INSUFICIENTE | «Solo hay {n} años con datos válidos en esta zona; no alcanzan para este análisis.» | "There are only {n} years of valid data here; not enough for this analysis." |
 
 ### 8.6 Evento `EMERGENCIA` (función «alertas y seguimiento»)
 `{type:"EMERGENCIA", entity:"mx-dgo", layer:"…", year: 2019, from:"NO_CONCLUYENTE", to:"PROBADO", evidence:{window:"2001-2019", q:0.0, nSig:3}}` — se deriva de `windows/` y se lista con su evidencia. **No es una alerta de peligro:** dice que *la evidencia ya alcanza*.
@@ -315,3 +326,12 @@ Base `http://<host>:8247`. JSON en UTF-8. Llave: `Authorization: Bearer <llave>`
 | `POST /alerts/{id}/transition` | operador | `{to, note}`; el actor es el nombre de la llave |
 | `POST /monitors` | admin | `{id, entity, variable, period, params?, org?}` → 201 |
 Errores: 400 (dato inválido, con motivo), 401 (sin llave), 403 (sin permiso), 404, 413 (> 5 MB). CORS abierto por defecto (configurable).
+
+## 15 · Inicio «Mis monitores» (`home.json`, v0.9, aditivo) — doc «Modos de profundidad… v2» §5
+Lo escribe `python -m zon home --place … --var … --out apps/web/public/bundles` (`zon/home.py`). La web lo lee si existe; si no, el inicio es el de siempre.
+- `entities[]`: una por lugar seguido, **ordenadas por la prioridad de HORI** (P0 primero) y luego por nombre. Cada una: `entity` (§10.1 + `kind`, `alternatives`), `monitors[]`, `events[]` y `state` = `hori.api.entity_state` (§12.3) tal cual.
+- `monitors[]`: uno por variable: `finding` (veredicto regional del lugar = misma regla y mismo número que `zon.query.query_place(...)["regional"]`; solo años completos), `series` (anomalía anual usada en la prueba), `timeline` (ventanas crecientes: `ends`, `verdict`, `effect`, `emergence_year`, `first_probado`, `withdrawals`, `event`, `consistent` = la última ventana reproduce el veredicto completo), `anomalies[]` (detector mensual de §11.1, las últimas 12, con `recent`), `data` (`last_month` ≠ `computed_at`, fuente, versión, `n_cells`, `resolution_deg`, `cell_km`, `input_sha256`), `method`.
+- `events[]`: `{id, monitor, type, tray, date, …}`. `id` es **estable** (la web guarda «visto» por id: no vuelve a avisar lo mismo). `tray` ∈ `evidencia` (EMERGENCIA, CRUZO, SE_DEBILITO, CAMBIO_SIGNO, anomalías del fenómeno) · `calidad` (`sin_datos`, `congelado`, `fuera_de_rango`, CAMBIO_DE_VERSION) · `seguimiento` (alertas y aportes, cuando haya cuentas).
+- `calibration`: las cifras medidas que la web muestra en «¿qué tan seguro?» (MODEL_CARD §3.1 y §3.9). `honesty`: frase fija.
+- La familia FDR de una consulta de lugar es **el lugar** (1 serie regional): `method.family` lo dice.
+

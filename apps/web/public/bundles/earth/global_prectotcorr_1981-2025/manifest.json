@@ -1,0 +1,336 @@
+{
+  "contract": "0.4",
+  "id": "powerzarr_PRECTOTCORR_global_1981-2025",
+  "profile": "earth",
+  "variable": {
+    "name": "PRECTOTCORR",
+    "unit": "mm/day",
+    "unit_per_decade": "mm/day/década"
+  },
+  "entity": {
+    "kind": "region_cell",
+    "body": "earth",
+    "count": 207936,
+    "valid": 207936,
+    "id": "earth-bbox-90s-180w-90n-179-375e",
+    "type": "region",
+    "name": {
+      "es": "Recuadro [-90.0, -180.0, 90.0, 179.375]",
+      "en": "Box [-90.0, -180.0, 90.0, 179.375]"
+    },
+    "status": "real",
+    "version": "1",
+    "source": {
+      "place": {
+        "name": "recuadro de la consulta"
+      },
+      "dataset": "NASA POWER ARD (MERRA-2), Zarr on AWS",
+      "dataset_url": "https://nasa-power.s3.us-west-2.amazonaws.com/merra2/temporal/power_merra2_monthly_temporal_lst.zarr",
+      "dataset_version": "",
+      "variable": "PRECTOTCORR",
+      "input_sha256": "668ce354b70d33ed332e7bc6c9542cc435102873622739ee502da50867863ff8",
+      "card_sha256": "23318e081cbd6236cc5bb7fbc13d65425812c680a1ed22dcc1b4dcaf97fdfbfb"
+    },
+    "geometry": {
+      "type": "bbox",
+      "bbox": [
+        -90.0,
+        -180.0,
+        90.0,
+        179.375
+      ]
+    },
+    "relations": []
+  },
+  "grid": {
+    "type": "latlon",
+    "nlat": 361,
+    "nlon": 576,
+    "lat0": 90.0,
+    "dlat": -0.5,
+    "lon0": -180.0,
+    "dlon": 0.625,
+    "native_resolution_deg": 0.5
+  },
+  "dataset": {
+    "name": "NASA POWER ARD (MERRA-2), Zarr on AWS",
+    "kind": "reanalysis",
+    "url": "https://nasa-power.s3.us-west-2.amazonaws.com/merra2/temporal/power_merra2_monthly_temporal_lst.zarr",
+    "time_standard": "LST",
+    "known_breaks": {
+      "years": [
+        1992,
+        2001,
+        2011
+      ],
+      "source": "MERRA-2 production streams (GMAO); see UCAR Climate Data Guide"
+    }
+  },
+  "window": {
+    "start": 1981,
+    "end": 2025,
+    "n": 45,
+    "step": "annual",
+    "aggregation": "mean of monthly anomalies; >= 9/12 months per year"
+  },
+  "params": {
+    "alpha": 0.05,
+    "fdr_q": 0.1,
+    "delta_sigma_per_decade": 2.0,
+    "delta_per_decade": 0.2,
+    "delta_source": "profile",
+    "memory_hurst": 0.7,
+    "min_valid_years": 10,
+    "min_months": 9
+  },
+  "detectability": {
+    "cells": 207936,
+    "n_years": 45,
+    "share_detectable_now": 0.7197,
+    "share_needs_more_than_60_years": 0.0288,
+    "years_more_p50": 15.0,
+    "years_more_p90": 44.0,
+    "not_yet_knowable": 38101,
+    "note": "MDE <= delta: a change of size delta would have been detected with >= 80 % power (noise model)."
+  },
+  "quality": {
+    "known_breaks": {
+      "years": [
+        1992,
+        2001,
+        2011
+      ],
+      "source": "MERRA-2 production streams (GMAO); see UCAR Climate Data Guide",
+      "flagged_cells": 17374,
+      "share_within_1_year": 0.1777,
+      "expected_if_uniform": 0.2195,
+      "note": "Diagnóstico: si la parte observada supera a la esperada, parte de los saltos son artefactos de versión del producto."
+    }
+  },
+  "methods": [
+    "MK-VC",
+    "TFPW-WS",
+    "OLS-AR1"
+  ],
+  "verdict_codes": {
+    "0": "INSUFICIENTE",
+    "1": "PROBADO",
+    "2": "CANDIDATA",
+    "3": "NO_CONCLUYENTE",
+    "4": "SIN_CAMBIO_MAYOR_QUE_DELTA"
+  },
+  "flag_bits": {
+    "1": "depende_del_metodo",
+    "2": "cambio_de_version",
+    "4": "cobertura_baja",
+    "8": "resolucion_gruesa",
+    "16": "reconstruccion",
+    "32": "simulado",
+    "64": "autocorrelacion_alta",
+    "128": "quiebre_posible"
+  },
+  "summary": {
+    "cells_valid": 207936,
+    "naive_marked": 72080,
+    "ebh_discoveries": 10902,
+    "probado_robusto_memoria": 24538,
+    "bh_discoveries": 31876,
+    "quiebre_posible": 17374,
+    "insuficiente": 0,
+    "probado": 31876,
+    "candidata": 38522,
+    "no_concluyente": 38101,
+    "sin_cambio_mayor_que_delta": 99437
+  },
+  "calibration": {
+    "note": "Measured by simulation (AR(1) Gaussian noise, n=23): false alarms 5.2% (phi=0.3) and 6.8% (phi=0.5); power 92% / 78% at 2 sigma per decade. Illustrates, does not prove, behaviour on real data. See sim/."
+  },
+  "honesty": {
+    "data_real": true,
+    "simulated": false,
+    "label_es": "Datos reales: NASA POWER ARD (MERRA-2), Zarr on AWS",
+    "label_en": "Real data: NASA POWER ARD (MERRA-2), Zarr on AWS"
+  },
+  "warnings": [],
+  "build": {
+    "hori": "0.0.1",
+    "python": "3.14.8",
+    "numpy": "2.5.4",
+    "seed": 247,
+    "input_sha256": "668ce354b70d33ed332e7bc6c9542cc435102873622739ee502da50867863ff8",
+    "created_at": "2026-11-15T03:53:14Z"
+  },
+  "profile_spec": {
+    "id": "auto.flujo_de_agua.prectotcorr",
+    "version": "auto-1",
+    "body": "earth",
+    "mode": "trend",
+    "variables": [
+      "PRECTOTCORR"
+    ],
+    "unit": "mm/day",
+    "aggregation": {
+      "step": "annual",
+      "method": "mean_monthly_anomaly",
+      "min_months": 9
+    },
+    "delta_per_decade": 0.2,
+    "delta_rationale": "0.2 mm/día/década: ≈13 % por década de la lluvia media de Durango (1.52 mm/día, POWER, medido). En zonas muy secas es grande frente a la media: el δ va siempre visible. Valor de trabajo, por revisar.",
+    "review": "automatico",
+    "methods": [
+      "MK-VC",
+      "TFPW-WS",
+      "OLS-AR1"
+    ],
+    "name": {
+      "es": "Precipitation Corrected",
+      "en": "Precipitation Corrected"
+    },
+    "physical_class": "flujo_de_agua",
+    "decisions": [
+      "Propiedades de ceros/límites medidas en una muestra repartida por la malla.",
+      "Clase física «Flujo de agua» porque units = 'mm/day' y el nombre dice 'precip'; δ = 0.2 mm/day/década (tabla curada).",
+      "Agregación anual = media de anomalías mensuales (≥ 9 de 12 meses), coherente con cell_methods = 'time: mean'.",
+      "Medido en los datos: 1.9% de meses en cero, 1.9% en los límites válidos, 0.0% de años con media cero.",
+      "Tras correr: σ interanual mediana 0.2553, φ̂ mediana 0.0962, MDE mediano 0.1119 mm/day/década frente a δ 0.2."
+    ],
+    "flags": [],
+    "measured": {
+      "sigma_median": 0.2553,
+      "r1_median": 0.0962,
+      "mde_median": 0.1119,
+      "delta_used_median": 0.2
+    },
+    "catalog_version": "auto-1"
+  },
+  "title": {
+    "es": "PRECTOTCORR",
+    "en": "PRECTOTCORR"
+  },
+  "arrays": {
+    "effect": {
+      "file": "effect.f32",
+      "dtype": "f32"
+    },
+    "ci_lo": {
+      "file": "ci_lo.f32",
+      "dtype": "f32"
+    },
+    "ci_hi": {
+      "file": "ci_hi.f32",
+      "dtype": "f32"
+    },
+    "sigma": {
+      "file": "sigma.f32",
+      "dtype": "f32"
+    },
+    "r1": {
+      "file": "r1.f32",
+      "dtype": "f32"
+    },
+    "p_cons": {
+      "file": "p_cons.f32",
+      "dtype": "f32"
+    },
+    "q_cons": {
+      "file": "q_cons.f32",
+      "dtype": "f32"
+    },
+    "mde": {
+      "file": "mde.f32",
+      "dtype": "f32"
+    },
+    "years_more": {
+      "file": "years_more.f32",
+      "dtype": "f32"
+    },
+    "verdict": {
+      "file": "verdict.u8",
+      "dtype": "u8"
+    },
+    "flags": {
+      "file": "flags.u8",
+      "dtype": "u8"
+    },
+    "nvalid": {
+      "file": "nvalid.u8",
+      "dtype": "u8"
+    },
+    "nsig_methods": {
+      "file": "nsig_methods.u8",
+      "dtype": "u8"
+    },
+    "naive_sig": {
+      "file": "naive_sig.u8",
+      "dtype": "u8"
+    },
+    "delta": {
+      "file": "delta.f32",
+      "dtype": "f32"
+    },
+    "e_cons": {
+      "file": "e_cons.f32",
+      "dtype": "f32"
+    },
+    "ebh_sig": {
+      "file": "ebh_sig.u8",
+      "dtype": "u8"
+    },
+    "robust_mem": {
+      "file": "robust_mem.u8",
+      "dtype": "u8"
+    },
+    "break_year": {
+      "file": "break_year.f32",
+      "dtype": "f32"
+    }
+  },
+  "series": null,
+  "years": [
+    1981,
+    1982,
+    1983,
+    1984,
+    1985,
+    1986,
+    1987,
+    1988,
+    1989,
+    1990,
+    1991,
+    1992,
+    1993,
+    1994,
+    1995,
+    1996,
+    1997,
+    1998,
+    1999,
+    2000,
+    2001,
+    2002,
+    2003,
+    2004,
+    2005,
+    2006,
+    2007,
+    2008,
+    2009,
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ]
+}

@@ -141,7 +141,7 @@ let cardId = 900000;
 function zonCard(es: string, en: string): Card {
   return {
     id: cardId++, kind: "zon", source: "system", action: null,
-    text: { es: { sencillo: es, tecnico: es }, en: { sencillo: en, tecnico: en } },
+    text: { es: { sencillo: es, normal: es, tecnico: es }, en: { sencillo: en, normal: en, tecnico: en } },
     origin: "zon", evidence: null, chips: [], correctable: false,
   };
 }

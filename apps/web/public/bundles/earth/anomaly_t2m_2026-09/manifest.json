@@ -1,0 +1,62 @@
+{
+ "contract": "0.7",
+ "kind": "anomaly_map",
+ "id": "anomaly_t2m_2026-09",
+ "profile": "earth",
+ "variable": {
+  "name": "T2M",
+  "unit": "C",
+  "long_name": "Temperature at 2 Meters"
+ },
+ "month": "2026-09",
+ "window": {
+  "start": 1981,
+  "end": 2026,
+  "n": 549
+ },
+ "grid": {
+  "type": "latlon",
+  "nlat": 361,
+  "nlon": 576,
+  "lat0": 90.0,
+  "dlat": -0.5,
+  "lon0": -180.0,
+  "dlon": 0.625
+ },
+ "params": {
+  "z_alarm": 3.5,
+  "transform": null,
+  "method": "hori.anomaly.z_last (igual a detect para el último mes)"
+ },
+ "summary": {
+  "cells": 207936,
+  "points": 4858,
+  "area_share_points": 0.02883,
+  "area_share_high": 0.02053,
+  "area_share_low": 0.00829,
+  "expected_by_chance_cells": 312
+ },
+ "arrays": {
+  "z": {
+   "file": "z.f32",
+   "dtype": "f32"
+  },
+  "point": {
+   "file": "point.u8",
+   "dtype": "u8"
+  }
+ },
+ "dataset": {
+  "name": "NASA POWER ARD (MERRA-2), Zarr on AWS",
+  "kind": "reanalysis",
+  "url": "https://nasa-power.s3.us-west-2.amazonaws.com/merra2/temporal/power_merra2_monthly_temporal_lst.zarr"
+ },
+ "build": {
+  "seconds": 569.6,
+  "workers": 2
+ },
+ "honesty": {
+  "es": "Desviación estadística del mes frente a los años previos de cada celda. Por azar se esperan ~0.15 % de celdas marcadas, y las vecinas están correlacionadas: hay que leer manchas, no celdas sueltas. No es prueba de daño ni de peligro.",
+  "data_real": true
+ }
+}

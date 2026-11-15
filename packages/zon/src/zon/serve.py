@@ -14,19 +14,38 @@ import shutil
 from pathlib import Path
 
 
+# Plain names for the variables NASA POWER names in English (the web is Spanish-first)
+_TITLES = {
+    "T2M": {"es": "Temperatura del aire (2 m)", "en": "Air temperature (2 m)"},
+    "PRECTOTCORR": {"es": "Lluvia", "en": "Rainfall"},
+    "RH2M": {"es": "Humedad del aire", "en": "Air humidity"},
+    "WS2M": {"es": "Viento", "en": "Wind"},
+    "CDOD610": {"es": "Polvo en Marte", "en": "Dust on Mars"},
+}
+
+
+def _title(doc: dict, var: dict) -> dict | None:
+    t, name = doc.get("title"), str(var.get("name") or "")
+    if t and str(t.get("es", "")).upper() != name.upper():      # a real title, not the bare variable code
+        return t
+    return _TITLES.get(name.upper()) or t
+
+
 def _entry(rel: str, d: Path) -> dict | None:
     if (d / "timeline.json").exists():
         doc, kind = json.loads((d / "timeline.json").read_text(encoding="utf-8")), "timeline"
     elif (d / "manifest.json").exists():
-        doc, kind = json.loads((d / "manifest.json").read_text(encoding="utf-8")), "layer"
+        doc = json.loads((d / "manifest.json").read_text(encoding="utf-8"))
+        # a trend layer has no `kind`; the anomaly map says so, and the web must not open it as a trend layer
+        kind = "anomaly" if doc.get("kind") == "anomaly_map" else "layer"
     else:
         return None
     var, win = doc.get("variable", {}), doc.get("window", doc.get("windows", {}))
     files = {f.name: {"bytes": f.stat().st_size, "sha256": hashlib.sha256(f.read_bytes()).hexdigest()}
              for f in sorted(d.iterdir()) if f.is_file()}
     end = win.get("end", (win.get("ends") or [None])[-1])
-    return {"path": rel, "kind": kind, "id": doc.get("id"), "profile": doc.get("profile", "earth"),
-            "title": doc.get("title") or {"es": var.get("long_name") or var.get("name"), "en": var.get("long_name") or var.get("name")},
+    return {"path": rel, "kind": kind, "id": doc.get("id") or d.name, "profile": doc.get("profile", "earth"),
+            "title": _title(doc, var) or {"es": var.get("long_name") or var.get("name"), "en": var.get("long_name") or var.get("name")},
             "variable": var, "unit": var.get("unit"),
             "window": {"start": win.get("start"), "end": end, "n": win.get("n") or (len(win.get("ends", [])) or None)},
             "cells": (doc.get("entity") or {}).get("count") or (doc.get("grid", {}).get("nlat", 0) * doc.get("grid", {}).get("nlon", 0)) or None,

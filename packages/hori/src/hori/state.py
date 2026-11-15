@@ -21,6 +21,15 @@ VERDICT_ES = {"PROBADO": "probada", "CANDIDATA": "candidata (sin confirmar)", "N
 ANOM_ES = {"punto": "un valor fuera de lo esperable", "racha": "una racha de valores fuera de lo esperable",
            "cambio_nivel": "un cambio de nivel sostenido", "sin_datos": "la fuente dejó de enviar datos",
            "fuera_de_rango": "valores imposibles (fuera del rango físico)", "congelado": "el sensor repite el mismo valor (posible falla)"}
+# Plain reading of each flag (design doc «Modos de profundidad… v2» §3.2); the web has the same table in both languages.
+FLAG_ES = {"depende_del_metodo": "según cómo se calcule, la señal aparece o no",
+           "cambio_de_version": "la fuente cambió de versión a mitad del periodo",
+           "cobertura_baja": "faltan datos en parte del periodo o de la zona",
+           "resolucion_gruesa": "la zona es más chica que el detalle de los datos",
+           "reconstruccion": "parte de los datos son reconstruidos, no medidos",
+           "simulado": "datos simulados, no reales",
+           "autocorrelacion_alta": "los años se parecen mucho entre sí; eso hace más difícil estar seguros",
+           "quiebre_posible": "hay un salto brusco; podría ser del instrumento y no del fenómeno"}
 LEVEL_ES = {"reporte_aislado": "un reporte aislado", "senal_ciudadana": "una señal ciudadana",
             "senal_con_evidencia": "una señal ciudadana con evidencia", "corroborada_por_instrumento": "una señal ciudadana que un instrumento confirma"}
 
@@ -41,7 +50,7 @@ def explain(item: dict) -> str:
         s = (f"{t['variable']}: tendencia {VERDICT_ES.get(t['verdict'], t['verdict'])}, {t['effect']:+.2f} {t['unit']}/década "
              f"(rango 95 %: {t['ci'][0]:+.2f} a {t['ci'][1]:+.2f}).")
         if t["verdict"] == "NO_CONCLUYENTE" and t.get("years_more") is not None:
-            s += f" Faltan ~{int(t['years_more'])} años de datos para poder ver un cambio de {t['delta']:g} {t['unit']}/década."
+            s += f" Faltan ~{int(t['years_more'])} año{'' if int(t['years_more']) == 1 else 's'} de datos para poder ver un cambio de {t['delta']:g} {t['unit']}/década."
         if t.get("event"):
             s += f" Cambió con el último dato: {t['event'].lower().replace('_', ' ')}."
         return s + " [Calculado por HORI]"
@@ -117,10 +126,10 @@ def entity_state(entity: dict, *, trends: list | None = None, anomalies: list | 
     unknowns = []
     for t in trends:
         if t["verdict"] in ("NO_CONCLUYENTE", "INSUFICIENTE"):
-            unknowns.append(f"{t['variable']}: " + (f"aún no se puede saber; faltan ~{int(t['years_more'])} años" if t.get("years_more")
+            unknowns.append(f"{t['variable']}: " + (f"aún no se puede saber; faltan ~{int(t['years_more'])} año{'' if int(t['years_more']) == 1 else 's'}" if t.get("years_more")
                                                     else "datos insuficientes"))
         for f in t.get("flags", []):
-            unknowns.append(f"{t['variable']}: bandera {f}")
+            unknowns.append(f"{t['variable']}: {FLAG_ES.get(f, 'bandera ' + f)}")
     for w in swarm:
         if w.get("instrument_variable") is None:
             unknowns.append(f"enjambre «{w['theme']}»: ningún instrumento conectado puede confirmarlo ni descartarlo")

@@ -3,8 +3,8 @@
 
 import { entryWindow, siblings } from "@/core/contract/extra";
 import { cellIndexAt } from "@/core/contract/loader";
-import type { AppState, Store } from "@/core/state/store";
-import { compose, type CardKind, type Ctx, type Source } from "./compose";
+import { stepRegister, type AppState, type Store } from "@/core/state/store";
+import { compose, topicCard, type CardKind, type Ctx, type Source } from "./compose";
 import type { Conversation, Via } from "./conversation";
 import type { Command } from "./parse";
 
@@ -75,7 +75,14 @@ export function run(cmd: Command, via: Via, label: string | null, d: Deps): void
 
   switch (i.t) {
     case "lang": store.set({ ...patch, lang: i.l }); answerWhenReady(d, "done", source, false, null); return;
-    case "register": store.set({ ...patch, register: i.r }); answerWhenReady(d, before.selection || patch.selection ? "area" : "summary", source, false, null); return;
+    case "register": {
+      // Same numbers, another reading: nothing is recomputed and nothing is fetched (doc v2 §2.4).
+      const r = i.r === "+" ? stepRegister(before.register, 1) : i.r === "-" ? stepRegister(before.register, -1) : i.r;
+      store.set({ ...patch, register: r });
+      answerWhenReady(d, before.selection || patch.selection ? "area" : "level", source, false, null);
+      return;
+    }
+    case "certainty": store.set(patch); answerWhenReady(d, "certainty", source, correctable, null); return;
     case "theme": d.setTheme(i.th); store.set(patch); answerWhenReady(d, "done", source, false, null); return;
     case "profile":
       store.set(patch);
@@ -130,6 +137,32 @@ export function run(cmd: Command, via: Via, label: string | null, d: Deps): void
     case "contrast": store.set(patch); answerWhenReady(d, "contrast", source, correctable, null); return;
     case "provenance": store.set(patch); answerWhenReady(d, "provenance", source, correctable, null); return;
     case "help": store.set(patch); answerWhenReady(d, "help", source, false, null); return;
+    case "topic": {
+      // Live questions look at the place on the map too, so the answer can add HORI's long-term reading.
+      const w = i.where ?? (i.topic === "clima" || i.topic === "ganado" ? { name: "Durango", lat: 24.02, lon: -104.67 } : null);
+      if (w && ctx.layer && (i.topic === "clima" || i.topic === "ganado")) {
+        const idx = cellIndexAt(ctx.layer.manifest, w.lat, w.lon);
+        if (idx >= 0) patch.selection = { kind: "cell", index: idx };
+      }
+      store.set(patch);
+      conv.pending = null;
+      conv.answer(topicCard(i.topic, w, { ...d.ctx(), state: store.get() }, source));
+      return;
+    }
+    case "imagery": store.set({ ...patch, imagery: i.layer }); answerWhenReady(d, "imagery", source, correctable, null); return;
+    case "evolution": {
+      // The playback needs a layer with its yearly series: the 2° planet layer has one even when the 0.5° does not.
+      const years = m?.series?.years ?? [];
+      const yearly = years.length ? null : ctx.entries.find((e) => /annual2deg/.test(e.id)) ?? null;
+      if (yearly) {
+        store.set({ ...patch, layerId: yearly.id, selection: null, timeMode: "anual", year: null, windowEnd: null, evolution: true });
+        answerWhenReady(d, "evolution", source, correctable, yearly.id);
+        return;
+      }
+      store.set({ ...patch, selection: null, timeMode: years.length ? "anual" : before.timeMode, year: years[0] ?? null, evolution: years.length > 0 });
+      answerWhenReady(d, "evolution", source, correctable, null);
+      return;
+    }
     case "advice": answerWhenReady(d, "advice", source, false, null); return;
     case "cause": answerWhenReady(d, "cause", source, false, null); return;
   }

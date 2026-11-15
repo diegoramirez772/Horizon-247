@@ -28,7 +28,7 @@ function write(key: string, value: string | null): void {
 export function useUrlSync(store: Store): void {
   useEffect(() => {
     const remembered = read(REGISTER_KEY);
-    const base = { ...DEFAULT_STATE, register: remembered === "tecnico" ? "tecnico" as const : DEFAULT_STATE.register };
+    const base = { ...DEFAULT_STATE, register: remembered === "tecnico" || remembered === "normal" ? remembered : DEFAULT_STATE.register };
     store.set({ ...fromSearch(window.location.search, base, navigator.language), hydrated: true });
     const sync = () => {
       const s = store.get();

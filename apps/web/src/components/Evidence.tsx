@@ -1,19 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { FLAG, type CellFinding, type Manifest } from "@/contract/types";
 import { flagNames } from "@/core/contract/extra";
 import type { Layer } from "@/core/contract/loader";
-import { readSelection, type Ctx } from "@/core/assistant/compose";
+import { readingLimits, readSelection, type Ctx } from "@/core/assistant/compose";
+import { certaintyText } from "@/core/honesty/calibration";
+import { shownLimits } from "@/core/honesty/limits";
 import { count, num, signed } from "@/core/format/format";
-import { FLAG_LABEL, PLAIN_FLAGS, UI, type Lang } from "@/core/i18n/texts";
+import { FLAG_LABEL, UI, type Lang } from "@/core/i18n/texts";
 import type { Selection } from "@/core/state/store";
 import { SeriesChart } from "./SeriesChart";
 
 /**
- * «Ver evidencia»: the technical part behind an answer (doc 01 §4, web-diseno §2.2).
- * Same numbers in both registers; Experto shows every flag with its contract bit.
+ * «Ver evidencia»: the part behind an answer (doc 01 §4, web-diseno §2.2), for Normal and Experto.
+ * Same numbers in every level. Normal: chart, effect, interval, MDE/δ, up to three limits, no p/q.
+ * Experto: everything, every flag with its contract bit, and the measured calibration (doc v2 §2.2, §3).
  */
 export function EvidenceDetails({ ctx, selection, seriesReady }: { ctx: Ctx; selection: Exclude<Selection, null>; seriesReady: boolean }) {
+  const [sure, setSure] = useState(false);
   const s = ctx.state;
   const T = UI[s.lang];
   const layer = ctx.layer as Layer;
@@ -22,7 +27,8 @@ export function EvidenceDetails({ ctx, selection, seriesReady }: { ctx: Ctx; sel
   if (!r) return null;
   const f = r.finding;
   const expert = s.register === "tecnico";
-  const flags = flagNames(f.flags).filter((x) => expert || PLAIN_FLAGS.has(x));
+  const flags = expert ? flagNames(f.flags) : [];
+  const limits = shownLimits(readingLimits(ctx, r), s.register);
   const years = m.series?.years ?? [];
   const u = m.variable.unit_per_decade;
   const hasSeries = f.series.length === years.length && years.length > 0;
@@ -38,6 +44,13 @@ export function EvidenceDetails({ ctx, selection, seriesReady }: { ctx: Ctx; sel
           ))}
         </ul>
       ) : null}
+
+      <ul aria-label={s.lang === "es" ? "Límites" : "Limits"} className="flex flex-col gap-1 text-sm text-text-2">
+        {limits.map((l) => (
+          <li key={l.key} className="flex gap-1.5"><span aria-hidden="true">⚠︎</span><span>{l.text[s.lang]}
+            {expert && l.bit !== null ? <span className="tabular text-text-3"> · bit {l.bit}</span> : null}</span></li>
+        ))}
+      </ul>
 
       <section>
         <h3 className="mb-2 text-sm font-semibold">{T.series}</h3>
@@ -56,9 +69,13 @@ export function EvidenceDetails({ ctx, selection, seriesReady }: { ctx: Ctx; sel
           <Row k="δ" v={Number.isFinite(f.sigma)
             ? `${num(m.params.delta_sigma_per_decade * f.sigma, s.lang)} ${u} (${num(m.params.delta_sigma_per_decade, s.lang, 1)} σ)`
             : `${num(m.params.delta_sigma_per_decade, s.lang, 1)} σ`} />
-          <Row k="p" v={num(f.p, s.lang, 4)} />
-          <Row k={`q (FDR, ${count(r.N, s.lang)})`} v={num(f.q, s.lang, 4)} />
-          {selection.kind === "cell" ? (
+          {expert ? (
+            <>
+              <Row k="p" v={num(f.p, s.lang, 4)} />
+              <Row k={`q (FDR, ${count(r.N, s.lang)})`} v={num(f.q, s.lang, 4)} />
+            </>
+          ) : null}
+          {expert && selection.kind === "cell" ? (
             <>
               <Row k={T.methods} v={`${f.nSig} / 3 · ${m.methods.join(", ")}`} />
               <Row k="r̂₁" v={num(f.r1, s.lang)} />
@@ -74,7 +91,13 @@ export function EvidenceDetails({ ctx, selection, seriesReady }: { ctx: Ctx; sel
         </button>
       ) : null}
 
-      <Provenance m={m} lang={s.lang} />
+      <section>
+        <button type="button" onClick={() => setSure((x) => !x)} aria-expanded={sure}
+          className="text-sm font-semibold underline underline-offset-4">{s.lang === "es" ? "¿Qué tan seguro es?" : "How sure is it?"}</button>
+        {sure ? <p className="mt-2 text-sm leading-6 text-text-2">{certaintyText(s.register, s.lang)}</p> : null}
+      </section>
+
+      <Provenance m={m} lang={s.lang} expert={expert} />
     </div>
   );
 }
@@ -88,7 +111,7 @@ function Row({ k, v }: { k: string; v: string }) {
   );
 }
 
-function Provenance({ m, lang }: { m: Manifest; lang: Lang }) {
+function Provenance({ m, lang, expert }: { m: Manifest; lang: Lang; expert: boolean }) {
   const T = UI[lang];
   const d = m.dataset;
   return (
@@ -97,7 +120,7 @@ function Provenance({ m, lang }: { m: Manifest; lang: Lang }) {
       <p>{d.name} · {d.provider} · {d.version}</p>
       <p className="text-text-2">{m.window.start}–{m.window.end} (n = {m.window.n}) · {m.grid.native_resolution_deg}° · {T.licence}: {d.licence}</p>
       {d.doi ? <p className="text-text-2">DOI: {d.doi}</p> : null}
-      {d.sha256 ? <p className="break-all text-xs text-text-3">sha256 {d.sha256}</p> : null}
+      {expert && d.sha256 ? <p className="break-all text-xs text-text-3">sha256 {d.sha256}</p> : null}
       {d.url ? <a className="break-all text-text-2 underline" href={d.url} target="_blank" rel="noopener noreferrer">{d.url}</a> : null}
     </section>
   );

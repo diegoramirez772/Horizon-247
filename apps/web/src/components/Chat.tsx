@@ -4,16 +4,22 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { Card, Ctx, Figure } from "@/core/assistant/compose";
 import type { Conversation, Via } from "@/core/assistant/conversation";
 import { parse, type Command } from "@/core/assistant/parse";
+import type { HomeDoc } from "@/contract/types";
 import { digitsFor, num } from "@/core/format/format";
+import { shownLimits } from "@/core/honesty/limits";
 import { verdictName, type Lang, type Register } from "@/core/i18n/texts";
-import { Emblem } from "./ui";
+import { FeedbackInline } from "./FeedbackInline";
+import { MonitorsHome } from "./Home";
+import { TrendChart } from "./charts";
+import { Widgets, type WidgetActions } from "./genui/Widgets";
+import { Emblem, Spark, VerdictGlyph } from "./ui";
 import { useHub, useHubState } from "./interaccion/context";
 
 const T = {
   es: {
     hello: "¿Qué quieres saber del planeta?",
     sub: "Pregunta con tus palabras. HORIZON te muestra qué está cambiando, dónde, cuánto y si ya se puede saber.",
-    placeholder: "Pregúntale al mapa…",
+    placeholder: "Pregúntale a HORIZON…",
     send: "Enviar",
     mic: "Hablar",
     stop: "Dejar de escuchar",
@@ -28,7 +34,7 @@ const T = {
     next: "Siguiente",
     tryIt: "Probar",
     notThat: "No era eso",
-    onMap: "Ver en el mapa",
+    onMap: "Ver en Monitoreo",
     evidence: "Evidencia",
     origin: { hori: "Calculado por HORI", sim: "Datos simulados", ui: null, zon: "Registro de ZON" },
     you: "Tú",
@@ -45,7 +51,7 @@ const T = {
   en: {
     hello: "What do you want to know about the planet?",
     sub: "Ask in your own words. HORIZON shows what is changing, where, how much, and whether it is knowable yet.",
-    placeholder: "Ask the map…",
+    placeholder: "Ask HORIZON…",
     send: "Send",
     mic: "Speak",
     stop: "Stop listening",
@@ -60,7 +66,7 @@ const T = {
     next: "Next",
     tryIt: "Try it",
     notThat: "Not that",
-    onMap: "Show on the map",
+    onMap: "Show in Monitoring",
     evidence: "Evidence",
     origin: { hori: "Calculated by HORI", sim: "Simulated data", ui: null, zon: "ZON record" },
     you: "You",
@@ -76,9 +82,11 @@ const T = {
   },
 };
 
-export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence }: {
+export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, homeDoc = null, actions }: {
   conv: Conversation;
   ctx: Ctx;
+  /** «Mis monitores» (home.json, SPEC §15): shown on the start screen when ZON exported it. */
+  homeDoc?: HomeDoc | null;
   /** Show the start screen (the conversation is kept; «← Regresar» brings you here). */
   home: boolean;
   onHome: (home: boolean) => void;
@@ -86,6 +94,8 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence }:
   /** Open the map on what an answer talks about. */
   onShow: (card: Card) => void;
   onEvidence: (card: Card) => void;
+  /** What the generated components can do (fly the globe, change the imagery). */
+  actions: WidgetActions;
 }) {
   const snap = useSyncExternalStore(conv.subscribe, conv.get, conv.get);
   const { lang, register } = ctx.state;
@@ -110,13 +120,14 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence }:
           <div className="mb-4 flex justify-center"><Emblem size={92} /></div>
           <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.28em] text-text-3">{t.kicker}</p>
           <h1 className="mb-6 text-center text-[clamp(1.75rem,3.2vw,2.5rem)] font-semibold leading-tight tracking-tight text-balance">{t.hello}</h1>
-          <Composer conv={conv} lang={lang} simulated={simulated} onSend={(x, v) => { onHome(false); ask(x, v); }} autoFocus bare />
+          <Composer conv={conv} lang={lang} register={register} simulated={simulated} onSend={(x, v) => { onHome(false); ask(x, v); }} autoFocus bare />
           {msgs.length > 0 ? (
             <button type="button" onClick={() => onHome(false)} className="mx-auto mt-4 text-sm font-medium text-text-2 underline-offset-4 hover:text-text hover:underline">
               {t.resume} →
             </button>
           ) : null}
         </div>
+        {homeDoc ? <MonitorsHome doc={homeDoc} lang={lang} register={register} onAsk={(x) => { onHome(false); ask(x, "chip"); }} /> : null}
         <Discover lang={lang} onTry={(cmd, label) => { onHome(false); onCommand(cmd, "chip", label); }} />
         {simulated ? <p className="relative px-4 pb-4 pt-2 text-center text-xs text-text-3">{t.simNote}</p> : null}
       </div>
@@ -137,7 +148,7 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence }:
           ) : (
             <li key={m.id} className="enter">
               <Answer card={m.card} lang={lang} register={register} latest={m.id === lastAssistantId} ctx={ctx}
-                onCommand={onCommand} onShow={onShow} onEvidence={onEvidence} />
+                onCommand={onCommand} onShow={onShow} onEvidence={onEvidence} actions={actions} />
             </li>
           ))}
         </ol>
@@ -146,7 +157,7 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence }:
       <div className="relative px-4 pb-4 pt-2">
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-bg to-transparent" />
         <div className="mx-auto w-full max-w-[760px]">
-          <Composer conv={conv} lang={lang} simulated={simulated} onSend={ask} />
+          <Composer conv={conv} lang={lang} register={register} simulated={simulated} onSend={ask} />
         </div>
       </div>
     </div>
@@ -155,8 +166,8 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence }:
 
 // ---------------------------------------------------------------- one answer
 
-function Answer({ card, lang, register, latest, ctx, onCommand, onShow, onEvidence }: {
-  card: Card; lang: Lang; register: Register; latest: boolean; ctx: Ctx;
+function Answer({ card, lang, register, latest, ctx, onCommand, onShow, onEvidence, actions }: {
+  card: Card; lang: Lang; register: Register; latest: boolean; ctx: Ctx; actions: WidgetActions;
   onCommand: (cmd: Command, via: Via, label: string) => void; onShow: (c: Card) => void; onEvidence: (c: Card) => void;
 }) {
   const t = T[lang];
@@ -174,6 +185,15 @@ function Answer({ card, lang, register, latest, ctx, onCommand, onShow, onEviden
       <div className="min-w-0 flex-1">
         {card.action ? <p className="mb-1 truncate text-xs text-text-3">{card.action[lang]}</p> : null}
         <p className="whitespace-pre-line text-base leading-7 text-pretty">{card.text[lang][register]}</p>
+        {card.limits?.length ? (
+          <ul aria-label={lang === "es" ? "Límites" : "Limits"} className="mt-1.5 flex flex-col gap-0.5 text-sm text-text-2">
+            {shownLimits(card.limits, register).map((l) => (
+              <li key={l.key} className="flex gap-1.5"><span aria-hidden="true">⚠︎</span><span>{l.text[lang]}
+                {register === "tecnico" && l.bit !== null ? <span className="tabular text-text-3"> · bit {l.bit}</span> : null}</span></li>
+            ))}
+          </ul>
+        ) : null}
+        {card.widgets?.length ? <Widgets widgets={card.widgets} lang={lang} actions={actions} /> : null}
         {figure ? <FigureBlock f={figure} lang={lang} register={register} onClick={live ? () => onEvidence(card) : undefined} /> : null}
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {origin ? (
@@ -188,6 +208,7 @@ function Answer({ card, lang, register, latest, ctx, onCommand, onShow, onEviden
           {latest && card.correctable ? (
             <ActionButton onClick={() => onCommand({ intent: { t: "undo" }, place: null }, "chip", t.notThat)} icon={<span aria-hidden="true">↶</span>}>{t.notThat}</ActionButton>
           ) : null}
+          {latest ? <FeedbackInline lang={lang} layerId={card.evidence?.layerId ?? ctx.layer?.manifest.id ?? null} /> : null}
         </div>
         {latest && card.chips.length ? (
           <div className="mt-4 flex flex-wrap gap-2">
@@ -221,7 +242,8 @@ function FigureBlock({ f, lang, register, onClick }: { f: Figure; lang: Lang; re
   const Tag = onClick ? "button" : "div";
   return (
     <Tag type={onClick ? "button" : undefined} onClick={onClick}
-      className={`mt-3 flex w-full items-center gap-4 rounded-2xl border border-border bg-surface-2/70 p-3.5 text-left ${onClick ? "transition-colors hover:border-accent" : ""}`}>
+      className={`mt-3 block w-full rounded-2xl border border-border bg-surface-2/70 p-3.5 text-left ${onClick ? "transition-colors hover:border-accent" : ""}`}>
+      <div className="flex w-full items-center gap-4">
       <div className="min-w-0">
         <p className="flex items-center gap-1.5 text-xs font-semibold"><VerdictGlyph v={f.verdict} />{verdictName(f.verdict, lang, register)}</p>
         {f.verdict === 1 && register === "sencillo" ? (
@@ -240,46 +262,31 @@ function FigureBlock({ f, lang, register, onClick }: { f: Figure; lang: Lang; re
         <p className="tabular text-xs text-text-3">
           {register === "tecnico"
             ? `${f.verdict === 1 ? `IC ${signed(f.lo)} … ${signed(f.hi)} · ` : ""}MDE ${Number.isFinite(f.mde) ? num(f.mde, lang, digitsFor(register, f.mde)) : "—"} · ${f.window}`
-            : `${t.window} ${f.window}`}
+            : register === "normal" && f.verdict === 1
+              ? `${lang === "es" ? "Entre" : "Between"} ${signed(f.lo)} ${lang === "es" ? "y" : "and"} ${signed(f.hi)} · ${t.window} ${f.window}`
+              : `${t.window} ${f.window}`}
         </p>
       </div>
-      <Spark values={f.series} highlight={f.verdict === 1} />
+      {register === "sencillo" || !f.years.length ? <Spark values={f.series} highlight={f.verdict === 1} /> : null}
+      </div>
+      {register !== "sencillo" && f.years.length ? (
+        <div className="mt-2">
+          <TrendChart years={f.years} values={f.series} effect={f.verdict === 1 || f.verdict === 2 ? f.effect : NaN} lo={f.lo} hi={f.hi}
+            unit={lang === "es" ? `diferencia con lo normal (${f.unit})` : `difference from normal (${f.unit})`} lang={lang} showFan={register === "tecnico"}
+            label={lang === "es" ? `Serie anual ${f.window}` : `Yearly series ${f.window}`} />
+          <p className="text-xs text-text-3">{lang === "es"
+            ? `Barras: cada año contra lo normal de la zona (rojo más, azul menos). Línea: la tendencia que midió HORI${register === "tecnico" ? "; sombra: su intervalo" : ""}.`
+            : `Bars: each year against the area's normal (red above, blue below). Line: the trend HORI measured${register === "tecnico" ? "; shade: its interval" : ""}.`}</p>
+        </div>
+      ) : null}
     </Tag>
-  );
-}
-
-function Spark({ values, highlight }: { values: number[]; highlight: boolean }) {
-  const pts = values.map((v, i) => [i, v] as const).filter(([, v]) => Number.isFinite(v));
-  if (pts.length < 3) return null;
-  const W = 150, H = 44;
-  const ys = pts.map(([, v]) => v);
-  const lo = Math.min(...ys), hi = Math.max(...ys), span = hi - lo || 1;
-  const x = (i: number) => (i / (values.length - 1)) * (W - 4) + 2;
-  const y = (v: number) => H - 3 - ((v - lo) / span) * (H - 6);
-  const path = pts.map(([i, v], k) => `${k ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join("");
-  const [li, lv] = pts[pts.length - 1];
-  return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true" className="ml-auto shrink-0">
-      <path d={path} fill="none" stroke={highlight ? "var(--accent)" : "var(--text-3)"} strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={x(li)} cy={y(lv)} r="3" fill={highlight ? "var(--accent)" : "var(--text-3)"} />
-    </svg>
-  );
-}
-
-function VerdictGlyph({ v }: { v: number }) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" className="shrink-0">
-      <rect x="0.75" y="0.75" width="14.5" height="14.5" rx="3.5" fill={v === 1 ? "currentColor" : v === 4 ? "var(--no-change)" : "none"} stroke="currentColor" strokeWidth="1.5" />
-      {v === 3 ? <path d="M3 13L13 3M0 8L8 0M8 16L16 8" stroke="currentColor" strokeWidth="1.3" /> : null}
-      {v === 2 ? <g fill="currentColor"><circle cx="5" cy="5" r="1.2" /><circle cx="11" cy="5" r="1.2" /><circle cx="5" cy="11" r="1.2" /><circle cx="11" cy="11" r="1.2" /></g> : null}
-    </svg>
   );
 }
 
 // ---------------------------------------------------------------- composer
 
-function Composer({ conv, lang, onSend, simulated, autoFocus = false, bare = false }: {
-  conv: Conversation; lang: Lang; onSend: (text: string, via: Via) => void; autoFocus?: boolean;
+function Composer({ conv, lang, register, onSend, simulated, autoFocus = false, bare = false }: {
+  conv: Conversation; lang: Lang; register: Register; onSend: (text: string, via: Via) => void; autoFocus?: boolean;
   /** The layer on screen is simulated (manifest honesty.simulated): only then the "simulated" notice shows. */
   simulated: boolean;
   /** Start screen: no note and no voice option under the box. */
@@ -301,8 +308,8 @@ function Composer({ conv, lang, onSend, simulated, autoFocus = false, bare = fal
   useEffect(() => {
     if (!card || !snap.voiceReply || card.source === "map" || card.source === "controls" || card.id === spokenId.current) return;
     spokenId.current = card.id;
-    hub.speakCard(card.text[lang].sencillo, true);
-  }, [card, snap.voiceReply, hub, lang]);
+    hub.speakCard(card.text[lang][register], true); // the voice reads the level on screen (doc v2 §2.5)
+  }, [card, snap.voiceReply, hub, lang, register]);
 
   useEffect(() => { if (autoFocus) box.current?.focus(); }, [autoFocus]);
   useEffect(() => {
@@ -394,9 +401,13 @@ function HorizonBackdrop() {
   );
 }
 
-type Art = "voice" | "legend" | "compare" | "filter" | "years" | "data";
+type Art = "voice" | "legend" | "compare" | "filter" | "years" | "data" | "live" | "cattle" | "space" | "earth";
 const CARDS: Record<Lang, { art: Art; title: string; desc: string; cmd: Command; label: string }[]> = {
   es: [
+    { art: "earth", title: "La evolución de la Tierra", desc: "El globo reproduce, año por año desde 1981, cuánto se apartó cada zona de lo normal.", cmd: { intent: { t: "evolution" }, place: null }, label: "Muéstrame la evolución de la Tierra" },
+    { art: "live", title: "Satélites en vivo", desc: "Infrarrojo de la NASA cada 10 minutos: tormentas y nubes, de día y de noche.", cmd: { intent: { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }, place: null }, label: "Infrarrojo en vivo" },
+    { art: "cattle", title: "Ganado y calor", desc: "Índice de estrés por calor con lo último que midió la NASA en tu zona.", cmd: { intent: { t: "topic", topic: "ganado", where: null }, place: null }, label: "¿Cómo está el ganado en Durango?" },
+    { art: "space", title: "Marte y el espacio", desc: "El polvo de Marte analizado por HORI y un monitoreo de astronautas (simulado).", cmd: { intent: { t: "topic", topic: "marte", where: null }, place: null }, label: "¿Qué pasa en Marte?" },
     { art: "voice", title: "Pregunta como hablas", desc: "Escribe o usa el micrófono. El mapa se mueve solo hacia lo que preguntas.", cmd: { intent: { t: "help" }, place: null }, label: "¿Qué puedes hacer?" },
     { art: "legend", title: "Lee el mapa en 5 segundos", desc: "Sólido = cambio detectado. Rayado = aún no se puede saber, que no es lo mismo que «no cambia».", cmd: { intent: { t: "legend" }, place: null }, label: "¿Qué significa el rayado?" },
     { art: "compare", title: "Más años, más certeza", desc: "Con 24 años algo puede ser «aún no»; con 45 ya se ve. HORIZON te dice cuántos años faltan.", cmd: { intent: { t: "compare" }, place: null }, label: "Compara 24 y 45 años" },
@@ -405,6 +416,10 @@ const CARDS: Record<Lang, { art: Art; title: string; desc: string; cmd: Command;
     { art: "data", title: "Cada número tiene origen", desc: "Producto, versión y métodos a un clic. Si no se puede saber, lo dice.", cmd: { intent: { t: "provenance" }, place: null }, label: "¿De dónde salen los datos?" },
   ],
   en: [
+    { art: "earth", title: "How Earth has changed", desc: "The globe plays, year by year since 1981, how far each area moved from its normal.", cmd: { intent: { t: "evolution" }, place: null }, label: "Show me how Earth has changed" },
+    { art: "live", title: "Live satellites", desc: "NASA infrared every 10 minutes: storms and clouds, day and night.", cmd: { intent: { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }, place: null }, label: "Live infrared" },
+    { art: "cattle", title: "Livestock and heat", desc: "Heat stress index from the latest NASA measurements where you are.", cmd: { intent: { t: "topic", topic: "ganado", where: null }, place: null }, label: "How is the livestock in Durango?" },
+    { art: "space", title: "Mars and space", desc: "Mars dust analysed by HORI and astronaut monitoring (simulated).", cmd: { intent: { t: "topic", topic: "marte", where: null }, place: null }, label: "What is happening on Mars?" },
     { art: "voice", title: "Ask the way you talk", desc: "Type or use the microphone. The map moves to whatever you ask about.", cmd: { intent: { t: "help" }, place: null }, label: "What can you do?" },
     { art: "legend", title: "Read the map in 5 seconds", desc: "Solid = change detected. Striped = not yet knowable, which is not the same as “no change”.", cmd: { intent: { t: "legend" }, place: null }, label: "What do the stripes mean?" },
     { art: "compare", title: "More years, more certainty", desc: "With 24 years something may be “not yet”; with 45 it shows. HORIZON tells you how many years are missing.", cmd: { intent: { t: "compare" }, place: null }, label: "Compare 24 and 45 years" },
@@ -523,6 +538,33 @@ function CardArt({ art }: { art: Art }) {
             return <rect key={`${r}-${c}`} x={22 + c * 9} y={6 + r * 9} width="7" height="7" rx="1.5"
               fill={on ? (c > 8 ? "#2B73D6" : "#D9481F") : "currentColor"} opacity={on ? 1 : 0.14} />;
           }))}
+        </>
+      ) : art === "earth" ? (
+        <>
+          <circle cx="50" cy="32" r="22" stroke={ink} strokeWidth="1.6" />
+          <path d="M30 26c8 4 14-6 22-2s8 10 16 8M34 44c6-2 10 2 16 0s10-6 16-4" stroke={ink} strokeWidth="1.3" opacity="0.6" />
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((k) => <rect key={k} x={86 + k * 8} y={40 - k * 3.2} width="5" height={8 + k * 3.2} rx="1.5" fill={k > 4 ? "var(--warm)" : k > 2 ? "#E8A0A0" : "var(--cool)"} />)}
+        </>
+      ) : art === "live" ? (
+        <>
+          <circle cx="58" cy="32" r="22" stroke={ink} strokeWidth="1.6" />
+          <path d="M44 24c6-6 18-6 22 2s-6 14 2 18M48 40c4 4 12 4 16-2" stroke={ink} strokeWidth="2.2" strokeLinecap="round" opacity="0.75" />
+          <circle cx="112" cy="20" r="4" fill="var(--lvl-critical)" />
+          <path d="M100 40h44M100 48h30" stroke={ink} strokeWidth="1.6" strokeLinecap="round" opacity="0.4" />
+        </>
+      ) : art === "cattle" ? (
+        <>
+          {[60, 64, 70, 73, 77, 80, 76, 71].map((v, k) => <rect key={k} x={26 + k * 15} y={56 - (v - 50)} width="10" height={v - 50} rx="2"
+            fill={v >= 79 ? "var(--lvl-danger)" : v >= 75 ? "var(--lvl-watch)" : "var(--lvl-ok)"} />)}
+          <path d="M22 31h126" stroke={ink} strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
+        </>
+      ) : art === "space" ? (
+        <>
+          <circle cx="62" cy="32" r="16" fill="#C1440E" />
+          <path d="M50 26c6 2 10-2 16 0M52 38c6-2 10 2 18-1" stroke="#7A2A08" strokeWidth="1.4" />
+          <ellipse cx="62" cy="32" rx="34" ry="9" stroke={ink} strokeWidth="1.3" transform="rotate(-12 62 32)" opacity="0.6" />
+          <circle cx="126" cy="20" r="6" fill={ink} opacity="0.85" />
+          <circle cx="140" cy="44" r="3.5" fill={ink} opacity="0.5" />
         </>
       ) : art === "years" ? (
         <>

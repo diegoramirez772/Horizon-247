@@ -1,0 +1,193 @@
+{
+  "contract": "0.1",
+  "id": "power_T2M_monthly_2001-2024",
+  "profile": "earth",
+  "variable": {
+    "name": "T2M",
+    "unit": "C",
+    "unit_per_decade": "C/década"
+  },
+  "entity": {
+    "kind": "region_cell",
+    "body": "earth",
+    "count": 72,
+    "valid": 72
+  },
+  "grid": {
+    "type": "latlon",
+    "nlat": 9,
+    "nlon": 8,
+    "lat0": 26.5,
+    "dlat": -0.5,
+    "lon0": -106.875,
+    "dlon": 0.625,
+    "native_resolution_deg": 0.5
+  },
+  "dataset": {
+    "name": "NASA POWER (MERRA2)",
+    "provider": "NASA Langley Research Center POWER Project",
+    "version": "v2.10.0",
+    "doi": null,
+    "url": "https://power.larc.nasa.gov/api/temporal",
+    "sha256": "6adcf58012f6eee6bd8aa3d6b9390dec944df8a1ba73432f84fd9763e404529f",
+    "licence": "CC BY 4.0 per the AWS Open Data registry entry for NASA POWER; verify the API terms before publishing.",
+    "kind": "reanalysis"
+  },
+  "window": {
+    "start": 2001,
+    "end": 2024,
+    "n": 24,
+    "step": "annual",
+    "aggregation": "mean of monthly anomalies; >= 9/12 months per year"
+  },
+  "params": {
+    "alpha": 0.05,
+    "fdr_q": 0.1,
+    "delta_sigma_per_decade": 2.0,
+    "delta_per_decade": 0.3,
+    "min_valid_years": 10
+  },
+  "methods": [
+    "MK-VC",
+    "TFPW-WS",
+    "OLS-AR1"
+  ],
+  "verdict_codes": {
+    "0": "INSUFICIENTE",
+    "1": "PROBADO",
+    "2": "CANDIDATA",
+    "3": "NO_CONCLUYENTE",
+    "4": "SIN_CAMBIO_MAYOR_QUE_DELTA"
+  },
+  "flag_bits": {
+    "1": "depende_del_metodo",
+    "2": "cambio_de_version",
+    "4": "cobertura_baja",
+    "8": "resolucion_gruesa",
+    "16": "reconstruccion",
+    "32": "simulado",
+    "64": "autocorrelacion_alta"
+  },
+  "summary": {
+    "cells_valid": 72,
+    "naive_marked": 72,
+    "insuficiente": 0,
+    "probado": 66,
+    "candidata": 1,
+    "no_concluyente": 5,
+    "sin_cambio_mayor_que_delta": 0
+  },
+  "calibration": {
+    "note": "Measured by simulation (AR(1) Gaussian noise, n=23): false alarms 5.2% (phi=0.3) and 6.8% (phi=0.5); power 92% / 78% at 2 sigma per decade. Illustrates, does not prove, behaviour on real data. See sim/."
+  },
+  "honesty": {
+    "data_real": true,
+    "simulated": false,
+    "label_es": "Datos reales: NASA POWER (MERRA2)",
+    "label_en": "Real data: NASA POWER (MERRA2)"
+  },
+  "warnings": [],
+  "build": {
+    "hori": "0.0.1",
+    "python": "3.14.8",
+    "numpy": "2.5.4",
+    "seed": 247,
+    "created_at": "2026-11-14T22:17:48Z"
+  },
+  "title": {
+    "es": "Temperatura del aire a 2 m · Durango (caja aproximada)",
+    "en": "Air temperature at 2 m · Durango (approximate box)"
+  },
+  "arrays": {
+    "effect": {
+      "file": "effect.f32",
+      "dtype": "f32"
+    },
+    "ci_lo": {
+      "file": "ci_lo.f32",
+      "dtype": "f32"
+    },
+    "ci_hi": {
+      "file": "ci_hi.f32",
+      "dtype": "f32"
+    },
+    "sigma": {
+      "file": "sigma.f32",
+      "dtype": "f32"
+    },
+    "r1": {
+      "file": "r1.f32",
+      "dtype": "f32"
+    },
+    "p_cons": {
+      "file": "p_cons.f32",
+      "dtype": "f32"
+    },
+    "q_cons": {
+      "file": "q_cons.f32",
+      "dtype": "f32"
+    },
+    "mde": {
+      "file": "mde.f32",
+      "dtype": "f32"
+    },
+    "years_more": {
+      "file": "years_more.f32",
+      "dtype": "f32"
+    },
+    "verdict": {
+      "file": "verdict.u8",
+      "dtype": "u8"
+    },
+    "flags": {
+      "file": "flags.u8",
+      "dtype": "u8"
+    },
+    "nvalid": {
+      "file": "nvalid.u8",
+      "dtype": "u8"
+    },
+    "nsig_methods": {
+      "file": "nsig_methods.u8",
+      "dtype": "u8"
+    },
+    "naive_sig": {
+      "file": "naive_sig.u8",
+      "dtype": "u8"
+    }
+  },
+  "series": {
+    "file": "series.f32",
+    "dtype": "f32",
+    "shape": [
+      "cells",
+      "n"
+    ],
+    "years": [
+      2001,
+      2002,
+      2003,
+      2004,
+      2005,
+      2006,
+      2007,
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ]
+  }
+}

@@ -30,7 +30,7 @@ export function deltaValue(m: Manifest, c: CellFinding): number {
 }
 
 /**
- * Plain register rounds to 1 decimal; expert to 2 (web-diseno §4.3) — but never so far that a non-zero
+ * Plain register rounds to 1 decimal; normal and expert to 2 (web-diseno §4.3) — but never so far that a non-zero
  * value prints as 0.0, which would read as "nothing".
  */
 export function digitsFor(reg: Register, x?: number): number {
@@ -43,16 +43,16 @@ export function digitsFor(reg: Register, x?: number): number {
 export function templateValues(
   m: Manifest, c: CellFinding, nvalid: number | null, lang: Lang, reg: Register, N: number,
 ): TemplateValues {
-  const unit = m.variable.unit;
+  const unit = prettyUnit(m.variable.unit, lang);
   const withUnit = (x: number) => (Number.isFinite(x) ? `${num(x, lang, digitsFor(reg, x))} ${unit}` : "—");
   const d = digitsFor(reg, c.effect);
   const years = c.yearsMore === null ? "—" : isOver60(c.yearsMore) ? OVER_60[lang] : String(Math.round(c.yearsMore));
   // {n}: window years; for INSUFICIENTE the contract says "{n} valid years" → nvalid.u8 (PREGUNTAS #8).
   const n = c.verdict === 0 ? (nvalid === null ? "—" : String(nvalid)) : String(m.window.n);
-  // Plain register: no sign, "sube/baja" carries the direction (PREGUNTAS #13).
+  // Plain and normal registers: no sign, "sube/baja" carries the direction (PREGUNTAS #13).
   const variable = shortLabel(m, lang);
   return {
-    effect: reg === "sencillo" ? num(Math.abs(c.effect), lang, d) : signed(c.effect, lang, d),
+    effect: reg === "tecnico" ? signed(c.effect, lang, d) : num(Math.abs(c.effect), lang, d),
     unit,
     lo: signed(c.ci[0], lang, d),
     hi: signed(c.ci[1], lang, d),
@@ -74,6 +74,14 @@ export function templateValues(
 export function shortLabel(m: Manifest, lang: Lang): string {
   const v = m.variable as Manifest["variable"] & { short_label?: { es?: string; en?: string } };
   return v.short_label?.[lang] ?? m.title[lang];
+}
+
+/** Units as a person reads them: POWER writes "C" and "mm/day". Unknown units pass through unchanged. */
+export function prettyUnit(u: string, lang: Lang): string {
+  const map: Record<string, Record<Lang, string>> = {
+    C: { es: "°C", en: "°C" }, "mm/day": { es: "mm/día", en: "mm/day" }, "mm day-1": { es: "mm/día", en: "mm/day" }, "%": { es: "%", en: "%" },
+  };
+  return map[u]?.[lang] ?? u;
 }
 
 /** Sentence case for the start of a sentence built from a template. */

@@ -1,0 +1,321 @@
+{
+  "contract": "0.4",
+  "id": "powerzarr_T2M_annual2deg_1981-2025",
+  "profile": "earth",
+  "variable": {
+    "name": "T2M",
+    "unit": "C",
+    "unit_per_decade": "C/década"
+  },
+  "entity": {
+    "kind": "region_cell",
+    "body": "earth",
+    "count": 12960,
+    "valid": 12960,
+    "id": "earth-bbox-88-75s-179-062w-89-25n-178-438e",
+    "type": "region",
+    "name": {
+      "es": "Recuadro [-88.75, -179.0625, 89.25, 178.4375]",
+      "en": "Box [-88.75, -179.0625, 89.25, 178.4375]"
+    },
+    "status": "real",
+    "version": "1",
+    "source": {
+      "place": {
+        "name": "recuadro de la consulta"
+      },
+      "dataset": "NASA POWER ARD (MERRA-2), Zarr on AWS",
+      "dataset_url": "https://nasa-power.s3.us-west-2.amazonaws.com/merra2/temporal/power_merra2_monthly_temporal_lst.zarr",
+      "dataset_version": "",
+      "variable": "T2M",
+      "input_sha256": "fd2f2615723d0d975aed8feb0118af532902426131a6c86cc38a24c822a1c716",
+      "card_sha256": "6981875d2b3ee3b970f903dc9915e1d58cc1650c9567777da4e125d48f31229b"
+    },
+    "geometry": {
+      "type": "bbox",
+      "bbox": [
+        -88.75,
+        -179.0625,
+        89.25,
+        178.4375
+      ]
+    },
+    "relations": []
+  },
+  "grid": {
+    "type": "latlon",
+    "nlat": 90,
+    "nlon": 144,
+    "lat0": 89.25,
+    "dlat": -2.0,
+    "lon0": -179.0625,
+    "dlon": 2.5,
+    "native_resolution_deg": 2.0
+  },
+  "dataset": {
+    "name": "NASA POWER ARD (MERRA-2), Zarr on AWS",
+    "kind": "reanalysis",
+    "url": "https://nasa-power.s3.us-west-2.amazonaws.com/merra2/temporal/power_merra2_monthly_temporal_lst.zarr",
+    "sha256": "9f14b708df556918afbfc0ead4f30f28e036ada9d8467ee65568bef1fa679f50",
+    "time_standard": "LST"
+  },
+  "window": {
+    "start": 1981,
+    "end": 2025,
+    "n": 45,
+    "step": "annual",
+    "aggregation": "annual input"
+  },
+  "params": {
+    "alpha": 0.05,
+    "fdr_q": 0.1,
+    "delta_sigma_per_decade": 2.0,
+    "delta_per_decade": 0.3,
+    "delta_source": "profile",
+    "memory_hurst": 0.7,
+    "min_valid_years": 10,
+    "min_months": 9
+  },
+  "detectability": {
+    "cells": 12960,
+    "n_years": 45,
+    "share_detectable_now": 0.5735,
+    "share_needs_more_than_60_years": 0.0016,
+    "years_more_p50": 13.0,
+    "years_more_p90": 29.0,
+    "not_yet_knowable": 1670,
+    "note": "MDE <= delta: a change of size delta would have been detected with >= 80 % power (noise model)."
+  },
+  "methods": [
+    "MK-VC",
+    "TFPW-WS",
+    "OLS-AR1"
+  ],
+  "verdict_codes": {
+    "0": "INSUFICIENTE",
+    "1": "PROBADO",
+    "2": "CANDIDATA",
+    "3": "NO_CONCLUYENTE",
+    "4": "SIN_CAMBIO_MAYOR_QUE_DELTA"
+  },
+  "flag_bits": {
+    "1": "depende_del_metodo",
+    "2": "cambio_de_version",
+    "4": "cobertura_baja",
+    "8": "resolucion_gruesa",
+    "16": "reconstruccion",
+    "32": "simulado",
+    "64": "autocorrelacion_alta",
+    "128": "quiebre_posible"
+  },
+  "summary": {
+    "cells_valid": 12960,
+    "naive_marked": 9633,
+    "ebh_discoveries": 5584,
+    "probado_robusto_memoria": 7007,
+    "bh_discoveries": 8459,
+    "quiebre_posible": 1429,
+    "insuficiente": 0,
+    "probado": 8118,
+    "candidata": 1081,
+    "no_concluyente": 1670,
+    "sin_cambio_mayor_que_delta": 2091
+  },
+  "calibration": {
+    "note": "Measured by simulation (AR(1) Gaussian noise, n=23): false alarms 5.2% (phi=0.3) and 6.8% (phi=0.5); power 92% / 78% at 2 sigma per decade. Illustrates, does not prove, behaviour on real data. See sim/."
+  },
+  "honesty": {
+    "data_real": true,
+    "simulated": false,
+    "label_es": "Datos reales: NASA POWER ARD (MERRA-2), Zarr on AWS",
+    "label_en": "Real data: NASA POWER ARD (MERRA-2), Zarr on AWS"
+  },
+  "warnings": [],
+  "build": {
+    "hori": "0.0.1",
+    "python": "3.14.8",
+    "numpy": "2.5.4",
+    "seed": 247,
+    "input_sha256": "fd2f2615723d0d975aed8feb0118af532902426131a6c86cc38a24c822a1c716",
+    "created_at": "2026-11-15T08:40:50Z"
+  },
+  "profile_spec": {
+    "id": "auto.temperatura.t2m",
+    "version": "auto-1",
+    "body": "earth",
+    "mode": "trend",
+    "variables": [
+      "T2M"
+    ],
+    "unit": "C",
+    "aggregation": {
+      "step": "annual",
+      "method": "mean_monthly_anomaly",
+      "min_months": 9
+    },
+    "delta_per_decade": 0.3,
+    "delta_rationale": "0.3 °C/década: algo más que el calentamiento global reciente (~0.2 °C/década en superficie), para que lo que se marque sea un cambio regional notable. Valor de trabajo del equipo, no de la literatura.",
+    "review": "automatico",
+    "methods": [
+      "MK-VC",
+      "TFPW-WS",
+      "OLS-AR1"
+    ],
+    "name": {
+      "es": "Temperature at 2 Meters",
+      "en": "Temperature at 2 Meters"
+    },
+    "physical_class": "temperatura",
+    "decisions": [
+      "Clase física «Temperatura» porque units = 'C' y el nombre dice 'temperat'; δ = 0.3 C/década (tabla curada).",
+      "Agregación anual = media de anomalías mensuales (≥ 9 de 12 meses), coherente con cell_methods = 'time: mean'.",
+      "Medido en los datos: 0.0% de meses en cero, 0.0% en los límites válidos, 0.0% de años con media cero.",
+      "Tras correr: σ interanual mediana 0.5054, φ̂ mediana 0.2239, MDE mediano 0.2601 C/década frente a δ 0.3."
+    ],
+    "flags": [],
+    "measured": {
+      "sigma_median": 0.5054,
+      "r1_median": 0.2239,
+      "mde_median": 0.2601,
+      "delta_used_median": 0.3
+    },
+    "catalog_version": "auto-1"
+  },
+  "title": {
+    "es": "Temperatura del aire (2 m) · año por año",
+    "en": "Air temperature (2 m) · year by year"
+  },
+  "arrays": {
+    "effect": {
+      "file": "effect.f32",
+      "dtype": "f32"
+    },
+    "ci_lo": {
+      "file": "ci_lo.f32",
+      "dtype": "f32"
+    },
+    "ci_hi": {
+      "file": "ci_hi.f32",
+      "dtype": "f32"
+    },
+    "sigma": {
+      "file": "sigma.f32",
+      "dtype": "f32"
+    },
+    "r1": {
+      "file": "r1.f32",
+      "dtype": "f32"
+    },
+    "p_cons": {
+      "file": "p_cons.f32",
+      "dtype": "f32"
+    },
+    "q_cons": {
+      "file": "q_cons.f32",
+      "dtype": "f32"
+    },
+    "mde": {
+      "file": "mde.f32",
+      "dtype": "f32"
+    },
+    "years_more": {
+      "file": "years_more.f32",
+      "dtype": "f32"
+    },
+    "verdict": {
+      "file": "verdict.u8",
+      "dtype": "u8"
+    },
+    "flags": {
+      "file": "flags.u8",
+      "dtype": "u8"
+    },
+    "nvalid": {
+      "file": "nvalid.u8",
+      "dtype": "u8"
+    },
+    "nsig_methods": {
+      "file": "nsig_methods.u8",
+      "dtype": "u8"
+    },
+    "naive_sig": {
+      "file": "naive_sig.u8",
+      "dtype": "u8"
+    },
+    "delta": {
+      "file": "delta.f32",
+      "dtype": "f32"
+    },
+    "e_cons": {
+      "file": "e_cons.f32",
+      "dtype": "f32"
+    },
+    "ebh_sig": {
+      "file": "ebh_sig.u8",
+      "dtype": "u8"
+    },
+    "robust_mem": {
+      "file": "robust_mem.u8",
+      "dtype": "u8"
+    },
+    "break_year": {
+      "file": "break_year.f32",
+      "dtype": "f32"
+    }
+  },
+  "series": {
+    "file": "series.f32",
+    "dtype": "f32",
+    "shape": [
+      "cells",
+      "n"
+    ],
+    "years": [
+      1981,
+      1982,
+      1983,
+      1984,
+      1985,
+      1986,
+      1987,
+      1988,
+      1989,
+      1990,
+      1991,
+      1992,
+      1993,
+      1994,
+      1995,
+      1996,
+      1997,
+      1998,
+      1999,
+      2000,
+      2001,
+      2002,
+      2003,
+      2004,
+      2005,
+      2006,
+      2007,
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ]
+  }
+}

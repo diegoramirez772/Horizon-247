@@ -1,0 +1,16 @@
+[
+  {
+    "at": "2026-11-15T03:50:53Z",
+    "variable": "T2M",
+    "from": null,
+    "to": "2026-09",
+    "status": "actualizado",
+    "events": {
+      "NUEVO": 0,
+      "SE_DEBILITO": 1353,
+      "CRUZO": 5944,
+      "CAMBIO_SIGNO": 0
+    },
+    "bundle": "earth/global_t2m_1981-2026"
+  }
+]

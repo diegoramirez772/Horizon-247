@@ -35,8 +35,24 @@ Large arrays (maps, series, windows) stay in files/Storage; `findings` keeps sel
 bash supabase/tests/run_local.sh     # throwaway PostgreSQL 15+, Supabase-like roles; 52 checks
 ```
 
+## Live project (15-nov)
+
+Project `horizon-247` (ref `lrxumkndviytplegtxna`, us-east-1, free plan): the 4 migrations are applied. ZON fills the
+light part and nothing else (≈230 rows, idempotent; a second push inserts nothing):
+
+```bash
+SUPABASE_ACCESS_TOKEN=… python -m zon db-push --bundles apps/web/public/bundles     # or --sql out.sql to only write it
+```
+
+Per exported trend bundle: source, dataset version, variable, entity, one `analysis_runs` row, the manifest as an
+`artifacts` row (path + SHA-256; arrays stay as files) and the grid summary as a finding; cell findings only for
+regional boxes (Durango: 72 + 72). From `home.json`: each place, its monitor (version active) and its finding.
+
+The web (publishable key in `apps/web/.env.local` or the host's env vars, see `.env.example`) reads reviewed `context_cards` (merged with
+`context.json`, the DB wins) and sends «¿Algo no cuadra?» to `feedback`. RLS keeps findings/monitors team-only.
+
 ## Not done yet (from the design's pending list)
 
 Review protocol, initial phenomena/units, public location policy, contribution licences, retention, rate limits
-for anonymous inserts, Storage buckets and policies, an API/adapter layer for other backends, ZON writing runs to the DB,
+for anonymous inserts, Storage buckets and policies, an API/adapter layer for other backends, ZON writing runs through `finalize_run` (today `db-push` writes finished runs directly),
 federation. The web uses only the **publishable** key; the service_role key never goes in the repo or the browser.

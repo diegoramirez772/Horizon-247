@@ -330,7 +330,7 @@ export function compose(spec: SceneSpec): Scene {
     if (e.collar) add(`collar-${e.species}`, "Collares GPS", placed, [], "Dispositivo simulado en cada animal");
   }
   if (spec.entities.some((e) => e.kind === "ganado") && thiL !== "normal") {
-    alerts.push({ level: thiL === "alerta" ? "atencion" : thiL, text: `Estrés térmico del ganado: THI ${thiV.toFixed(0)} = ${thiL} (umbral LCI). Es un índice de riesgo del ambiente; no describe la salud de cada animal.`, drivenBy: ["temp_c", "rh_pct"] });
+    alerts.push({ level: thiL === "alerta" ? "atencion" : thiL, text: `Estrés térmico del ganado: THI ${thiV.toFixed(0)} = ${thiL} (umbral LCI). Es un índice del ambiente; no describe la salud de cada animal.`, drivenBy: ["temp_c", "rh_pct"] });
   }
 
   // ---- people ----
@@ -391,7 +391,7 @@ export function compose(spec: SceneSpec): Scene {
   if (storm) {
     for (let i = 0; i < 2; i++) M.lightning(solid, (r() * 2 - 1) * HALF * 0.7, cloudBase, (r() * 2 - 1) * HALF * 0.7, r);
     add("rayos", "Rayos", 2, ["precip_mm_h"], `Tormenta: ${say("precip_mm_h")} (≥ 15 mm/h)`);
-    alerts.push({ level: "alto", text: `Lluvia intensa: ${say("precip_mm_h")}. Riesgo de encharcamiento y rayos.`, drivenBy: ["precip_mm_h"] });
+    alerts.push({ level: "alto", text: `Lluvia intensa: ${say("precip_mm_h")}. Posible encharcamiento y rayos.`, drivenBy: ["precip_mm_h"] });
   }
   const dusty = (earth && (aod > 0.8 || (drought > 0.5 && wind > 9))) || (spec.body === "mars" && (dustTau > 1.2 || wind > 8));
   if (dusty) {

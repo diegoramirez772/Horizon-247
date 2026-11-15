@@ -11,6 +11,9 @@ export interface IndexEntry {
   variable: unknown;
   window: { start: number; end: number; n: number } | unknown;
   path: string;
+  /** ZON export: "layer" (trend), "timeline" (when it became known) or "anomaly" (last month). Absent = layer. */
+  kind?: "layer" | "timeline" | "anomaly";
+  data_real?: boolean;
 }
 
 /** SPEC §3: verdict codes. The web never computes them; HORI writes them. */

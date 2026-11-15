@@ -1,7 +1,8 @@
 // Bundle loader (contract v0.1 + v0.2). The web only READS the contract: no verdict is computed here.
 // Ported from the Vite prototype (web/src/contract/loader.ts) without changing its behaviour.
 
-import type { CellFinding, ContextCard, Manifest, RegionLayer, Verdict } from "@/contract/types";
+import type { CellFinding, ContextCard, HomeDoc, Manifest, RegionLayer, Verdict } from "@/contract/types";
+import { fetchContextCards } from "@/core/live/db";
 import { type IndexEntry, type RegionGeo, YEARS_MORE_OVER_60 } from "./extra";
 
 export type ArrayName =
@@ -73,7 +74,8 @@ export function loadIndex(root: string): Promise<IndexEntry[]> {
 
 /** Validates the parts of a manifest the web depends on. Unknown fields are ignored (SPEC §8). */
 export function checkManifest(m: Manifest, url = "manifest.json"): void {
-  if (m.contract !== "0.1" && m.contract !== "0.2") {
+  // Every version up to 0.4 is additive over 0.1 (SPEC §8–§10): the fields the web reads keep their meaning.
+  if (!["0.1", "0.2", "0.3", "0.4"].includes(m.contract)) {
     throw new ContractError(`${url}: versión de contrato desconocida (${String(m.contract)})`, url);
   }
   const g = m.grid;
@@ -205,6 +207,23 @@ export function visibleContext(cards: ContextCard[]): ContextCard[] {
   return cards.filter((c) => c.status === "revisado" && !!c.source?.url && c.level !== "ACCION");
 }
 
+/** SPEC §15: «Mis monitores». Rejected (→ usual start screen) unless it is a home document with entities. */
+export function checkHome(d: unknown): HomeDoc | null {
+  const h = d as HomeDoc | null;
+  return h && h.kind === "home" && Array.isArray(h.entities) && Array.isArray(h.events) ? h : null;
+}
+
+export async function loadHome(root: string): Promise<HomeDoc | null> {
+  return checkHome(await fetchJson<unknown>(join(root, "home.json")));
+}
+
+/** Cards from context.json and from the team database (reviewed ones only, by RLS); the database wins on the same id. */
 export async function loadContext(root: string): Promise<ContextCard[]> {
-  return visibleContext(await fetchJson<ContextCard[]>(join(root, "context.json")));
+  const [file, db] = await Promise.all([
+    fetchJson<ContextCard[]>(join(root, "context.json")).catch(() => [] as ContextCard[]),
+    fetchContextCards().catch(() => [] as ContextCard[]),
+  ]);
+  const byId = new Map<string, ContextCard>();
+  for (const c of [...(Array.isArray(file) ? file : []), ...db]) byId.set(c.id, c);
+  return visibleContext([...byId.values()]);
 }

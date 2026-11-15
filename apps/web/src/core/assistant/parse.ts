@@ -2,6 +2,8 @@
 // It understands Spanish and English at the same time, whatever the interface language is.
 
 import type { Region } from "@/contract/types";
+import type { Register } from "@/core/i18n/texts";
+import { findPlace, type Where } from "@/core/genui/places";
 import { P, normalize } from "./patterns";
 
 export type Intent =
@@ -20,7 +22,8 @@ export type Intent =
   | { t: "year"; y: number | null }
   | { t: "accumulated"; end: number | null }
   | { t: "full" }
-  | { t: "register"; r: "sencillo" | "tecnico" }
+  | { t: "register"; r: Register | "+" | "-" }
+  | { t: "certainty" }
   | { t: "lang"; l: "es" | "en" }
   | { t: "theme"; th: "light" | "dark" }
   | { t: "profile"; p: "mars" | "person" | "earth" }
@@ -28,7 +31,13 @@ export type Intent =
   | { t: "world" }
   | { t: "undo" }
   | { t: "clear" }
+  | { t: "topic"; topic: Topic; where: Where | null }
+  | { t: "imagery"; layer: string }
+  | { t: "evolution" }
   | { t: "unknown" };
+
+/** What the answer is about when it brings its own components (clima, ganado, astronauta, Marte, planetas, eventos). */
+export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos";
 
 /** What a command may carry besides its intent: a place to look at first. */
 export type Place = { kind: "region"; id: string } | { kind: "coord"; lat: number; lon: number } | null;
@@ -65,6 +74,13 @@ function filterOf(text: string): number[] | null {
   return null;
 }
 
+/** A place for a live question: a named city, else the coordinates typed, else none (the caller picks a default). */
+function whereOf(raw: string, place: Place): Where | null {
+  const named = findPlace(raw);
+  if (named) return named;
+  return place?.kind === "coord" ? { name: `${place.lat.toFixed(2)}°, ${place.lon.toFixed(2)}°`, lat: place.lat, lon: place.lon } : null;
+}
+
 export function parse(raw: string, regions: Region[]): Command {
   const text = normalize(raw);
   const regionId = findRegion(text, regions);
@@ -85,6 +101,7 @@ export function parse(raw: string, regions: Region[]): Command {
     : P.help.test(text) ? { t: "help" }
     : P.legend.test(text) ? { t: "legend" }
     : P.contrast.test(text) ? { t: "contrast" }
+    : P.certainty.test(text) ? { t: "certainty" }
     : P.provenance.test(text) ? { t: "provenance" }
     : P.detect.test(text) ? { t: "detect" }
     : P.compare.test(text) ? { t: "compare" }
@@ -94,11 +111,21 @@ export function parse(raw: string, regions: Region[]): Command {
     : win ? { t: "window", n: Number(win[1]) }
     : P.english.test(text) ? { t: "lang", l: "en" }
     : P.spanish.test(text) ? { t: "lang", l: "es" }
+    : P.deeper.test(text) ? { t: "register", r: "+" }
+    : P.simpler.test(text) ? { t: "register", r: "-" }
+    : P.normal.test(text) ? { t: "register", r: "normal" }
     : P.expert.test(text) ? { t: "register", r: "tecnico" }
     : P.plain.test(text) ? { t: "register", r: "sencillo" }
     : P.dark.test(text) ? { t: "theme", th: "dark" }
     : P.light.test(text) ? { t: "theme", th: "light" }
-    : P.mars.test(text) ? { t: "profile", p: "mars" }
+    : P.evolution.test(text) ? { t: "evolution" }
+    : P.infrared.test(text) && !P.events.test(text) ? { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }
+    : P.livestock.test(text) ? { t: "topic", topic: "ganado", where: whereOf(raw, place) }
+    : P.astronaut.test(text) ? { t: "topic", topic: "astronauta", where: null }
+    : P.mars.test(text) ? { t: "topic", topic: "marte", where: null }
+    : P.planets.test(text) ? { t: "topic", topic: "planetas", where: null }
+    : P.events.test(text) ? { t: "topic", topic: "eventos", where: whereOf(raw, place) }
+    : P.weatherNow.test(text) ? { t: "topic", topic: "clima", where: whereOf(raw, place) }
     : P.person.test(text) && !place ? { t: "profile", p: "person" }
     : P.earth.test(text) ? { t: "profile", p: "earth" }
     : place ? { t: "area" }

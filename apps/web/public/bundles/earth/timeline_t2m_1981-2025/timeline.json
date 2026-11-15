@@ -1,0 +1,1550 @@
+{
+  "contract": "0.4",
+  "kind": "timeline",
+  "id": "powerzarr_T2M_timeline_1981-2025",
+  "variable": {
+    "name": "T2M",
+    "unit": "C",
+    "long_name": "Temperature at 2 Meters",
+    "definition": "The average air (dry bulb) temperature at 2 meters above the surface of the earth.",
+    "valid_min": -125.0,
+    "valid_max": 80.0,
+    "cell_methods": "time: mean"
+  },
+  "dataset": {
+    "name": "NASA POWER ARD (MERRA-2), Zarr on AWS",
+    "kind": "reanalysis",
+    "url": "https://nasa-power.s3.us-west-2.amazonaws.com/merra2/temporal/power_merra2_monthly_temporal_lst.zarr",
+    "sha256": "9f14b708df556918afbfc0ead4f30f28e036ada9d8467ee65568bef1fa679f50",
+    "time_standard": "LST"
+  },
+  "grid": {
+    "type": "latlon",
+    "nlat": 361,
+    "nlon": 576,
+    "lat0": 90.0,
+    "dlat": -0.5,
+    "lon0": -180.0,
+    "dlon": 0.625
+  },
+  "windows": {
+    "mode": "expanding",
+    "start": 1981,
+    "ends": [
+      1995,
+      1996,
+      1997,
+      1998,
+      1999,
+      2000,
+      2001,
+      2002,
+      2003,
+      2004,
+      2005,
+      2006,
+      2007,
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "min_n": 15
+  },
+  "params": {
+    "alpha": 0.05,
+    "fdr_q": 0.1,
+    "delta_per_decade": 0.3,
+    "delta_source": "profile",
+    "methods": [
+      "MK-VC",
+      "TFPW-WS",
+      "OLS-AR1"
+    ]
+  },
+  "profile_spec": {
+    "id": "auto.temperatura.t2m",
+    "version": "auto-1",
+    "body": "earth",
+    "mode": "trend",
+    "variables": [
+      "T2M"
+    ],
+    "unit": "C",
+    "aggregation": {
+      "step": "annual",
+      "method": "mean_monthly_anomaly",
+      "min_months": 9
+    },
+    "delta_per_decade": 0.3,
+    "delta_rationale": "0.3 °C/década: algo más que el calentamiento global reciente (~0.2 °C/década en superficie), para que lo que se marque sea un cambio regional notable. Valor de trabajo del equipo, no de la literatura.",
+    "review": "automatico",
+    "methods": [
+      "MK-VC",
+      "TFPW-WS",
+      "OLS-AR1"
+    ],
+    "name": {
+      "es": "Temperature at 2 Meters",
+      "en": "Temperature at 2 Meters"
+    },
+    "physical_class": "temperatura",
+    "decisions": [
+      "Clase física «Temperatura» porque units = 'C' y el nombre dice 'temperat'; δ = 0.3 C/década (tabla curada).",
+      "Agregación anual = media de anomalías mensuales (≥ 9 de 12 meses), coherente con cell_methods = 'time: mean'."
+    ],
+    "flags": []
+  },
+  "stats": {
+    "windows": 31,
+    "first_end": 1995,
+    "last_end": 2025,
+    "cells": 207936,
+    "ever_probado": 146178,
+    "probado_now": 129645,
+    "withdrawn_share": 0.1131,
+    "step_reversal_rate": 0.0386,
+    "sign_reversal_share": 7e-05,
+    "events": {
+      "NUEVO": 0,
+      "SE_DEBILITO": 1423,
+      "CRUZO": 6716,
+      "CAMBIO_SIGNO": 0
+    },
+    "tiers": {
+      "EVENTO": 8139,
+      "PROBADO": 122929,
+      "POR_EMERGER": 21625,
+      "RESTO": 55243
+    },
+    "definitions": {
+      "withdrawn_share": "of the cells that were PROBADO in some window, share that is NOT PROBADO today",
+      "step_reversal_rate": "PROBADO -> not PROBADO transitions per PROBADO cell-year",
+      "sign_reversal_share": "cells PROBADO with one sign in one window and with the opposite sign in another",
+      "caveat": "nested windows on today's data version: a backtest, not independent tests nor the data of each year"
+    }
+  },
+  "emergence_histogram": {
+    "1995": 0,
+    "1996": 0,
+    "1997": 0,
+    "1998": 0,
+    "1999": 0,
+    "2000": 0,
+    "2001": 5,
+    "2002": 313,
+    "2003": 1943,
+    "2004": 2045,
+    "2005": 4408,
+    "2006": 5289,
+    "2007": 9122,
+    "2008": 4380,
+    "2009": 5796,
+    "2010": 7318,
+    "2011": 4679,
+    "2012": 3022,
+    "2013": 5254,
+    "2014": 5509,
+    "2015": 5296,
+    "2016": 11059,
+    "2017": 5323,
+    "2018": 5929,
+    "2019": 5364,
+    "2020": 5446,
+    "2021": 4920,
+    "2022": 4997,
+    "2023": 8140,
+    "2024": 7372,
+    "2025": 6716
+  },
+  "event_codes": {
+    "0": "NINGUNO",
+    "1": "NUEVO",
+    "2": "SE_DEBILITO",
+    "3": "CRUZO",
+    "4": "CAMBIO_SIGNO"
+  },
+  "tier_codes": {
+    "0": "EVENTO",
+    "1": "PROBADO",
+    "2": "POR_EMERGER",
+    "3": "RESTO"
+  },
+  "arrays": {
+    "verdict_by_window.u8": {
+      "file": "verdict_by_window.u8",
+      "shape": [
+        "windows",
+        "cells"
+      ]
+    },
+    "emergence_year.f32": {
+      "file": "emergence_year.f32",
+      "shape": [
+        "cells"
+      ]
+    },
+    "first_probado_year.f32": {
+      "file": "first_probado_year.f32",
+      "shape": [
+        "cells"
+      ]
+    },
+    "reversals.u8": {
+      "file": "reversals.u8",
+      "shape": [
+        "cells"
+      ]
+    },
+    "sign_flip.u8": {
+      "file": "sign_flip.u8",
+      "shape": [
+        "cells"
+      ]
+    },
+    "event.u8": {
+      "file": "event.u8",
+      "shape": [
+        "cells"
+      ]
+    },
+    "priority_tier.u8": {
+      "file": "priority_tier.u8",
+      "shape": [
+        "cells"
+      ]
+    },
+    "priority_strength.f32": {
+      "file": "priority_strength.f32",
+      "shape": [
+        "cells"
+      ]
+    },
+    "priority_order.u32": {
+      "file": "priority_order.u32",
+      "shape": [
+        "cells"
+      ]
+    }
+  },
+  "priority_top": [
+    {
+      "cell": 29646,
+      "lat": 64.5,
+      "lon": -11.25,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.206,
+      "strength": 1.03,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 25015,
+      "lat": 68.5,
+      "lon": -25.625,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.335,
+      "strength": 1.03,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 91323,
+      "lat": 11.0,
+      "lon": 16.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.225,
+      "strength": 0.98,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 171924,
+      "lat": -59.0,
+      "lon": -7.5,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.257,
+      "strength": 0.98,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 169646,
+      "lat": -57.0,
+      "lon": 8.75,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.227,
+      "strength": 0.98,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 28452,
+      "lat": 65.5,
+      "lon": -37.5,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.386,
+      "strength": 0.98,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 181191,
+      "lat": -67.0,
+      "lon": 24.375,
+      "tier": "EVENTO",
+      "event": "SE_DEBILITO",
+      "effect": -0.485,
+      "strength": 0.97,
+      "reason": {
+        "es": "Evento: dejó de ser PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 90171,
+      "lat": 12.0,
+      "lon": 16.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.246,
+      "strength": 0.97,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 25025,
+      "lat": 68.5,
+      "lon": -19.375,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.359,
+      "strength": 0.97,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 169644,
+      "lat": -57.0,
+      "lon": 7.5,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.217,
+      "strength": 0.97,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 25595,
+      "lat": 68.0,
+      "lon": -23.125,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.394,
+      "strength": 0.96,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 169647,
+      "lat": -57.0,
+      "lon": 9.375,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.223,
+      "strength": 0.96,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 26744,
+      "lat": 67.0,
+      "lon": -25.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.299,
+      "strength": 0.96,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 181192,
+      "lat": -67.0,
+      "lon": 25.0,
+      "tier": "EVENTO",
+      "event": "SE_DEBILITO",
+      "effect": -0.473,
+      "strength": 0.96,
+      "reason": {
+        "es": "Evento: dejó de ser PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 60885,
+      "lat": 37.5,
+      "lon": 73.125,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.265,
+      "strength": 0.96,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 27925,
+      "lat": 66.0,
+      "lon": -6.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.255,
+      "strength": 0.96,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 26161,
+      "lat": 67.5,
+      "lon": -29.375,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.383,
+      "strength": 0.95,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 83839,
+      "lat": 17.5,
+      "lon": 19.375,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.25,
+      "strength": 0.95,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 24451,
+      "lat": 69.0,
+      "lon": -18.125,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.365,
+      "strength": 0.95,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 181193,
+      "lat": -67.0,
+      "lon": 25.625,
+      "tier": "EVENTO",
+      "event": "SE_DEBILITO",
+      "effect": -0.469,
+      "strength": 0.95,
+      "reason": {
+        "es": "Evento: dejó de ser PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 180034,
+      "lat": -66.0,
+      "lon": 21.25,
+      "tier": "EVENTO",
+      "event": "SE_DEBILITO",
+      "effect": -0.495,
+      "strength": 0.95,
+      "reason": {
+        "es": "Evento: dejó de ser PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 169643,
+      "lat": -57.0,
+      "lon": 6.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.211,
+      "strength": 0.95,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 26160,
+      "lat": 67.5,
+      "lon": -30.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.378,
+      "strength": 0.95,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 24450,
+      "lat": 69.0,
+      "lon": -18.75,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.396,
+      "strength": 0.95,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 84962,
+      "lat": 16.5,
+      "lon": 1.25,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.187,
+      "strength": 0.94,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 24449,
+      "lat": 69.0,
+      "lon": -19.375,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.428,
+      "strength": 0.94,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 27889,
+      "lat": 66.0,
+      "lon": -29.375,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.3,
+      "strength": 0.94,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 72760,
+      "lat": 27.0,
+      "lon": -65.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.226,
+      "strength": 0.94,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 25024,
+      "lat": 68.5,
+      "lon": -20.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.371,
+      "strength": 0.94,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 62011,
+      "lat": 36.5,
+      "lon": 56.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.329,
+      "strength": 0.94,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 28500,
+      "lat": 65.5,
+      "lon": -7.5,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.232,
+      "strength": 0.94,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 26169,
+      "lat": 67.5,
+      "lon": -24.375,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.346,
+      "strength": 0.94,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 26162,
+      "lat": 67.5,
+      "lon": -28.75,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.369,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 51193,
+      "lat": 46.0,
+      "lon": 135.625,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.27,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 29075,
+      "lat": 65.0,
+      "lon": -8.125,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.228,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 171352,
+      "lat": -58.5,
+      "lon": -5.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.231,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 48901,
+      "lat": 48.0,
+      "lon": 143.125,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.254,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 25589,
+      "lat": 68.0,
+      "lon": -26.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.324,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 25023,
+      "lat": 68.5,
+      "lon": -20.625,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.394,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 94747,
+      "lat": 8.0,
+      "lon": -3.125,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.173,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 50614,
+      "lat": 46.5,
+      "lon": 133.75,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.253,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 29074,
+      "lat": 65.0,
+      "lon": -8.75,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.22,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 84377,
+      "lat": 17.0,
+      "lon": -4.375,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.259,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 169642,
+      "lat": -57.0,
+      "lon": 6.25,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.202,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 84378,
+      "lat": 17.0,
+      "lon": -3.75,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.255,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 72184,
+      "lat": 27.5,
+      "lon": -65.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.227,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 30261,
+      "lat": 64.0,
+      "lon": 13.125,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.38,
+      "strength": 0.93,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 83228,
+      "lat": 18.0,
+      "lon": -2.5,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.247,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 25022,
+      "lat": 68.5,
+      "lon": -21.25,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.4,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 181194,
+      "lat": -67.0,
+      "lon": 26.25,
+      "tier": "EVENTO",
+      "event": "SE_DEBILITO",
+      "effect": -0.453,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: dejó de ser PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 26736,
+      "lat": 67.0,
+      "lon": -30.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.405,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 29071,
+      "lat": 65.0,
+      "lon": -10.625,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.201,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 166894,
+      "lat": -54.5,
+      "lon": 88.75,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.118,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 188608,
+      "lat": -73.5,
+      "lon": -20.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.64,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 89572,
+      "lat": 12.5,
+      "lon": 2.5,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.16,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 25594,
+      "lat": 68.0,
+      "lon": -23.75,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.378,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 60282,
+      "lat": 38.0,
+      "lon": 56.25,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.319,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 84408,
+      "lat": 17.0,
+      "lon": 15.0,
+      "tier": "EVENTO",
+      "event": "SE_DEBILITO",
+      "effect": 0.213,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: dejó de ser PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 25593,
+      "lat": 68.0,
+      "lon": -24.375,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.376,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 186311,
+      "lat": -71.5,
+      "lon": -15.625,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.419,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 50619,
+      "lat": 46.5,
+      "lon": 136.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.269,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 52340,
+      "lat": 45.0,
+      "lon": 132.5,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.287,
+      "strength": 0.92,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 181195,
+      "lat": -67.0,
+      "lon": 26.875,
+      "tier": "EVENTO",
+      "event": "SE_DEBILITO",
+      "effect": -0.447,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: dejó de ser PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 180616,
+      "lat": -66.5,
+      "lon": 25.0,
+      "tier": "EVENTO",
+      "event": "SE_DEBILITO",
+      "effect": -0.467,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: dejó de ser PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 28453,
+      "lat": 65.5,
+      "lon": -36.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.375,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 61434,
+      "lat": 37.0,
+      "lon": 56.25,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.313,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 51195,
+      "lat": 46.0,
+      "lon": 136.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.276,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 169192,
+      "lat": -56.5,
+      "lon": 85.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.133,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 26202,
+      "lat": 67.5,
+      "lon": -3.75,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.266,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 28501,
+      "lat": 65.5,
+      "lon": -6.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.235,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 83233,
+      "lat": 18.0,
+      "lon": 0.625,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.198,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 26776,
+      "lat": 67.0,
+      "lon": -5.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.27,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 29662,
+      "lat": 64.5,
+      "lon": -1.25,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.198,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 83800,
+      "lat": 17.5,
+      "lon": -5.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.261,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 83229,
+      "lat": 18.0,
+      "lon": -1.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.233,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 186310,
+      "lat": -71.5,
+      "lon": -16.25,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.408,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 27351,
+      "lat": 66.5,
+      "lon": -5.625,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.267,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 49476,
+      "lat": 47.5,
+      "lon": 142.5,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.28,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 48902,
+      "lat": 48.0,
+      "lon": 143.75,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.233,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 169641,
+      "lat": -57.0,
+      "lon": 5.625,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.195,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 54827,
+      "lat": 42.5,
+      "lon": -113.125,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.314,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 26735,
+      "lat": 67.0,
+      "lon": -30.625,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.402,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 29025,
+      "lat": 65.0,
+      "lon": -39.375,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.365,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 69869,
+      "lat": 29.5,
+      "lon": -71.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.253,
+      "strength": 0.91,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 25021,
+      "lat": 68.5,
+      "lon": -21.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.399,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 48326,
+      "lat": 48.5,
+      "lon": 143.75,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.231,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 25592,
+      "lat": 68.0,
+      "lon": -25.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.359,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 26777,
+      "lat": 67.0,
+      "lon": -4.375,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.267,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 29072,
+      "lat": 65.0,
+      "lon": -10.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.203,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 26733,
+      "lat": 67.0,
+      "lon": -31.875,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.347,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 51194,
+      "lat": 46.0,
+      "lon": 136.25,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.268,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 169068,
+      "lat": -56.5,
+      "lon": 7.5,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.187,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 171345,
+      "lat": -58.5,
+      "lon": -9.375,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.227,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 27926,
+      "lat": 66.0,
+      "lon": -6.25,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.25,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 171348,
+      "lat": -58.5,
+      "lon": -7.5,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.225,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 183124,
+      "lat": -68.5,
+      "lon": 152.5,
+      "tier": "EVENTO",
+      "event": "SE_DEBILITO",
+      "effect": -0.445,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: dejó de ser PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 186886,
+      "lat": -72.0,
+      "lon": -16.25,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.602,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 29650,
+      "lat": 64.5,
+      "lon": -8.75,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.212,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 169072,
+      "lat": -56.5,
+      "lon": 10.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": -0.192,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    },
+    {
+      "cell": 7024,
+      "lat": 84.0,
+      "lon": -110.0,
+      "tier": "EVENTO",
+      "event": "CRUZO",
+      "effect": 0.631,
+      "strength": 0.9,
+      "reason": {
+        "es": "Evento: la evidencia cruzó a PROBADO con el dato de 2025",
+        "origin": "HORI"
+      }
+    }
+  ],
+  "honesty": {
+    "es": "Reanálisis con la versión ACTUAL de los datos: es un ensayo retrospectivo, no lo que se publicó cada año. Las ventanas están anidadas: es la evolución de la evidencia, no pruebas independientes.",
+    "en": "Backtest on TODAY's data version, not what was published each year. Windows are nested: this is the evolution of the evidence, not independent tests."
+  }
+}

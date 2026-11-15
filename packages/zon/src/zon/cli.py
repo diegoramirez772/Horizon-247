@@ -3,6 +3,8 @@
     python -m zon update-planet --param T2M --start 1981 --out data       # Z3: new month? recompute + events
     python -m zon export-web --src data/bundles --out apps/web/public/bundles   # Z7: static files + index.json
     python -m zon watch --config watch.json --once                               # vigilancia: datos nuevos -> alertas -> avisos
+    python -m zon home --place Durango Chihuahua --var T2M PRECTOTCORR --out apps/web/public/bundles   # «Mis monitores»
+    python -m zon db-push --bundles apps/web/public/bundles      # lo ligero a Supabase (catálogo, corridas, hallazgos, monitores)
 """
 import argparse
 import sys
@@ -53,7 +55,36 @@ def main() -> None:
     ky.add_argument("--name", required=True)
     ky.add_argument("--role", choices=["lector", "operador", "admin"], required=True)
     ky.add_argument("--orgs", nargs="+", default=["publica"])
+    hm = sub.add_parser("home", help="«Mis monitores»: regional finding + time machine + recent anomalies + state per place (home.json)")
+    hm.add_argument("--place", nargs="+", required=True, help="any place name in the local index (Natural Earth / GeoNames)")
+    hm.add_argument("--var", nargs="+", default=["T2M"])
+    hm.add_argument("--start", type=int, default=1981)
+    hm.add_argument("--end", type=int, default=2026, help="last year to read; the trend uses complete years only")
+    hm.add_argument("--places-dir", default="data/places")
+    hm.add_argument("--out", default="apps/web/public/bundles")
+    hm.add_argument("--online", action="store_true", help="read the store from the network instead of the cache")
+    dp = sub.add_parser("db-push", help="light rows to Supabase: catalog, runs, selected findings, monitors (never arrays)")
+    dp.add_argument("--bundles", default="apps/web/public/bundles", help="exported web bundles (index.json + home.json)")
+    dp.add_argument("--project", default=None, help="Supabase project ref (default: horizon-247)")
+    dp.add_argument("--sql", default=None, help="only write the SQL to this file; send nothing")
+    dp.add_argument("--cell-limit", type=int, default=500, help="cell findings only for regional boxes up to this many cells")
     args = ap.parse_args()
+    if args.cmd == "db-push":
+        import json
+        from .supa import PROJECT_REF, push
+        print(json.dumps(push(args.bundles, args.project or PROJECT_REF, args.sql, args.cell_limit), indent=1, ensure_ascii=False))
+        return
+    if args.cmd == "home":
+        from .fetch.power_zarr import PowerZarr
+        from .home import build_home
+        from .places import PlaceIndex
+        d = args.places_dir.rstrip("/") + "/"
+        idx = PlaceIndex.from_natural_earth(d + "ne_10m_admin_0_countries.shp", d + "ne_10m_admin_1_states_provinces.shp")
+        doc = build_home(args.place, args.var, args.start, args.end, index=idx, store=PowerZarr(offline=not args.online), out_dir=args.out)
+        for e in doc["entities"]:
+            print(e["entity"]["name"]["es"], "·", e["state"]["status"], "·", (e["state"]["headline"] or {}).get("es"))
+        print(f"home.json -> {args.out} ({len(doc['events'])} eventos)")
+        return
     if args.cmd == "anomaly-map":
         import json
         from .anomaly_map import anomaly_map

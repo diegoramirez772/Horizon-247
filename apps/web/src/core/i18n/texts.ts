@@ -1,13 +1,17 @@
 // Interface texts, ES and EN.
-// Verdict sentences are copied VERBATIM from the contract: SPEC §5 (expert/technical) and §8.5 (plain).
+// Verdict sentences are copied VERBATIM from the contract: SPEC §5 (expert/technical), §8.5b (normal) and §8.5 (plain).
 // Text the contract does not define is marked `OWN:` (own translation, pending Estela + Carolina, plan D9).
 // Forbidden in any text (checked by scripts/lint-texts.mjs): see FORBIDDEN below.
 
 import type { Verdict } from "@/contract/types";
 
 export type Lang = "es" | "en";
-/** Internal names stay as in SPEC §8.5; the screen says Sencillo / Experto (decision D3). */
-export type Register = "sencillo" | "tecnico";
+/**
+ * Three reading levels over the same numbers (design doc «Modos de profundidad… v2» §2). Internal names stay as in
+ * SPEC §8.5 so old links keep working; the screen says Simple / Normal / Experto.
+ */
+export type Register = "sencillo" | "normal" | "tecnico";
+export const REGISTERS: Register[] = ["sencillo", "normal", "tecnico"];
 
 type Templates = Record<Verdict, string>;
 
@@ -35,7 +39,7 @@ const SENCILLO: Record<Lang, Templates> = {
     1: "Aquí sí hay un cambio real: {variable} {sube/baja} unos {efecto} {unidad} cada 10 años. Es muy poco probable que sea casualidad.",
     2: "Parece haber un cambio, pero aún no estamos seguros: podría ser casualidad o depender de cómo se calcule.",
     3: "Todavía no se puede saber. Con {n} años de datos solo notaríamos cambios de {mde} o más cada 10 años. Habría que esperar unos {años} años más.",
-    4: "No vemos cambios grandes (de {δ} o más cada 10 años). Si los hubiera, lo habríamos notado.",
+    4: "No vemos cambios grandes (de {δ} o más cada 10 años). Si los hubiera, muy probablemente los habríamos notado.",
     0: "No hay datos suficientes en esta zona.",
   },
   en: {
@@ -44,6 +48,24 @@ const SENCILLO: Record<Lang, Templates> = {
     3: "We cannot tell yet. With {n} years of data we could only notice changes of {mde} or more per 10 years. We would need about {years} more years.",
     4: "We see no large changes ({δ} or more per 10 years). If there were, we would likely have noticed.",
     0: "Not enough data in this area.",
+  },
+};
+
+// SPEC §8.5b (normal register): the chart-and-comparison reading, without p/q on screen.
+const NORMAL: Record<Lang, Templates> = {
+  es: {
+    1: "{variable} {sube/baja} {efecto} {unidad} por década (entre {lo} y {hi}). Los tres métodos lo ven. Se mantiene al revisar {N} zonas a la vez.",
+    2: "Hay una señal de {efecto} {unidad} por década, pero no pasa todos los filtros ({k} de 3 métodos la ven). Puede ser real o casualidad.",
+    3: "Con {n} años de datos solo se distinguen cambios de {mde} o más por década, y lo que buscamos es {δ}. Con ~{años} años más se podría saber.",
+    4: "No aparece un cambio de {δ} o más por década. Con estos datos, uno así se habría visto en la gran mayoría de los casos.",
+    0: "Solo hay {n} años con datos válidos en esta zona; no alcanzan para este análisis.",
+  },
+  en: {
+    1: "{variable} is {rising/falling} {effect} {unit} per decade (between {lo} and {hi}). All three methods see it. It holds when {N} areas are checked at once.",
+    2: "There is a signal of {effect} {unit} per decade, but it does not pass every check ({k} of 3 methods see it). It may be real or chance.",
+    3: "With {n} years of data only changes of {mde} or more per decade stand out, and we are looking for {δ}. About {years} more years would tell.",
+    4: "No change of {δ} or more per decade shows up. With these data, one like that would have been seen in most cases.",
+    0: "There are only {n} years of valid data here; not enough for this analysis.",
   },
 };
 
@@ -63,7 +85,9 @@ export interface TemplateValues {
 }
 
 export function verdictText(v: Verdict, reg: Register, lang: Lang, x: TemplateValues): string {
-  const t = (reg === "tecnico" ? TECNICO : SENCILLO)[lang][v];
+  let t = (reg === "tecnico" ? TECNICO : reg === "normal" ? NORMAL : SENCILLO)[lang][v];
+  // A single place is a family of one: «corrección por mirar 1 zonas» says nothing, so that sentence is dropped.
+  if (x.N === "1") t = t.replace(/\s*[^.]*\{N\}[^.]*\./, "");
   const map: Record<string, string> = {
     "{efecto}": x.effect, "{effect}": x.effect,
     "{unidad}": x.unit, "{unit}": x.unit,
@@ -80,7 +104,7 @@ export function verdictText(v: Verdict, reg: Register, lang: Lang, x: TemplateVa
 }
 
 /** Raw templates, exposed for the text lint and tests. */
-export const TEMPLATES = { TECNICO, SENCILLO };
+export const TEMPLATES = { TECNICO, NORMAL, SENCILLO };
 
 export const OVER_60: Record<Lang, string> = { es: "más de 60", en: "over 60" };
 
@@ -125,7 +149,7 @@ export const UI = {
     profiles: { earth: "Tierra", mars: "Marte", person: "Persona" },
     profile: "Perfil",
     tabs: { cambio: "Cambio", contraste: "Contraste", detectabilidad: "Detectabilidad", evidencia: "Evidencia" },
-    register: { sencillo: "Sencillo", tecnico: "Experto" },
+    register: { sencillo: "Simple", normal: "Normal", tecnico: "Experto" },
     registerLabel: "Nivel de detalle",
     lang: "Idioma",
     theme: { label: "Tema", system: "Sistema", light: "Claro", dark: "Oscuro" },
@@ -182,7 +206,7 @@ export const UI = {
     profiles: { earth: "Earth", mars: "Mars", person: "Person" },
     profile: "Profile",
     tabs: { cambio: "Change", contraste: "Contrast", detectabilidad: "Detectability", evidencia: "Evidence" },
-    register: { sencillo: "Plain", tecnico: "Expert" },
+    register: { sencillo: "Simple", normal: "Normal", tecnico: "Expert" },
     registerLabel: "Level of detail",
     lang: "Language",
     theme: { label: "Theme", system: "System", light: "Light", dark: "Dark" },
@@ -241,16 +265,16 @@ export const FLAG_LABEL: Record<Lang, Record<string, string>> = {
     DEPENDE_DEL_METODO: "Depende del método", CAMBIO_DE_VERSION: "Cambio de versión del dato",
     COBERTURA_BAJA: "Cobertura baja", RESOLUCION_GRUESA: "Resolución gruesa",
     RECONSTRUCCION: "Reconstrucción", SIMULADO: "Simulado", AUTOCORRELACION_ALTA: "Autocorrelación alta",
+    QUIEBRE_POSIBLE: "Posible salto",
   },
   en: {
     DEPENDE_DEL_METODO: "Method-dependent", CAMBIO_DE_VERSION: "Data version change",
     COBERTURA_BAJA: "Low coverage", RESOLUCION_GRUESA: "Coarse resolution",
     RECONSTRUCCION: "Reconstruction", SIMULADO: "Simulated", AUTOCORRELACION_ALTA: "High autocorrelation",
+    QUIEBRE_POSIBLE: "Possible jump",
   },
 };
 
-/** Flags shown in the plain register: only those that change the reading (web-diseno §2.2). */
-export const PLAIN_FLAGS = new Set(["SIMULADO", "RESOLUCION_GRUESA", "CAMBIO_DE_VERSION", "RECONSTRUCCION"]);
 
 /** Doc 04 §4: words that must never appear in interface text. */
-export const FORBIDDEN = [/prueba/i, /causa/i, /predic/i, /recomend/i, /debería/i, /peligro/i, /diagnós/i, /no hay cambio/i];
+export const FORBIDDEN = [/prueba/i, /causa/i, /predic/i, /recomend/i, /debería/i, /peligro/i, /diagnós/i, /no hay cambio/i, /riesgo(?!_potencial)/i, /urgente/i];

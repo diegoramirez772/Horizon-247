@@ -96,3 +96,43 @@ export interface TimelineDoc {
     reason: { es: string; origin: Origin } }[];
   honesty: { es: string; en: string };
 }
+
+// v0.9 (additive) — home.json, «Mis monitores» (SPEC §15)
+export type Tray = "evidencia" | "calidad" | "seguimiento";
+export interface HomeFinding {
+  verdict: Verdict; verdict_name: string; effect: number | null; ci: [number | null, number | null]; mde: number | null;
+  delta: number | null; delta_source: string | null; years_more: number | null; flags: number; flag_names: string[];
+  p: number | null; q: number | null; n_sig: number; sigma: number | null; r1: number | null; n: number;
+  window: { start: number; end: number }; break_year: number | null; e_value: number | null; ebh: boolean | null;
+}
+export interface HomeTimeline {
+  ends: number[]; verdict: Verdict[]; effect: (number | null)[]; emergence_year: number | null; first_probado: number | null;
+  withdrawals: number; event: string; consistent: boolean;
+}
+export interface HomeAnomaly { type: string; t_start: string; t_end: string; severity: string; peak_z?: number | null; mean_z?: number | null; recent: boolean }
+export interface HomeMonitor {
+  id: string; entity_id: string;
+  variable: { name: string; unit: string; unit_per_decade: string; label: { es: string; en: string } };
+  finding: HomeFinding; series: { years: number[]; values: (number | null)[] }; timeline: HomeTimeline | null; anomalies: HomeAnomaly[];
+  data: { last_month: string; first_month: string; source: string; provider: string; version: string | null; url: string | null;
+    licence: string | null; data_real: boolean; n_cells: number; resolution_deg: number; cell_km: number; computed_at: string | null;
+    input_sha256: string | null };
+  method: { methods: string[]; fdr_q: number; alpha: number; calibration: string; family: string };
+}
+export interface HomeEvent { id: string; monitor: string; type: string; tray: Tray; date: string; year?: number; [k: string]: unknown }
+export interface StateItem { kind: "tendencia" | "anomalia" | "enjambre" | "conjunto"; tier: number; priority: "P0" | "P1" | "P2" | "P3" | "P4"; text_es: string; variable?: string; [k: string]: unknown }
+export interface EntityState {
+  status: "atencion" | "hallazgos" | "vigilando" | "sin_novedad"; headline: { es: string; priority: string | null };
+  changes: StateItem[]; attention: StateItem[]; follow_up: { open_alerts: number; by_state: Record<string, number> };
+  priority: StateItem[]; unknowns: string[]; honesty: { es: string; rules: string };
+}
+export interface HomeEntity {
+  entity: { id: string; type: string; body: string; name: { es: string; en: string }; status: EntityStatus; kind: string; alternatives: { es: string; en: string }[] };
+  monitors: HomeMonitor[]; events: HomeEvent[]; state: EntityState;
+}
+export interface HomeCalibration {
+  source: string; fdr_probado_real_null: { optimistic: number; pessimistic: number }; fdr_ebh_real_null: { optimistic: number; pessimistic: number };
+  power_at_delta: { optimistic: number; pessimistic: number }; sim_false_alarms: Record<string, number>; sim_power_2sigma: Record<string, number>; note: string;
+}
+export interface HomeDoc { contract: "0.9"; kind: "home"; entities: HomeEntity[]; events: HomeEvent[]; honesty: { es: string; en: string }; calibration: HomeCalibration }
+

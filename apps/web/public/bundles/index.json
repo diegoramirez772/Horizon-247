@@ -1,1 +1,758 @@
-[]
+[
+ {
+  "path": "earth/anomaly_t2m_2026-09",
+  "kind": "anomaly",
+  "id": "anomaly_t2m_2026-09",
+  "profile": "earth",
+  "title": {
+   "es": "Temperatura del aire (2 m)",
+   "en": "Air temperature (2 m)"
+  },
+  "variable": {
+   "name": "T2M",
+   "unit": "C",
+   "long_name": "Temperature at 2 Meters"
+  },
+  "unit": "C",
+  "window": {
+   "start": 1981,
+   "end": 2026,
+   "n": 549
+  },
+  "cells": 207936,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 1041058,
+  "files": {
+   "manifest.json": {
+    "bytes": 1378,
+    "sha256": "4c04bddbc83ce9fcfb1e0f6813a6aeaa7712de61e15a797f8762cc820f32e5a8"
+   },
+   "point.u8": {
+    "bytes": 207936,
+    "sha256": "7264dfbf24e05daa1634559eea2a52f447f17585aef11888481573e98b0168c3"
+   },
+   "z.f32": {
+    "bytes": 831744,
+    "sha256": "fe87eccc653d3d827c6a95ecd2e082de071f97b60db0fa638ef6cf1fbd5d89bf"
+   }
+  }
+ },
+ {
+  "path": "earth/global_prectotcorr_1981-2025",
+  "kind": "layer",
+  "id": "powerzarr_PRECTOTCORR_global_1981-2025",
+  "profile": "earth",
+  "title": {
+   "es": "Lluvia",
+   "en": "Rainfall"
+  },
+  "variable": {
+   "name": "PRECTOTCORR",
+   "unit": "mm/day",
+   "unit_per_decade": "mm/day/década"
+  },
+  "unit": "mm/day",
+  "window": {
+   "start": 1981,
+   "end": 2025,
+   "n": 45
+  },
+  "cells": 207936,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 11444524,
+  "files": {
+   "break_year.f32": {
+    "bytes": 831744,
+    "sha256": "89c9795490c11e04c4a22f740e73b24590426abf933d743fd1c035c7c70c6f81"
+   },
+   "ci_hi.f32": {
+    "bytes": 831744,
+    "sha256": "e7f2f4e4c9784be98417afadaf511bc9dcc45e614e8bd0358ff5a8b15cf721a7"
+   },
+   "ci_lo.f32": {
+    "bytes": 831744,
+    "sha256": "046f4d3794356602bbfff9911ec2aab43dcb7fc61aeb500a0b35dadbab7db37f"
+   },
+   "delta.f32": {
+    "bytes": 831744,
+    "sha256": "67868149872a7ea160168b6bca5e01eff447c5a26980a7137b775d95eea4d633"
+   },
+   "e_cons.f32": {
+    "bytes": 831744,
+    "sha256": "a9d288ee84cccf20a9d961403d1a359edbfe3fa4c999dd6037adcac966ac3ac4"
+   },
+   "ebh_sig.u8": {
+    "bytes": 207936,
+    "sha256": "c5b4a30235bce5d033d1a5ee987945d98f4bb7a6e7227f1db389984364ad267c"
+   },
+   "effect.f32": {
+    "bytes": 831744,
+    "sha256": "7373dab3373b93f63fb9f0f61883c59bb49dc7ea258d29680e1ce79b55034087"
+   },
+   "flags.u8": {
+    "bytes": 207936,
+    "sha256": "e4264107d603880a1387cb6efb312674a493e7bead3fe74037151d30bc9da343"
+   },
+   "manifest.json": {
+    "bytes": 8044,
+    "sha256": "e745905b4611a719babf4c47a299400aad99b499807f169df4c0da96c5e7658f"
+   },
+   "mde.f32": {
+    "bytes": 831744,
+    "sha256": "92c4165c02bdfddd26d4b8cc39a375f7c6775441ad89f11393fbf913c33947a2"
+   },
+   "naive_sig.u8": {
+    "bytes": 207936,
+    "sha256": "7cd0a35f45a1c9d50713e84451021ecbc122cca2d32e35a46c1d6267415b42cb"
+   },
+   "nsig_methods.u8": {
+    "bytes": 207936,
+    "sha256": "f031ce2cd1b67de0c5e0b2aa39ea31f384a33d308329c8f4b443e2457798b7a6"
+   },
+   "nvalid.u8": {
+    "bytes": 207936,
+    "sha256": "640d3a39cf1cff48c9ac0defa887d561d348342c586c20c42c24b6c1151b077f"
+   },
+   "p_cons.f32": {
+    "bytes": 831744,
+    "sha256": "4d795e7fafc62c4223a89016eb03ae677e9977e3d78479784a4b85f091b799b8"
+   },
+   "q_cons.f32": {
+    "bytes": 831744,
+    "sha256": "7140ee44dc10c6b6eccbe14a224782b8d7972bb80199cdb49c3e710d450d3a8f"
+   },
+   "r1.f32": {
+    "bytes": 831744,
+    "sha256": "2502298bbeaf426ec87d0563cece3bfa9c57eb9ca6c06094f44ccfe8b7d11b49"
+   },
+   "robust_mem.u8": {
+    "bytes": 207936,
+    "sha256": "c298789001a8209032cfe8d9e1a5a82345dd263bbdca18e1d4e3bbb763d9bf88"
+   },
+   "sigma.f32": {
+    "bytes": 831744,
+    "sha256": "695aef9a0ef3ef356b48d2ec8d9aceade7d3afd51e9e51dd8ff2c6c2a8f24b63"
+   },
+   "verdict.u8": {
+    "bytes": 207936,
+    "sha256": "3058e1e52ce1d1ced33d799519898a7836745d656890493d5f7c13787fd8b15c"
+   },
+   "years_more.f32": {
+    "bytes": 831744,
+    "sha256": "1906bc389b4ba7db494f43145c7937f9cacc0e09cd548898c40b710948182be1"
+   }
+  }
+ },
+ {
+  "path": "earth/global_t2m_1981-2026",
+  "kind": "layer",
+  "id": "powerzarr_T2M_global_1981-2026",
+  "profile": "earth",
+  "title": {
+   "es": "Temperatura del aire (2 m)",
+   "en": "Air temperature (2 m)"
+  },
+  "variable": {
+   "name": "T2M",
+   "unit": "C",
+   "unit_per_decade": "C/década"
+  },
+  "unit": "C",
+  "window": {
+   "start": 1981,
+   "end": 2026,
+   "n": 46
+  },
+  "cells": 207936,
+  "data_real": true,
+  "last_month": "2026-09",
+  "has_events": true,
+  "bytes": 13554176,
+  "files": {
+   "break_year.f32": {
+    "bytes": 831744,
+    "sha256": "1cedf701884b72ba099e33204f2acca34d41d13adb68b509eaf90527abba8954"
+   },
+   "ci_hi.f32": {
+    "bytes": 831744,
+    "sha256": "55e9234ac770ae696f6feb5fadbc81ae7ec138e327caf5395a05443e6d93519b"
+   },
+   "ci_lo.f32": {
+    "bytes": 831744,
+    "sha256": "d4b3e317f6e9e3fa9f05c7930c1bff5142f0601c698a25da99de48e89dca5ed5"
+   },
+   "delta.f32": {
+    "bytes": 831744,
+    "sha256": "95b7f11b36c9f3413c333da86c4d7c660bb42989011a64d05ae9659527de5dd9"
+   },
+   "e_cons.f32": {
+    "bytes": 831744,
+    "sha256": "583c60b29216f7f37da803a3a072d93eb6b2ba9aa86f2b31b0de1b8cc4386924"
+   },
+   "ebh_sig.u8": {
+    "bytes": 207936,
+    "sha256": "d7583d8a471486b8c959164893a7939df3d3a5873cee02029cf28998afd610c7"
+   },
+   "effect.f32": {
+    "bytes": 831744,
+    "sha256": "4e4417707f1337901c839ec7df590d13dbeb564d5953c09a946e15eab41c0164"
+   },
+   "event.u8": {
+    "bytes": 207936,
+    "sha256": "3150b9f33bd4da47175c0ed52b013d54968724a714139fef0adb5a455871f2ff"
+   },
+   "events.json": {
+    "bytes": 30340,
+    "sha256": "34ceeac23ea50ceea8c06662c79ba46014c976843e298632fa19df5343c270dc"
+   },
+   "flags.u8": {
+    "bytes": 207936,
+    "sha256": "003cada9b48f5c33408fa332a90c192e1c3004af7bc053b1934663d78eca6ffc"
+   },
+   "manifest.json": {
+    "bytes": 7996,
+    "sha256": "51a09601fce96ec267e348de9fbd7c2cbbbec6b2b28d0e4433026c89eb5c6690"
+   },
+   "mde.f32": {
+    "bytes": 831744,
+    "sha256": "c31aaa4e51511264dcdf6a2504b7fa3f867b44c1479920d4da3b259354c40929"
+   },
+   "naive_sig.u8": {
+    "bytes": 207936,
+    "sha256": "d6428a33c16611faa48fa9e1a6748a31c490939aab7d76eb8b40f5449f34a79b"
+   },
+   "nsig_methods.u8": {
+    "bytes": 207936,
+    "sha256": "649c0fd18a42986dda6b14b940690b3d5fb9eb2a48b3a69dded559e97f264751"
+   },
+   "nvalid.u8": {
+    "bytes": 207936,
+    "sha256": "1daa4e6df7d858e7a1f32d5c88536edf23ed7401fe7c0a85d87182813bd2a1cb"
+   },
+   "p_cons.f32": {
+    "bytes": 831744,
+    "sha256": "f7f71828b6d9622c6a01f2177dfbf03c408a970e5ef2ac97d89357af686c4d43"
+   },
+   "priority_order.u32": {
+    "bytes": 831744,
+    "sha256": "5c43f453372e2bec97a9306d63d482157718c7384b3de78411d6cf0184956925"
+   },
+   "priority_strength.f32": {
+    "bytes": 831744,
+    "sha256": "99aa2e8187a9250bb95694b14539a8dd456056a17242ad962dab78d1a963ec6b"
+   },
+   "priority_tier.u8": {
+    "bytes": 207936,
+    "sha256": "26ddd12fe7959ad5fb5fd0ed9f229482234327b8d29df0355ed6000726dce4b9"
+   },
+   "q_cons.f32": {
+    "bytes": 831744,
+    "sha256": "ddc231aba3ac1226a0ed41618ca69057d91d859730a0ac87483b89f3f68a8f11"
+   },
+   "r1.f32": {
+    "bytes": 831744,
+    "sha256": "59246b1c3c25efb543074821f560a5dfa94ce2fe6b4a07da559c66efe822c43c"
+   },
+   "robust_mem.u8": {
+    "bytes": 207936,
+    "sha256": "baf79911dca5a18b628f7d1f5c204d912a524816aef2db5ad924d578585c53a6"
+   },
+   "sigma.f32": {
+    "bytes": 831744,
+    "sha256": "d10df6a3f87676d9c09f4e95dff0a19978d70fc35496c0c9a2822bb4480ad65d"
+   },
+   "verdict.u8": {
+    "bytes": 207936,
+    "sha256": "78301540e22c2725ad0db7b0efdf38747950b7f5bb83d63d0f1a86ab54b77243"
+   },
+   "years_more.f32": {
+    "bytes": 831744,
+    "sha256": "0970f0f5be14c1edb85d77dd8684bb3f4accef17d527a730a7ae5650a27771fe"
+   }
+  }
+ },
+ {
+  "path": "earth/global_t2m_2deg_1981-2025",
+  "kind": "layer",
+  "id": "powerzarr_T2M_annual2deg_1981-2025",
+  "profile": "earth",
+  "title": {
+   "es": "Temperatura del aire (2 m) · año por año",
+   "en": "Air temperature (2 m) · year by year"
+  },
+  "variable": {
+   "name": "T2M",
+   "unit": "C",
+   "unit_per_decade": "C/década"
+  },
+  "unit": "C",
+  "window": {
+   "start": 1981,
+   "end": 2025,
+   "n": 45
+  },
+  "cells": 12960,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 3053178,
+  "files": {
+   "break_year.f32": {
+    "bytes": 51840,
+    "sha256": "07f1c6f9ff44e254dfecdbc591f66305469fb393d2eccf7a681b9870ada8b97b"
+   },
+   "ci_hi.f32": {
+    "bytes": 51840,
+    "sha256": "fc62bef0b76b3a9e1d48c47aef89f5042f4484b885e81cc856061e8f23702cf2"
+   },
+   "ci_lo.f32": {
+    "bytes": 51840,
+    "sha256": "66ee942e2326266daf11d34b7e3e9d14afab09b7726eeede94f3e9cd486a813d"
+   },
+   "delta.f32": {
+    "bytes": 51840,
+    "sha256": "6277de87c421774af87dd83e24d6f48cab31240e5a2a011522ca67f1013d7514"
+   },
+   "e_cons.f32": {
+    "bytes": 51840,
+    "sha256": "fb4a9ee5f55f3135621153e7441dcad159fc8549863220154139a519d6019559"
+   },
+   "ebh_sig.u8": {
+    "bytes": 12960,
+    "sha256": "706b1b9581bf2609d2927c5990b60c84c021ac37d6c8b289e301953dea6d00bf"
+   },
+   "effect.f32": {
+    "bytes": 51840,
+    "sha256": "79d4f7f6805477c8fd6913b4cf4124db268a0210b35ebc8cc8f55314812b6be6"
+   },
+   "flags.u8": {
+    "bytes": 12960,
+    "sha256": "6e059701b0015cd6593ff71719617c5cfb9de87c445d535480e7d503935d8578"
+   },
+   "manifest.json": {
+    "bytes": 7578,
+    "sha256": "ade45736b22b6098b87914f3da6f2bff4a95c4a562d843f82947f0aac3c77061"
+   },
+   "mde.f32": {
+    "bytes": 51840,
+    "sha256": "9783b12c40227c657f00c1c7b35bc01c3c5c908516ab3164464a6c648b502dc7"
+   },
+   "naive_sig.u8": {
+    "bytes": 12960,
+    "sha256": "9141ded737dc047201b44fc4fcbdb3827b5f60583e675f2b814e97f7b8300b05"
+   },
+   "nsig_methods.u8": {
+    "bytes": 12960,
+    "sha256": "3b8053b7118e54ac56bd0cb9efad2e7cbe1ac754343940918892d069c97a8fc5"
+   },
+   "nvalid.u8": {
+    "bytes": 12960,
+    "sha256": "ab80dfac99e64676043f690dd3f124bef5bb3d7c8f290313316d92b92588f85d"
+   },
+   "p_cons.f32": {
+    "bytes": 51840,
+    "sha256": "4bf7842e4cc76283ab86bbd3430399e389cd0a6f3d3ae0a98a8910bd49094bbd"
+   },
+   "q_cons.f32": {
+    "bytes": 51840,
+    "sha256": "f7e2e683745d8e21227f187d63979eba4dcc1b9ffceb10cf777cc25f2df66fdc"
+   },
+   "r1.f32": {
+    "bytes": 51840,
+    "sha256": "a76ea6a9b1d4d9012de89428927f883f60be0cf401060abf8daa691c6fe6a6a9"
+   },
+   "robust_mem.u8": {
+    "bytes": 12960,
+    "sha256": "84e781c3f80b90ffa88552f13e8505ca4502584b2a5d6adca240b11ab834ae73"
+   },
+   "series.f32": {
+    "bytes": 2332800,
+    "sha256": "d5f077b9d2ed3a1fbf54c06f4cbd6384f232bc2db68a8fd6d6c78a9fe1ac281a"
+   },
+   "sigma.f32": {
+    "bytes": 51840,
+    "sha256": "5006fee7636f0f289c99cc1e11aa1328d3d45044e1783cd409b75e8c2fc0a408"
+   },
+   "verdict.u8": {
+    "bytes": 12960,
+    "sha256": "93bafba535be66f65ab0623b8561d9db18acbc8fa7d90d496006124dac97c37a"
+   },
+   "years_more.f32": {
+    "bytes": 51840,
+    "sha256": "1878318cf595386e5a1adb01ee985944f72d108b08e061ac47aba33d14b94f59"
+   }
+  }
+ },
+ {
+  "path": "earth/power_prectotcorr_dgo_2001-2024",
+  "kind": "layer",
+  "id": "power_PRECTOTCORR_monthly_2001-2024",
+  "profile": "earth",
+  "title": {
+   "es": "Precipitación corregida · Durango (caja aproximada)",
+   "en": "Corrected precipitation · Durango (approximate box)"
+  },
+  "variable": {
+   "name": "PRECTOTCORR",
+   "unit": "mm/day",
+   "unit_per_decade": "mm/day/década"
+  },
+  "unit": "mm/day",
+  "window": {
+   "start": 2001,
+   "end": 2024,
+   "n": 24
+  },
+  "cells": 72,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 13893,
+  "files": {
+   "ci_hi.f32": {
+    "bytes": 288,
+    "sha256": "c521e4a2a63ffe8c979c2e82845b6c3ab91da6780d87203e66435cf967eeaf09"
+   },
+   "ci_lo.f32": {
+    "bytes": 288,
+    "sha256": "f432bd4b637ad7b586654811294ab2c246a860cf9891c8eed200cb2540517df3"
+   },
+   "effect.f32": {
+    "bytes": 288,
+    "sha256": "2ec5c3b04282e1a626354f91469ead14a4631a354692feb75c7da776bb5e6c56"
+   },
+   "flags.u8": {
+    "bytes": 72,
+    "sha256": "f93473c20a1f9baed998628c7c3b550522980ab2cbce0b8e796c5237325979a0"
+   },
+   "manifest.json": {
+    "bytes": 4029,
+    "sha256": "9829a236d441fe6b94288c475d2c627cbc484980dc6517ced5279b8354e58126"
+   },
+   "mde.f32": {
+    "bytes": 288,
+    "sha256": "8af4c98d212b80a3b8c83e122b593ad25256b490c8c0409b90ea987ff13f9e6b"
+   },
+   "naive_sig.u8": {
+    "bytes": 72,
+    "sha256": "3367754e81b553a1a389d70d039c59a2843bbb2e9903073239fe02752e843c72"
+   },
+   "nsig_methods.u8": {
+    "bytes": 72,
+    "sha256": "d2d01d621a499ebc4aa037027ece12c7d75129bd0dad52420dadcce2ff5b0666"
+   },
+   "nvalid.u8": {
+    "bytes": 72,
+    "sha256": "959fc3852525e245f2fbe87dc922933f35237d934c8f2a9f7f23c28383abc7a6"
+   },
+   "p_cons.f32": {
+    "bytes": 288,
+    "sha256": "ffa0ad0d19cd5c86e0bb0dbe56da00e200684599ff2a2e87011fb179595f31b3"
+   },
+   "q_cons.f32": {
+    "bytes": 288,
+    "sha256": "852ccaaa1235291d33e030b0bd2ac37e0c02212a421e17722662c3043cc13991"
+   },
+   "r1.f32": {
+    "bytes": 288,
+    "sha256": "3868093243e127c2ed285ad9b9dfecdae323f53871149cefa6c2e283e608f73b"
+   },
+   "series.f32": {
+    "bytes": 6912,
+    "sha256": "454cc9f81a9fea10c6b746f66de3149ed18ad1fe7e66ec6ccae3f6603e5aba07"
+   },
+   "sigma.f32": {
+    "bytes": 288,
+    "sha256": "195a498b6cf75deb712fc1f9ab1ae55124aeb6b610e1a56ce210e0088a91881b"
+   },
+   "verdict.u8": {
+    "bytes": 72,
+    "sha256": "65cd67f64e5b85cfa5fbed0fe72c22621c89fdeda28946614cb5f976fd1e4dd5"
+   },
+   "years_more.f32": {
+    "bytes": 288,
+    "sha256": "94daae8a6ea364161501ac1f88ac354445ed015619ed5e295e21dea352440eec"
+   }
+  }
+ },
+ {
+  "path": "earth/power_t2m_dgo_2001-2024",
+  "kind": "layer",
+  "id": "power_T2M_monthly_2001-2024",
+  "profile": "earth",
+  "title": {
+   "es": "Temperatura del aire a 2 m · Durango (caja aproximada)",
+   "en": "Air temperature at 2 m · Durango (approximate box)"
+  },
+  "variable": {
+   "name": "T2M",
+   "unit": "C",
+   "unit_per_decade": "C/década"
+  },
+  "unit": "C",
+  "window": {
+   "start": 2001,
+   "end": 2024,
+   "n": 24
+  },
+  "cells": 72,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 13867,
+  "files": {
+   "ci_hi.f32": {
+    "bytes": 288,
+    "sha256": "876aa004bff59a8553657136fe65ed22cc7b00aeeb40402c928c7bf62fef871f"
+   },
+   "ci_lo.f32": {
+    "bytes": 288,
+    "sha256": "a83796c65344108434641379b82871b1b566bc5f651f2723c319c207fa34a730"
+   },
+   "effect.f32": {
+    "bytes": 288,
+    "sha256": "9904f280f27f6b40348b383216489b7c75161520b6afe09d0b110adfd120f091"
+   },
+   "flags.u8": {
+    "bytes": 72,
+    "sha256": "fa8f3e9b1ce48239a018789375b7c6e523f10419fb5239adc9825ddc802719e8"
+   },
+   "manifest.json": {
+    "bytes": 4003,
+    "sha256": "840b9ad59950ed1eae4257e5ec61d3a8dfb731580fe40288311f5115a4193397"
+   },
+   "mde.f32": {
+    "bytes": 288,
+    "sha256": "9341e0f331313d69f89522c4e4c60ddf6fe776596ebd017c14f909b85b525b42"
+   },
+   "naive_sig.u8": {
+    "bytes": 72,
+    "sha256": "c8bed0af5473e956f38c0def7c0b5047ff756a6a7e666f5f3fb956c5c1652b1e"
+   },
+   "nsig_methods.u8": {
+    "bytes": 72,
+    "sha256": "117084ec239e4955a54286a4a13e6530fd8a6ce9f74fdb62878115c500a7bf60"
+   },
+   "nvalid.u8": {
+    "bytes": 72,
+    "sha256": "959fc3852525e245f2fbe87dc922933f35237d934c8f2a9f7f23c28383abc7a6"
+   },
+   "p_cons.f32": {
+    "bytes": 288,
+    "sha256": "c0fd823e2d04e80625ba684341abe162a63faccb7141187afdb3b29b8584fe41"
+   },
+   "q_cons.f32": {
+    "bytes": 288,
+    "sha256": "255fe0331a979aecabf442c7c639784ec6da84aee1edae3ddf935612c92bff46"
+   },
+   "r1.f32": {
+    "bytes": 288,
+    "sha256": "baffbd3613b56e6eadd026d75c945b14a3904c0eeac0298bd5cc6d0cbcf12c4e"
+   },
+   "series.f32": {
+    "bytes": 6912,
+    "sha256": "00311118e2bde33e856700b642dc857c0dc791950f72b854d60328e81bd12ce3"
+   },
+   "sigma.f32": {
+    "bytes": 288,
+    "sha256": "65cff94b8323d0f9045548a6fd800c80f4b233875a7c041a22fe03c2efe780ae"
+   },
+   "verdict.u8": {
+    "bytes": 72,
+    "sha256": "3a5b8ece2142add3046ea7072e07ab9d9c80d4a6fc12e53a8887c1a8edae813b"
+   },
+   "years_more.f32": {
+    "bytes": 288,
+    "sha256": "edc49999abde7eff6e90c81a9f450bc86a2d3a46a951395d784eb61925104220"
+   }
+  }
+ },
+ {
+  "path": "earth/timeline_t2m_1981-2025",
+  "kind": "timeline",
+  "id": "powerzarr_T2M_timeline_1981-2025",
+  "profile": "earth",
+  "title": {
+   "es": "Temperatura del aire (2 m)",
+   "en": "Air temperature (2 m)"
+  },
+  "variable": {
+   "name": "T2M",
+   "unit": "C",
+   "long_name": "Temperature at 2 Meters",
+   "definition": "The average air (dry bulb) temperature at 2 meters above the surface of the earth.",
+   "valid_min": -125.0,
+   "valid_max": 80.0,
+   "cell_methods": "time: mean"
+  },
+  "unit": "C",
+  "window": {
+   "start": 1981,
+   "end": 2025,
+   "n": 31
+  },
+  "cells": 207936,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 10639967,
+  "files": {
+   "emergence_year.f32": {
+    "bytes": 831744,
+    "sha256": "72faf193b285bb39eedfa7bdad20d5cc767739433f119c1760cb824453afc715"
+   },
+   "event.u8": {
+    "bytes": 207936,
+    "sha256": "a03f771e747051ba766598d6a80838ece6a70e89d7c89738bf58977dc4482120"
+   },
+   "first_probado_year.f32": {
+    "bytes": 831744,
+    "sha256": "73eb94f6e054947da67d36143ae759b27532557637fa1422e14a9bdd2ba11a90"
+   },
+   "priority_order.u32": {
+    "bytes": 831744,
+    "sha256": "f7b863090df36e96b21f95b6b01531b8d267b0630ac21b6b1e52d6676a72c030"
+   },
+   "priority_strength.f32": {
+    "bytes": 831744,
+    "sha256": "e6c2e61f1832a71e0669321cc29449615744174e5bbb35e405a84bc1c819fbe3"
+   },
+   "priority_tier.u8": {
+    "bytes": 207936,
+    "sha256": "7a65b64bd3cd6ed2b616378f176191c7599738e2397d03562462a631b0707678"
+   },
+   "reversals.u8": {
+    "bytes": 207936,
+    "sha256": "d2ae1dd32435e88e0b853749ffd3ad2daee3c545ea526448876ab4253b46b329"
+   },
+   "sign_flip.u8": {
+    "bytes": 207936,
+    "sha256": "9775e1b2ca73f4ee0b69cbe48cdf7aa4a7f790222d842bd0e412c6a0573d627b"
+   },
+   "timeline.json": {
+    "bytes": 35231,
+    "sha256": "c3ed2ae2b9411aed1818f06ae72ff82e17cef18013908d5ebdee745fc040b500"
+   },
+   "verdict_by_window.u8": {
+    "bytes": 6446016,
+    "sha256": "53fa60b647618f256daa0a4f7a913d6d8bb940ffcc6b8a6a63b46a077f6643f9"
+   }
+  }
+ },
+ {
+  "path": "mars/dust_cdod610_MY24-MY36",
+  "kind": "layer",
+  "id": "mars_cdod610_annual_MY24-MY36",
+  "profile": "mars",
+  "title": {
+   "es": "Polvo en Marte",
+   "en": "Dust on Mars"
+  },
+  "variable": {
+   "name": "cdod610",
+   "unit": "Pa/Pa",
+   "unit_per_decade": "Pa/Pa/década"
+  },
+  "unit": "Pa/Pa",
+  "window": {
+   "start": 24,
+   "end": 36,
+   "n": 13
+  },
+  "cells": 7200,
+  "data_real": true,
+  "last_month": null,
+  "has_events": false,
+  "bytes": 778459,
+  "files": {
+   "break_year.f32": {
+    "bytes": 28800,
+    "sha256": "de46d03b4fc394bf4fd7c2e522ae8a4a217110b48ff512f01366dfcfa77e522a"
+   },
+   "ci_hi.f32": {
+    "bytes": 28800,
+    "sha256": "33b19886442ef362e588cf3b62cfc8d2a79a0d9082ef0d21a1ba1b5a390a1e92"
+   },
+   "ci_lo.f32": {
+    "bytes": 28800,
+    "sha256": "36bdec07d8489ddfa73b814dfb31782a1bb8794c247aafc7ff004c375ee20257"
+   },
+   "delta.f32": {
+    "bytes": 28800,
+    "sha256": "507fd138be5ec7d9fdfd85782695aa198705476bd8bb54d46d52733decaa3141"
+   },
+   "e_cons.f32": {
+    "bytes": 28800,
+    "sha256": "b987e4f3f0153134c6727b57c17c7a97b0c2af8ea303ab5aab8b45c68ec5e27e"
+   },
+   "ebh_sig.u8": {
+    "bytes": 7200,
+    "sha256": "e4331b4b5dff91084b34db4018c5905a016cdf9c0d74d02c0d5af88dabfc6bc6"
+   },
+   "effect.f32": {
+    "bytes": 28800,
+    "sha256": "db780431ab6e78a18af5813e983593ccd2116c74bb11281c036c4a14978d518f"
+   },
+   "flags.u8": {
+    "bytes": 7200,
+    "sha256": "8b4a7fae55bb8fd7d907965e9acfa0bcda920d2b26feb02802a9fae3da7eecea"
+   },
+   "manifest.json": {
+    "bytes": 8059,
+    "sha256": "cfd21f88244927134c22c4dc18e922afaa248c41083fb51bb992fd67f545d305"
+   },
+   "mde.f32": {
+    "bytes": 28800,
+    "sha256": "9bedc72466dc292ec36a9423cc30761b31d98369bacca569d10fefa4f46809f9"
+   },
+   "naive_sig.u8": {
+    "bytes": 7200,
+    "sha256": "6b70818a21684cfe823a04d5b1c287cc6bb76ca3eb2ec8cb87c598d014a27d5c"
+   },
+   "nsig_methods.u8": {
+    "bytes": 7200,
+    "sha256": "41afa8e398ea5b3ec9d63cdce2e158b4abe107a9a90c5e57c87ed5a0083ec774"
+   },
+   "nvalid.u8": {
+    "bytes": 7200,
+    "sha256": "f82b920ddd64b413240a41380aec01c6ca2c3aca5caf407214c10612aa64330a"
+   },
+   "p_cons.f32": {
+    "bytes": 28800,
+    "sha256": "79b8f7cd762f92a0d27dc4b9c599bd96acd493bc5623cecc19c647add8cd70a4"
+   },
+   "q_cons.f32": {
+    "bytes": 28800,
+    "sha256": "83982894d0415a83f55396c075d7eca2322c3359e45bb70c3ff164bc8e816228"
+   },
+   "r1.f32": {
+    "bytes": 28800,
+    "sha256": "6be6b14734013e67bece294bc6fe61a750b2d8d0798b528e2cf6845e79c30885"
+   },
+   "robust_mem.u8": {
+    "bytes": 7200,
+    "sha256": "e4331b4b5dff91084b34db4018c5905a016cdf9c0d74d02c0d5af88dabfc6bc6"
+   },
+   "series.f32": {
+    "bytes": 374400,
+    "sha256": "0648c1f738482877a6b3bf16b4a3e23e6e8900c403fc3097557f7a7b3312abaa"
+   },
+   "sigma.f32": {
+    "bytes": 28800,
+    "sha256": "50b421ee6847ad99c9d4ffb01a5f0bacb0b958398014478da3b544e1ff4f0df0"
+   },
+   "verdict.u8": {
+    "bytes": 7200,
+    "sha256": "dcb32caeceb4737964bb7c428f0686e5ffae4ab1aeed3729b881457603deaf94"
+   },
+   "years_more.f32": {
+    "bytes": 28800,
+    "sha256": "42071497bc5028c7c297d9c26c3c6f9d6e7ed34d0460ff758acb499d1cc7ad25"
+   }
+  }
+ }
+]

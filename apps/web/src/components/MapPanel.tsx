@@ -1,25 +1,27 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { compose, readSelection, type Ctx } from "@/core/assistant/compose";
+import { compose, readingLimits, readSelection, type Ctx } from "@/core/assistant/compose";
 import { entryWindow, type IndexEntry } from "@/core/contract/extra";
 import { cellLatLon } from "@/core/contract/loader";
 import { digitsFor, num } from "@/core/format/format";
 import { UI, verdictName, type Lang } from "@/core/i18n/texts";
 import type { BBox, MapData } from "@/core/map/MapView";
 import type { MapTheme } from "@/core/map/palette";
-import type { Metric, TimeMode } from "@/core/state/store";
+import { shownLimits } from "@/core/honesty/limits";
+import { allowedMetrics, type Metric, type TimeMode } from "@/core/state/store";
 import { EvidenceDetails } from "./Evidence";
+import { LivePanel } from "./LivePanel";
 import { LegendBar } from "./Legend";
 import { MapCanvas, type HoverInfo, type MapFocus, type Projection } from "./MapCanvas";
 import { SeriesChart } from "./SeriesChart";
 import { Segmented } from "./ui";
 
-export type PanelTab = "map" | "evidence";
+export type PanelTab = "map" | "live" | "evidence";
 
 const C = {
   es: {
-    map: "Mapa", evidence: "Evidencia", close: "Cerrar panel", expand: "Ampliar panel", shrink: "Reducir panel",
+    map: "Monitoreo", live: "En vivo", evidence: "Evidencia", close: "Cerrar panel", expand: "Ampliar panel", shrink: "Reducir panel",
     full: "Pantalla completa", exitFull: "Salir de pantalla completa (Esc)", view: "Vista", globe: "Globo 3D", flat: "Plano",
     years: "Datos", mode: { completa: "Tendencia", anual: "Año a año", acumulada: "Cómo crece la evidencia" },
     hint: "Pasa el cursor o toca una zona", simulated: "Simulado",
@@ -31,11 +33,11 @@ const C = {
     howMuch: "¿Cuánto cambia?", howSure: "¿Qué tan seguro es?", withWhat: "¿Con qué datos?",
     sure: { 1: "Seguro: es un cambio real, no una casualidad", 2: "Todavía no: hay indicios pero no se confirma", 3: "Todavía no se puede saber con estos años", 4: "No hubo un cambio grande", 0: "No hay datos suficientes" } as Record<number, string>,
     seriesHelp: "Cada punto es un año. La línea punteada muestra hacia dónde va.",
-    technical: "Ver detalles técnicos",
+    technical: "Ver más detalle",
     notYet: "Aún no se sabe",
   },
   en: {
-    map: "Map", evidence: "Evidence", close: "Close panel", expand: "Widen panel", shrink: "Narrow panel",
+    map: "Monitoring", live: "Live", evidence: "Evidence", close: "Close panel", expand: "Widen panel", shrink: "Narrow panel",
     full: "Full screen", exitFull: "Exit full screen (Esc)", view: "View", globe: "3D globe", flat: "Flat",
     years: "Data", mode: { completa: "Trend", anual: "Year by year", acumulada: "How evidence grows" },
     hint: "Hover or tap an area", simulated: "Simulated",
@@ -47,18 +49,25 @@ const C = {
     howMuch: "How much does it change?", howSure: "How sure is it?", withWhat: "With what data?",
     sure: { 1: "Sure: it is a real change, not chance", 2: "Not yet: there are hints but it is not confirmed", 3: "It cannot be known yet with these years", 4: "There was no large change", 0: "Not enough data" } as Record<number, string>,
     seriesHelp: "Each dot is a year. The dashed line shows where it is heading.",
-    technical: "See technical details",
+    technical: "See more detail",
     notYet: "Not known yet",
   },
 };
 
 export interface PanelControls {
   metric: (m: Metric) => void;
-  expert: () => void;
+  /** One level deeper (Simple → Normal → Experto). */
+  deeper: () => void;
   window: (id: string) => void;
   time: (m: TimeMode) => void;
   year: (y: number) => void;
   windowEnd: (y: number) => void;
+  /** NASA imagery under the data (null = Blue Marble). */
+  imagery: (id: string | null) => void;
+  /** The «evolución» playback reached the last year. */
+  evolutionDone: () => void;
+  /** Fly the globe to a point (from «En vivo»). */
+  look: (lat: number, lon: number) => void;
 }
 
 /**
@@ -81,13 +90,14 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
   const sel = s.selection;
   const reading = sel ? readSelection(ctx) : null;
   const expert = s.register === "tecnico";
+  const plain = s.register === "sencillo";
   const [hover, setHover] = useState(-1);
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-surface">
       <div className="flex items-center gap-2 border-b border-border px-3 py-2">
         <div role="tablist" aria-label={c.map} className="flex gap-1 rounded-full bg-surface-2 p-1">
-          {(["map", "evidence"] as PanelTab[]).map((x) => (
+          {(["map", "live", "evidence"] as PanelTab[]).map((x) => (
             <button key={x} role="tab" aria-selected={tab === x} type="button" onClick={() => setTab(x)}
               className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${tab === x ? "bg-surface text-text shadow-sm" : "text-text-2 hover:text-text"}`}>
               {c[x]}
@@ -131,12 +141,12 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
               ) : null}
               <Segmented<TimeMode> label={T.time} value={s.timeMode} onChange={controls.time} compact
                 options={(["completa", "anual", "acumulada"] as TimeMode[])
-                  // Sencillo keeps two easy choices; "how evidence grows" is an Experto tool.
-                  .filter((x) => x === "completa" || (x === "anual" && m.series) || (x === "acumulada" && m.windows && (expert || s.timeMode === "acumulada")))
-                  .map((x) => ({ value: x, label: expert ? c.mode[x] : c.plainTime[x] }))} />
-              {expert && s.timeMode === "completa" ? (
+                  // Simple keeps two easy choices; "how evidence grows" appears from Normal up.
+                  .filter((x) => x === "completa" || (x === "anual" && m.series) || (x === "acumulada" && m.windows && (!plain || s.timeMode === "acumulada")))
+                  .map((x) => ({ value: x, label: plain ? c.plainTime[x] : c.mode[x] }))} />
+              {!plain && s.timeMode === "completa" ? (
                 <Segmented<Metric> label={c.metric} value={s.metric} onChange={controls.metric} compact
-                  options={(["verdict", "effect", "mde", "years"] as Metric[]).map((x) => ({ value: x, label: c.metrics[x] }))} />
+                  options={allowedMetrics(s.register).map((x) => ({ value: x, label: c.metrics[x] }))} />
               ) : null}
             </div>
           ) : null}
@@ -150,7 +160,8 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
             ) : (
               <MapCanvas data={data} theme={theme} selected={sel?.kind === "cell" ? sel.index : -1}
                 filter={s.timeMode === "anual" ? null : s.filter} region={region} focus={focus} lang={s.lang}
-                label={T.mapLabel(m ? m.title[s.lang] : "")} onPick={onPick} describe={describe} onHoverCell={expert ? setHover : undefined} projection={expert ? projection : "globe"} />
+                label={T.mapLabel(m ? m.title[s.lang] : "")} onPick={onPick} describe={describe} onHoverCell={expert ? setHover : undefined} projection={expert ? projection : "globe"}
+                imageryId={s.imagery} onImagery={controls.imagery} />
             )}
             {loading && !error ? (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -164,12 +175,16 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
           {expert ? <Readout ctx={ctx} index={hover} hint={c.readout} /> : null}
           <LegendBar ctx={ctx} theme={theme} blueIsMore={blueIsMore} data={data} onFilter={onFilter} />
           {m && s.timeMode === "anual" && m.series ? (
-            <Timeline years={m.series.years} value={s.year ?? m.series.years.at(-1)!} note={T.descriptiveNote} lang={s.lang} onChange={controls.year} />
+            <Timeline years={m.series.years} value={s.year ?? m.series.years.at(-1)!} note={T.descriptiveNote} lang={s.lang} onChange={controls.year}
+              autoplay={s.evolution} onDone={controls.evolutionDone} />
           ) : null}
           {m && s.timeMode === "acumulada" && m.windows ? (
             <Timeline years={m.windows.ends} value={s.windowEnd ?? m.windows.ends.at(-1)!} prefix={`${m.windows.start}–`} note={T.accumulatedNote} lang={s.lang} onChange={controls.windowEnd} />
           ) : null}
         </>
+      ) : tab === "live" ? (
+        <LivePanel lang={s.lang} imagery={s.imagery} onImagery={(id) => { controls.imagery(id); setTab("map"); }}
+          onLook={(lat, lon) => { controls.look(lat, lon); setTab("map"); }} />
       ) : (
         <div className="min-h-0 flex-1 overflow-y-auto p-5">
           {sel && reading && ctx.layer ? (
@@ -177,8 +192,8 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-3">{c.evidence}</p>
               <h2 className="mt-1 text-xl font-semibold leading-tight">{reading.name[s.lang].replace(/^(la zona|the area) /, "")}</h2>
               <p className="text-sm text-text-2">{verdictName(reading.finding.verdict, s.lang, s.register)} · {m?.window.start}–{m?.window.end}</p>
-              {expert ? <EvidenceDetails ctx={ctx} selection={sel} seriesReady={seriesReady} />
-                : <PlainEvidence ctx={ctx} onExpert={controls.expert} seriesReady={seriesReady} />}
+              {plain ? <PlainEvidence ctx={ctx} onDeeper={controls.deeper} seriesReady={seriesReady} />
+                : <EvidenceDetails ctx={ctx} selection={sel} seriesReady={seriesReady} />}
             </>
           ) : (
             <p className="text-text-2">{c.noSel}</p>
@@ -199,19 +214,29 @@ function IconButton({ label, onClick, children, pressed }: { label: string; onCl
 }
 
 /** Time bar under the map, with a play button that steps through the years once (it stops at the end). */
-function Timeline({ years, value, note, prefix = "", lang, onChange }: {
+function Timeline({ years, value, note, prefix = "", lang, onChange, autoplay = false, onDone }: {
   years: number[]; value: number; note: string; prefix?: string; lang: Lang; onChange: (y: number) => void;
+  /** «Evolución de la Tierra»: start from the first year and play to the end by itself. */
+  autoplay?: boolean; onDone?: () => void;
 }) {
   const c = C[lang];
   const [playing, setPlaying] = useState(false);
   const i = Math.max(0, years.indexOf(value));
   const latest = useRef({ i, years, onChange });
   useEffect(() => { latest.current = { i, years, onChange }; }, [i, years, onChange]);
+  const done = useRef(onDone);
+  useEffect(() => { done.current = onDone; }, [onDone]);
+  useEffect(() => {
+    if (!autoplay) return;
+    latest.current.onChange(latest.current.years[0]);
+    setPlaying(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- starts once per «evolución» request
+  }, [autoplay]);
   useEffect(() => {
     if (!playing) return;
     const id = window.setInterval(() => {
       const { i: k, years: ys, onChange: go } = latest.current;
-      if (k >= ys.length - 1) { setPlaying(false); return; }
+      if (k >= ys.length - 1) { setPlaying(false); done.current?.(); return; }
       go(ys[k + 1]);
     }, 450);
     return () => window.clearInterval(id);
@@ -264,7 +289,7 @@ function Readout({ ctx, index, hint }: { ctx: Ctx; index: number; hint: string }
 }
 
 /** Plain evidence: what it means, the series, and three facts in everyday words. No tables, no jargon. */
-function PlainEvidence({ ctx, onExpert, seriesReady }: { ctx: Ctx; onExpert: () => void; seriesReady: boolean }) {
+function PlainEvidence({ ctx, onDeeper, seriesReady }: { ctx: Ctx; onDeeper: () => void; seriesReady: boolean }) {
   const s = ctx.state;
   const c = C[s.lang];
   const m = ctx.layer!.manifest;
@@ -272,6 +297,7 @@ function PlainEvidence({ ctx, onExpert, seriesReady }: { ctx: Ctx; onExpert: () 
   const f = r.finding;
   const years = m.series?.years ?? [];
   const sentence = compose("area", ctx, "system").text[s.lang].sencillo;
+  const [limit] = shownLimits(readingLimits(ctx, r), "sencillo"); // Simple shows the main limit, never none (doc v2 rule 2)
   const amount = f.verdict === 1 && Number.isFinite(f.effect)
     ? (s.lang === "es" ? `${f.effect > 0 ? "Sube" : "Baja"} unos ${num(Math.abs(f.effect), s.lang, digitsFor("sencillo", f.effect))} ${m.variable.unit} cada 10 años`
       : `${f.effect > 0 ? "Rising" : "Falling"} about ${num(Math.abs(f.effect), s.lang, digitsFor("sencillo", f.effect))} ${m.variable.unit} every 10 years`)
@@ -279,6 +305,7 @@ function PlainEvidence({ ctx, onExpert, seriesReady }: { ctx: Ctx; onExpert: () 
   return (
     <div className="mt-4 flex flex-col gap-4">
       <p className="rounded-2xl bg-surface-2 p-4 text-base leading-7">{sentence}</p>
+      {limit ? <p className="flex gap-1.5 text-sm text-text-2"><span aria-hidden="true">⚠︎</span>{limit.text[s.lang]}</p> : null}
       {f.series.length === years.length && years.length ? (
         <figure className="m-0">
           <SeriesChart values={f.series} years={years} effect={f.effect} unit={m.variable.unit} lang={s.lang} showTrend={f.verdict === 1} />
@@ -293,7 +320,7 @@ function PlainEvidence({ ctx, onExpert, seriesReady }: { ctx: Ctx; onExpert: () 
           </div>
         ))}
       </dl>
-      <button type="button" onClick={onExpert} className="self-start text-sm font-semibold underline underline-offset-4">{c.technical} →</button>
+      <button type="button" onClick={onDeeper} className="self-start text-sm font-semibold underline underline-offset-4">{c.technical} →</button>
     </div>
   );
 }

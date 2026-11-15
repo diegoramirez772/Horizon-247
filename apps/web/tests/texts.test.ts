@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Verdict } from "@/contract/types";
-import { FORBIDDEN, LEGEND, TEMPLATES, UI, verdictText, type Lang, type Register } from "@/core/i18n/texts";
+import { FORBIDDEN, LEGEND, REGISTERS, TEMPLATES, UI, verdictText, type Lang } from "@/core/i18n/texts";
 
 /** Collects every string (and the output of every text function) inside a value. */
 function strings(v: unknown): string[] {
@@ -28,8 +28,8 @@ describe("doc 04 §4 · text lint", () => {
   });
 });
 
-describe("verdict sentences (SPEC §5 and §8.5, verbatim)", () => {
-  for (const lang of ["es", "en"] as Lang[]) for (const reg of ["sencillo", "tecnico"] as Register[]) {
+describe("verdict sentences (SPEC §5, §8.5 and §8.5b, verbatim)", () => {
+  for (const lang of ["es", "en"] as Lang[]) for (const reg of REGISTERS) {
     it(`${lang}/${reg}: every placeholder is filled`, () => {
       for (const v of [0, 1, 2, 3, 4] as Verdict[]) expect(verdictText(v, reg, lang, values)).not.toMatch(/[{}]/);
     });
@@ -42,11 +42,14 @@ describe("verdict sentences (SPEC §5 and §8.5, verbatim)", () => {
     expect(LEGEND.es[1].phrase).toBe("Cambio detectado");
     expect(LEGEND.en[1].phrase).toBe("Change detected");
   });
-  it("«1 zonas» becomes «1 zona» (the contract template is plural)", () => {
-    expect(verdictText(1, "tecnico", "es", { ...values, N: "1" })).toContain("mirar 1 zona a la vez");
-    expect(verdictText(1, "tecnico", "es", { ...values, N: "12" })).toContain("mirar 12 zonas a la vez");
+  it("the selector says Simple / Normal / Experto (doc v2 §2)", () => {
+    expect(UI.es.register).toEqual({ sencillo: "Simple", normal: "Normal", tecnico: "Experto" });
   });
-  it("the selector says Sencillo / Experto (decision D3)", () => {
-    expect(UI.es.register).toEqual({ sencillo: "Sencillo", tecnico: "Experto" });
+  it("SIN_CAMBIO in Simple no longer promises certainty (measured power 80–92 %, SPEC §8.5 fix)", () => {
+    expect(verdictText(4, "sencillo", "es", values)).toContain("muy probablemente");
+  });
+  it("a family of one drops the «N zonas» sentence instead of saying «1 zonas»", () => {
+    for (const reg of REGISTERS) expect(verdictText(1, reg, "es", { ...values, N: "1" })).not.toMatch(/zonas|1 zonas/);
+    expect(verdictText(1, "tecnico", "es", values)).toContain("1 203 zonas");
   });
 });

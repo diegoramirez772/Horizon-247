@@ -11,7 +11,7 @@ import { cellIndexAt, cellLatLon, type Layer } from "@/core/contract/loader";
 import { UI, type Lang } from "@/core/i18n/texts";
 import { Hub, type Here } from "@/core/interaction/hub";
 import type { MapData } from "@/core/map/MapView";
-import { Store, type AppState, type Metric, type TimeMode } from "@/core/state/store";
+import { effectiveMetric, stepRegister, Store, type AppState, type Metric, type TimeMode } from "@/core/state/store";
 import { Chat, MapIcon } from "./Chat";
 import { HubProvider } from "./interaccion/context";
 import { InteractionLayer } from "./interaccion/InteractionLayer";
@@ -19,15 +19,15 @@ import { useAppState, useTheme, useUrlSync } from "./hooks";
 import type { MapFocus, Projection } from "./MapCanvas";
 import { MapPanel, type PanelTab } from "./MapPanel";
 import { Logo, Segmented } from "./ui";
-import { useIndex, useLayer, useMapData, useSeries } from "./useBundles";
+import { useHome, useIndex, useLayer, useMapData, useSeries } from "./useBundles";
 
 const C = {
-  es: { back: "Regresar", backLong: "Regresar al inicio", map: "Mapa", newChat: "Nueva conversación", theme: "Cambiar tema", skip: "Ir a la caja de preguntas", empty: "Aún no hay capas de datos." },
-  en: { back: "Back", backLong: "Back to the start", map: "Map", newChat: "New conversation", theme: "Switch theme", skip: "Go to the question box", empty: "No data layers yet." },
+  es: { back: "Regresar", backLong: "Regresar al inicio", map: "Monitoreo", newChat: "Nueva conversación", theme: "Cambiar tema", skip: "Ir a la caja de preguntas", empty: "Aún no hay capas de datos." },
+  en: { back: "Back", backLong: "Back to the start", map: "Monitoring", newChat: "New conversation", theme: "Switch theme", skip: "Go to the question box", empty: "No data layers yet." },
 };
 
 /** Questions that are about the map open the side panel; the rest stay in the conversation. */
-const STAYS_IN_CHAT: Intent["t"][] = ["help", "advice", "cause", "unknown", "undo", "clear", "lang", "register", "theme", "greet", "profile", "provenance"];
+const STAYS_IN_CHAT: Intent["t"][] = ["topic", "help", "advice", "cause", "unknown", "undo", "clear", "lang", "register", "theme", "greet", "profile", "provenance", "certainty"];
 
 /**
  * One main window (Diego's brief): the conversation stays centred and always visible; the map and the evidence
@@ -37,13 +37,21 @@ export function HorizonApp() {
   const [store] = useState(() => new Store());
   const [conv] = useState(() => new Conversation());
   const raw = useAppState(store);
-  // Metrics other than the verdict are an Experto tool: in Sencillo the map always shows the verdict.
-  const s = useMemo(() => (raw.register === "tecnico" || raw.metric === "verdict" ? raw : { ...raw, metric: "verdict" as const }), [raw]);
+  // Each level offers its own metrics (Simple: verdict; Normal: + effect; Experto: + MDE, years); others fall back to the verdict.
+  const s = useMemo(() => {
+    const metric = effectiveMetric(raw.register, raw.metric);
+    return metric === raw.metric ? raw : { ...raw, metric };
+  }, [raw]);
+  const homeDoc = useHome();
   useUrlSync(store);
   const theme = useTheme();
   const { index, regions } = useIndex();
   const [attempt, setAttempt] = useState(0);
   const [panel, setPanel] = useState<PanelTab | null>(null);
+  // The installed app's «En vivo» shortcut opens straight on that tab (manifest.webmanifest).
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("panel") === "live") setPanel("live");
+  }, []);
   const [wide, setWide] = useState(false);
   const [home, setHome] = useState(true);
   const [full, setFull] = useState(false);
@@ -65,8 +73,11 @@ export function HorizonApp() {
 
   useEffect(() => {
     if (!s.hydrated || index.status !== "ready" || entry || earth.length === 0) return;
-    const sib = siblings(entries, earth[0]);
-    store.set({ layerId: (sib.at(-1) ?? earth[0]).id, profile: "earth" });
+    // Start on the planet's temperature year by year (2°, light, with its series: charts and «evolución» work at once).
+    const yearly = earth.find((e) => /annual2deg/.test(e.id));
+    const first = yearly ?? earth.find((e) => /T2M/.test(e.id) && /global|zarr/i.test(e.id)) ?? earth[0];
+    const sib = siblings(entries, first);
+    store.set({ layerId: yearly ? yearly.id : (sib.at(-1) ?? first).id, profile: "earth" });
   }, [s.hydrated, index.status, entry, earth, entries, store]);
 
   const layerLoad = useLayer(entry, attempt);
@@ -119,6 +130,16 @@ export function HorizonApp() {
   }, [store]);
   const onShow = useCallback((card: Card) => { focusOn(card); setPanel("map"); }, [focusOn]);
   const onEvidence = useCallback((card: Card) => { focusOn(card); setPanel("evidence"); }, [focusOn]);
+  // What the assistant's generated components can do: fly the globe to a point, or change the NASA imagery.
+  const actions = useMemo(() => ({
+    look: (lat: number, lon: number) => {
+      const l = ctxRef.current.layer;
+      const i = l ? cellIndexAt(l.manifest, lat, lon) : -1;
+      store.set({ selection: i >= 0 ? { kind: "cell", index: i } : null, camera: store.get().camera + 1 });
+      setPanel("map");
+    },
+    imagery: (id: string) => { store.set({ imagery: id }); setPanel("map"); },
+  }), [store]);
 
   const pick = useCallback((i: number) => {
     store.set({ selection: { kind: "cell", index: i } });
@@ -132,7 +153,10 @@ export function HorizonApp() {
 
   const controls = useMemo(() => ({
     metric: (mt: Metric) => { store.set({ metric: mt, filter: mt === "verdict" ? store.get().filter : null }); },
-    expert: () => { store.set({ register: "tecnico" }); },
+    deeper: () => { store.set({ register: stepRegister(store.get().register, 1) }); },
+    imagery: (id: string | null) => { store.set({ imagery: id }); },
+    look: (lat: number, lon: number) => actions.look(lat, lon),
+    evolutionDone: () => { store.set({ evolution: false }); },
     window: (id: string) => {
       store.set({ layerId: id, timeMode: "completa", year: null, windowEnd: null });
       conv.wait({ kind: store.get().selection ? "area" : "summary", source: "controls", correctable: false, waitLayer: id });
@@ -149,7 +173,7 @@ export function HorizonApp() {
     },
     year: (y: number) => { store.set({ year: y }); conv.answer(compose("year", { ...ctxRef.current, state: store.get() }, "controls")); },
     windowEnd: (y: number) => { store.set({ windowEnd: y }); conv.answer(compose("accumulated", { ...ctxRef.current, state: store.get() }, "controls")); },
-  }), [store, conv, deps]);
+  }), [store, conv, deps, actions]);
 
   const newChat = () => {
     conv.clear();
@@ -205,7 +229,7 @@ export function HorizonApp() {
             <MapIcon /><span className="hidden sm:inline">{c.map}</span>
           </button>
           <Segmented label={T.registerLabel} value={s.register} onChange={(r) => store.set({ register: r })} compact
-            options={[{ value: "sencillo", label: T.register.sencillo }, { value: "tecnico", label: T.register.tecnico }]} />
+            options={[{ value: "sencillo", label: T.register.sencillo }, { value: "normal", label: T.register.normal }, { value: "tecnico", label: T.register.tecnico }]} />
           <Segmented<Lang> label={T.lang} value={s.lang} compact onChange={(l) => store.set({ lang: l })}
             options={[{ value: "es", label: "ES", title: "Español" }, { value: "en", label: "EN", title: "English" }]} />
           <HeaderIcon label={c.theme} onClick={() => theme.setPref(theme.pref === "light" ? "dark" : "light")} className="hidden sm:flex">
@@ -217,10 +241,10 @@ export function HorizonApp() {
 
       <div className="flex min-h-0 flex-1">
         <main className="min-w-0 flex-1">
-          {index.status === "ready" && earth.length === 0 ? (
+          {index.status === "ready" && earth.length === 0 && !homeDoc ? (
             <p className="p-10 text-center text-text-2">{c.empty} {T.emptyHint}</p>
           ) : (
-            <Chat conv={conv} ctx={ctx} home={home} onHome={setHome} onCommand={onCommand} onShow={onShow} onEvidence={onEvidence} />
+            <Chat conv={conv} ctx={ctx} home={home} onHome={setHome} onCommand={onCommand} onShow={onShow} onEvidence={onEvidence} homeDoc={homeDoc} actions={actions} />
           )}
         </main>
         {panel ? (

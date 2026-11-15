@@ -187,3 +187,32 @@ export function Button({ children, onClick, title, ariaLabel, pressed }: {
     </button>
   );
 }
+
+/** Sparkline of a yearly series (no axes): the shape, for the plain reading. */
+export function Spark({ values, highlight }: { values: number[]; highlight: boolean }) {
+  const pts = values.map((v, i) => [i, v] as const).filter(([, v]) => Number.isFinite(v));
+  if (pts.length < 3) return null;
+  const W = 150, H = 44;
+  const ys = pts.map(([, v]) => v);
+  const lo = Math.min(...ys), hi = Math.max(...ys), span = hi - lo || 1;
+  const x = (i: number) => (i / (values.length - 1)) * (W - 4) + 2;
+  const y = (v: number) => H - 3 - ((v - lo) / span) * (H - 6);
+  const path = pts.map(([i, v], k) => `${k ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join("");
+  const [li, lv] = pts[pts.length - 1];
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true" className="ml-auto shrink-0">
+      <path d={path} fill="none" stroke={highlight ? "var(--accent)" : "var(--text-3)"} strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={x(li)} cy={y(lv)} r="3" fill={highlight ? "var(--accent)" : "var(--text-3)"} />
+    </svg>
+  );
+}
+
+export function VerdictGlyph({ v }: { v: number }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" className="shrink-0">
+      <rect x="0.75" y="0.75" width="14.5" height="14.5" rx="3.5" fill={v === 1 ? "currentColor" : v === 4 ? "var(--no-change)" : "none"} stroke="currentColor" strokeWidth="1.5" />
+      {v === 3 ? <path d="M3 13L13 3M0 8L8 0M8 16L16 8" stroke="currentColor" strokeWidth="1.3" /> : null}
+      {v === 2 ? <g fill="currentColor"><circle cx="5" cy="5" r="1.2" /><circle cx="11" cy="5" r="1.2" /><circle cx="5" cy="11" r="1.2" /><circle cx="11" cy="11" r="1.2" /></g> : null}
+    </svg>
+  );
+}

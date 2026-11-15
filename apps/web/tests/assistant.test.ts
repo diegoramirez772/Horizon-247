@@ -58,7 +58,15 @@ const GOLDEN: [string, string, string | null][] = [
   ["¿qué puedes hacer?", "help", null],
   ["ayuda", "help", null],
   ["no era eso", "undo", null],
-  ["marte", "profile", null],
+  ["marte", "topic", null],
+  // Generative interface (Plan de unión U3) and Monitoreo (U5, U6)
+  ["¿cómo están las vacas en Torreón?", "topic", null],
+  ["monitoreo de astronautas", "topic", null],
+  ["¿qué incendios hay ahora?", "topic", null],
+  ["los planetas del sistema solar", "topic", null],
+  ["¿qué clima hace hoy en Durango?", "topic", "mx-dgo"],
+  ["muéstrame el infrarrojo", "imagery", null],
+  ["la evolución de la Tierra", "evolution", null],
   ["contraste ingenuo", "contrast", null],
   // not understood
   ["gráfica bonita", "unknown", null],
@@ -128,7 +136,7 @@ describe("answer cards", () => {
     const c = compose("area", ctx({ kind: "cell", index: 0 }), "user");
     expect(c.text.es.tecnico).toContain("+0.12");
     expect(c.text.es.tecnico).toContain("+0.10 a +0.20");
-    expect(c.text.es.sencillo).toContain("sube unos 0.1 °C cada 10 años");
+    expect(c.text.es.sencillo).toContain("sube: apenas 0,12 °C cada diez años");
     expect(c.origin).toBe("hori");
     expect(c.evidence).toEqual({ layerId: "L24", selection: { kind: "cell", index: 0 } });
   });
