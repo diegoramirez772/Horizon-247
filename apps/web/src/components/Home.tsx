@@ -1,12 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { HomeDoc } from "@/contract/types";
-import { certaintyText } from "@/core/honesty/calibration";
 import { loadSeen, markSeen, saveSeen, unseen } from "@/core/home/cursor";
-import {
-  attentionText, eventText, monitorName, presentMonitor, sourcesFor, staleSources, unknowns,
-} from "@/core/home/present";
+import { monitorName, presentMonitor, sourcesFor } from "@/core/home/present";
 import type { Lang, Register } from "@/core/i18n/texts";
 import { DeckCard, Spark, VerdictGlyph } from "./ui";
 
@@ -62,66 +59,4 @@ export function monitorCards({ doc, lang, register, onAsk, seen, see }: {
           </li>
         );
       }));
-}
-
-/** Under the deck: what changed, what needs attention, data quality and what is not known yet, as chips that open. */
-export function MonitorExtras({ doc, lang, register, seen, see }: {
-  doc: HomeDoc; lang: Lang; register: Register; seen: string[]; see: (ids: string[]) => void;
-}) {
-  const t = T[lang];
-  const [sure, setSure] = useState(false);
-  const [tray, setTray] = useState<null | "changed" | "attention" | "quality" | "unknown">(null);
-  const fresh = useMemo(() => unseen(doc.events, seen), [doc.events, seen]);
-  const changes = fresh.filter((e) => e.tray === "evidencia");
-  const quality = [...fresh.filter((e) => e.tray === "calidad").map((e) => ({ id: e.id, text: eventText(e, doc, lang) })),
-    ...staleSources(doc, new Date(), lang).map((x, i) => ({ id: `stale-${i}`, text: x }))];
-  const attention = doc.entities.flatMap((ent) => ent.state.attention.map((it, i) => ({ id: `${ent.entity.id}-${i}`, text: attentionText(it, ent, lang) })));
-  const notYet = unknowns(doc, lang);
-  const chips = [
-    { key: "changed" as const, label: t.changed, n: changes.length, empty: t.nothingNew, hot: changes.length > 0 },
-    { key: "attention" as const, label: t.attention, n: attention.length, empty: t.nothingAttention, hot: attention.length > 0 },
-    { key: "quality" as const, label: t.quality, n: quality.length, empty: t.qualityOk, hot: false },
-    { key: "unknown" as const, label: t.unknown, n: notYet.length, empty: "", hot: false },
-  ];
-  const open = chips.find((c) => c.key === tray) ?? null;
-  const list = tray === "changed" ? changes.map((e) => ({ id: e.id, text: eventText(e, doc, lang), seen: true }))
-    : tray === "attention" ? attention.map((a) => ({ ...a, seen: false }))
-    : tray === "quality" ? quality.map((q) => ({ ...q, seen: false }))
-    : tray === "unknown" ? notYet.map((x) => ({ id: x, text: x, seen: false })) : [];
-  return (
-    <div className="px-1">
-      <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t.sub}>
-        {chips.filter((c) => c.key !== "unknown" || c.n > 0).map((c) => (
-          <button key={c.key} type="button" onClick={() => setTray(tray === c.key ? null : c.key)} aria-expanded={tray === c.key}
-            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors ${tray === c.key ? "border-accent bg-accent text-on-accent" : "border-border bg-surface/90 text-text-2 hover:border-text-3 hover:text-text"}`}>
-            {c.hot && tray !== c.key ? <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent" /> : null}
-            {c.label}<span className="tabular text-xs opacity-70">{c.n}</span>
-          </button>
-        ))}
-        <button type="button" onClick={() => setSure((x) => !x)} aria-expanded={sure}
-          className="ml-auto text-sm font-medium text-text-2 underline-offset-4 hover:text-text hover:underline">
-          {sure ? t.hideSure : t.sure}
-        </button>
-      </div>
-      {sure ? <p role="note" className="widget-in mt-2 rounded-2xl bg-surface-2 p-3 text-sm leading-6">{certaintyText(register, lang, doc.calibration)}</p> : null}
-      {open ? (
-        <div className="widget-in mt-2 rounded-2xl border border-border bg-surface p-3">
-          {list.length ? (
-            <ul className="flex flex-col gap-2 text-sm">
-              {list.map((x) => (
-                <li key={x.id} className="flex items-start gap-2">
-                  <span className="min-w-0 flex-1">{x.text}</span>
-                  {x.seen ? <button type="button" onClick={() => see([x.id])} className="shrink-0 text-xs font-medium text-text-2 underline underline-offset-2 hover:text-text">{t.seen}</button> : null}
-                </li>
-              ))}
-            </ul>
-          ) : <p className="text-sm text-text-3">{open.empty}</p>}
-          {tray === "changed" && changes.length > 1 ? (
-            <button type="button" onClick={() => see(changes.map((e) => e.id))} className="mt-2 text-xs font-medium text-text-2 underline underline-offset-2 hover:text-text">{t.seenAll}</button>
-          ) : null}
-        </div>
-      ) : null}
-      <p className="mt-3 text-xs text-text-3">{t.note}</p>
-    </div>
-  );
 }

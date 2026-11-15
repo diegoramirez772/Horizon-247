@@ -9,7 +9,7 @@ import { digitsFor, num } from "@/core/format/format";
 import { shownLimits } from "@/core/honesty/limits";
 import { verdictName, type Lang, type Register } from "@/core/i18n/texts";
 import { FeedbackInline } from "./FeedbackInline";
-import { monitorCards, MonitorExtras, useSeen } from "./Home";
+import { monitorCards, useSeen } from "./Home";
 import { TrendChart } from "./charts";
 import { Widgets, type WidgetActions } from "./genui/Widgets";
 import { DeckCard, Emblem, Spark, VerdictGlyph } from "./ui";
@@ -117,8 +117,10 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, h
       <div className="relative flex h-full flex-col overflow-y-auto overflow-x-hidden">
         <HorizonBackdrop />
         <div className="relative my-auto flex w-full flex-col py-8">
-        <div className="relative mx-auto flex w-full max-w-[720px] flex-col px-4 pb-8">
-          <h1 className="mb-6 text-center text-[clamp(1.75rem,3.2vw,2.5rem)] font-semibold leading-tight tracking-tight text-balance">{t.hello}</h1>
+        <h1 className="mx-auto mb-6 max-w-[720px] px-4 text-center text-[clamp(1.75rem,3.2vw,2.5rem)] font-semibold leading-tight tracking-tight text-balance">{t.hello}</h1>
+        <Deck homeDoc={homeDoc} lang={lang} register={register} onAsk={(x) => { onHome(false); ask(x, "chip"); }}
+          onTry={(cmd, label) => { onHome(false); onCommand(cmd, "chip", label); }} />
+        <div className="relative mx-auto flex w-full max-w-[720px] flex-col px-4 pt-6">
           <Composer conv={conv} lang={lang} register={register} onRegister={onRegister} simulated={simulated} onSend={(x, v) => { onHome(false); ask(x, v); }} autoFocus bare />
           {msgs.length > 0 ? (
             <button type="button" onClick={() => onHome(false)} className="mx-auto mt-4 text-sm font-medium text-text-2 underline-offset-4 hover:text-text hover:underline">
@@ -126,8 +128,6 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, h
             </button>
           ) : null}
         </div>
-        <Deck homeDoc={homeDoc} lang={lang} register={register} onAsk={(x) => { onHome(false); ask(x, "chip"); }}
-          onTry={(cmd, label) => { onHome(false); onCommand(cmd, "chip", label); }} />
         </div>
         {simulated ? <p className="relative px-4 pb-4 pt-2 text-center text-xs text-text-3">{t.simNote}</p> : null}
       </div>
@@ -513,7 +513,7 @@ function Deck({ homeDoc, lang, register, onAsk, onTry }: {
   return (
     <Discover lang={lang} onTry={onTry} title={homeDoc ? T[lang].deck : T[lang].discover}
       lead={homeDoc ? monitorCards({ doc: homeDoc, lang, register, onAsk, seen, see }) : []}
-      footer={homeDoc ? <MonitorExtras doc={homeDoc} lang={lang} register={register} seen={seen} see={see} /> : null} />
+ />
   );
 }
 
@@ -523,8 +523,8 @@ function interleave<T>(a: T[], b: T[]): T[] {
   return out;
 }
 
-function Discover({ lang, onTry, title, lead, footer }: {
-  lang: Lang; onTry: (cmd: Command, label: string) => void; title: string; lead: React.ReactNode[]; footer: React.ReactNode;
+function Discover({ lang, onTry, title, lead }: {
+  lang: Lang; onTry: (cmd: Command, label: string) => void; title: string; lead: React.ReactNode[];
 }) {
   const t = T[lang];
   const row = useRef<HTMLUListElement>(null);
@@ -563,7 +563,7 @@ function Discover({ lang, onTry, title, lead, footer }: {
     return () => window.clearInterval(id);
   }, [auto]);
   return (
-    <section aria-labelledby="discover" className="relative mx-auto w-full max-w-[1120px] px-4 pb-4 md:pb-20" aria-roledescription="carrusel"
+    <section aria-labelledby="discover" className="relative mx-auto w-full max-w-[1120px] px-4" aria-roledescription="carrusel"
       onMouseEnter={() => setHolding(true)} onMouseLeave={() => setHolding(false)}
       onFocus={() => setHolding(true)} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setHolding(false); }}>
       <div className="mb-3 flex items-center justify-between gap-3 px-1">
@@ -585,7 +585,6 @@ function Discover({ lang, onTry, title, lead, footer }: {
           </li>
         )))}
       </ul>
-      {footer}
     </section>
   );
 }
