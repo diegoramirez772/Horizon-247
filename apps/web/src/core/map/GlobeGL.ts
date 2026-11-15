@@ -37,6 +37,8 @@ export interface MarkerInfo {
   url?: string;
   photo?: string;
   satId?: number;
+  /** The International Space Station: its card can open NASA's live camera. */
+  iss?: boolean;
 }
 type Marker = { x: number; y: number; r: number; info: () => MarkerInfo };
 import type { PrismLayer } from "@/core/detect/prisms";
@@ -924,7 +926,7 @@ export class GlobeGL {
           const p = satPosition(s);
           const G = { stations: { es: "Estación o tripulada", en: "Station" }, weather: { es: "Meteorológico", en: "Weather" }, resource: { es: "Observación de la Tierra", en: "Earth observation" }, science: { es: "Científico", en: "Science" } } as Record<string, { es: string; en: string }>;
           return {
-            kind: "sat", key: `sat${s.id}`, satId: s.id, title: s.name,
+            kind: "sat", key: `sat${s.id}`, satId: s.id, title: s.name, iss: s.id === 25544,
             lines: [
               `${G[s.group]?.[lang] ?? s.group} · NORAD ${s.id}`,
               `${Math.round(p.altKm).toLocaleString(lang)} km · ${p.speedKms.toFixed(2)} km/s · ${lang === "es" ? "vuelta en" : "orbit"} ${Math.round(periodMin(s))} min`,
@@ -1152,7 +1154,7 @@ export class GlobeGL {
     let down: { x: number; y: number; lon: number; lat: number; moved: boolean } | null = null;
     this.on("pointerdown", (e) => {
       cancelAnimationFrame(this.anim);
-      this.canvas.setPointerCapture(e.pointerId);
+      try { this.canvas.setPointerCapture(e.pointerId); } catch { /* synthetic pointer (hand, voice): nothing to capture */ }
       down = { x: e.offsetX, y: e.offsetY, lon: this.lon0, lat: this.lat0, moved: false };
     });
     this.on("pointermove", (e) => {

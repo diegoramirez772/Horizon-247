@@ -220,7 +220,7 @@ export class TerrainView {
   private bind(): void {
     let down: { x: number; y: number } | null = null;
     const c = this.canvas;
-    const pd = (e: PointerEvent) => { down = { x: e.clientX, y: e.clientY }; this.spin = false; c.setPointerCapture(e.pointerId); c.style.cursor = "grabbing"; };
+    const pd = (e: PointerEvent) => { down = { x: e.clientX, y: e.clientY }; this.spin = false; try { c.setPointerCapture(e.pointerId); } catch { /* synthetic pointer */ } c.style.cursor = "grabbing"; };
     const pm = (e: PointerEvent) => {
       if (!down) return;
       this.orbit((e.clientX - down.x) / c.clientWidth, (e.clientY - down.y) / c.clientHeight);

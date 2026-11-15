@@ -246,6 +246,14 @@ const TOPIC_CHIPS: Record<Topic, Chip[]> = {
   astronauta: [chip(L("¿Y Marte?", "And Mars?"), { t: "topic", topic: "marte", where: null })],
   marte: [chip(L("Marte en 3D", "Mars in 3D"), { t: "scene", where: null, timeline: false, preset: "marte" }), chip(L("Otros planetas", "Other planets"), { t: "topic", topic: "planetas", where: null }), chip(L("Volver a la Tierra", "Back to Earth"), { t: "summary" })],
   planetas: [chip(L("Polvo en Marte", "Dust on Mars"), { t: "topic", topic: "marte", where: null }), chip(L("Monitoreo de astronautas", "Astronaut monitoring"), { t: "topic", topic: "astronauta", where: null })],
+  camaras: [
+    chip(L("¿Hay alertas aquí?", "Any alerts here?"), { t: "topic", topic: "alertas", where: null }),
+    chip(L("Infrarrojo en vivo", "Live infrared"), { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }),
+  ],
+  conjunto: [
+    chip(L("Ver lo significativo", "Show what is significant"), { t: "open", panel: "map", tour: "apoyado" }),
+    chip(L("¿Hay alertas aquí?", "Any alerts here?"), { t: "topic", topic: "alertas", where: null }),
+  ],
   alertas: [
     chip(L("Todas las señales de fauna", "All animal signals"), { t: "topic", topic: "fauna", where: null }),
     chip(L("Tormentas y eventos", "Storms and events"), { t: "topic", topic: "eventos", where: null }),

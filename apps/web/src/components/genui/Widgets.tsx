@@ -10,6 +10,7 @@ import { HOME_PLACE, findPlace, type Where } from "@/core/genui/places";
 import { type FaunaGroup, type FaunaSignal, type TopSpecies, GROUPS, boxAround, topSpecies, watchFauna } from "@/core/live/fauna";
 import { type LiveDetection, distanceKm, subscribeWeather } from "@/core/map/weather";
 import { FaunaGroupCard, faunaLine } from "../FaunaPanel";
+import { IssCam, JointMap, SkyCam } from "./LiveViews";
 import type { Lang } from "@/core/i18n/texts";
 import { CAT_LABEL, CAT_PLURAL, fetchEvents, km, type NaturalEvent } from "@/core/live/eonet";
 import { fetchPowerPoint, thiDays, type PowerPoint, type ThiLevel } from "@/core/live/power";
@@ -47,6 +48,9 @@ export function Widgets({ widgets, lang, actions }: { widgets: Widget[]; lang: L
             : w.w === "alerts" ? <AlertsWidget where={w.where} lang={lang} actions={actions} />
             : w.w === "fauna" ? <FaunaWidget where={w.where} group={w.group} lang={lang} />
             : w.w === "storms" ? <StormsWidget near={w.near} lang={lang} actions={actions} />
+            : w.w === "iss" ? <IssCam lang={lang} />
+            : w.w === "sky" ? <SkyCam lang={lang} near={w.near} />
+            : w.w === "joint" ? <Frame title={lang === "es" ? "Cambio conjunto · HORI" : "Joint change · HORI"} badge={{ text: "HORI", kind: "hori" }}><JointMap lang={lang} hint={w.hint} onLook={actions.look} /></Frame>
             : <PlanetsWidget lang={lang} />}
         </div>
       ))}

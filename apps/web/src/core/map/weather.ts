@@ -232,7 +232,9 @@ async function compose(prev: LiveDetection[], signal: AbortSignal): Promise<Weat
   for (let p = 0, k = 0; p < W * H; p++, k += 4) {
     let c = ir ? irCloud(ir[k], ir[k + 1], ir[k + 2], ir[k + 3]) : -1;
     if (c < 0) c = vi ? rgbCloud(vi[k], vi[k + 1], vi[k + 2]) : 0;
-    else if (ir && irConvective(ir[k], ir[k + 1], ir[k + 2], ir[k + 3])) { conv[cell(p)]++; o[k + 2] = 255; }
+    // Deep convection only between 55° S and 55° N: polar ice and high ice sheets are as cold as storm tops in band 13
+    // (seen 2026-11-15: «storms» over Antarctica).
+    else if (ir && Math.abs(90 - ((p / W) | 0) * 180 / H) <= 55 && irConvective(ir[k], ir[k + 1], ir[k + 2], ir[k + 3])) { conv[cell(p)]++; o[k + 2] = 255; }
     o[k] = Math.round(c * 255);
     o[k + 1] = li ? Math.max(0, li[k] * 0.3 + li[k + 1] * 0.59 + li[k + 2] * 0.11 - 18) * 1.1 : 0;
     o[k + 3] = 255;

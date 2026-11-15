@@ -367,7 +367,7 @@ export class SceneView {
   private bindEvents(): void {
     const pts = new Map<number, { x: number; y: number }>();
     let pinch = 0;
-    this.on("pointerdown", (e) => { this.canvas.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); });
+    this.on("pointerdown", (e) => { try { this.canvas.setPointerCapture(e.pointerId); } catch { /* synthetic pointer (hand, voice): nothing to capture */ } pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); });
     this.on("pointermove", (e) => {
       const p = pts.get(e.pointerId);
       if (!p) return;

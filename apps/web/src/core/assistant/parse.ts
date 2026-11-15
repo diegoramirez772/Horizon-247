@@ -56,7 +56,7 @@ export type Intent =
   | { t: "world" }
   | { t: "undo" }
   | { t: "clear" }
-  | { t: "topic"; topic: Topic; where: Where | null; group?: FaunaGroup | null }
+  | { t: "topic"; topic: Topic; where: Where | null; group?: FaunaGroup | null; /** The words said, for components that pick from them. */ hint?: string }
   | { t: "imagery"; layer: string }
   | { t: "evolution" }
   | { t: "variable"; v: "T2M" | "PRECTOTCORR" }
@@ -73,7 +73,7 @@ export type Intent =
   | { t: "unknown" };
 
 /** What the answer is about when it brings its own components (clima, ganado, astronauta, Marte, planetas, eventos). */
-export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos" | "red" | "alertas" | "fauna";
+export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos" | "red" | "alertas" | "fauna" | "camaras" | "conjunto";
 
 /** What a command may carry besides its intent: a place to look at first. */
 export type Place = { kind: "region"; id: string } | { kind: "coord"; lat: number; lon: number } | null;
@@ -149,6 +149,10 @@ export function parse(raw: string, regions: Region[]): Command {
     : how ? { t: "howto", key: how }
     // «¿hay alertas por mi casa?», «¿algo raro aquí?»: everything watched around the place, each anomaly with its component
     : P.alerts.test(text) ? { t: "topic", topic: "alertas", where: whereOf(raw, place) }
+    // «cámara de la ISS», «¿cómo se ve el cielo ahora?»: the live views
+    : P.cameras.test(text) ? { t: "topic", topic: "camaras", where: whereOf(raw, place), hint: text }
+    // «¿qué cambia junto?», «más calor y menos nieve»: HORI's joint change
+    : P.joint.test(text) ? { t: "topic", topic: "conjunto", where: null, hint: text }
     // «abre señales de fauna» opens the panel; «muéstrame las aves» prints the card here
     : (OPEN_PANEL.test(text) || /(panel|senales de fauna|animal signals)/.test(text)) && FAUNA.test(text) ? { t: "open", panel: "fauna" }
     : (FAUNA.test(text) || faunaGroupOf(text)) && !P.livestock.test(text) ? { t: "topic", topic: "fauna", where: whereOf(raw, place), group: faunaGroupOf(text) }

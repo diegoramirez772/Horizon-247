@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { registerView } from "@/core/interaction/manipulate";
 import { GlobeView } from "@/core/map/GlobeView";
 import { DEFAULT_LAYERS, GlobeGL, type GlobeLayers, type MarkerInfo } from "@/core/map/GlobeGL";
+import { IssCam } from "./genui/LiveViews";
 import { LAYERS, liveSlot } from "@/core/map/imagery";
 import { detectTier } from "@/core/map/tier";
 import { MapView, type BBox, type MapData } from "@/core/map/MapView";
@@ -67,6 +68,7 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
   const [card, setCard] = useState<MarkerInfo | null>(null);
   const [following, setFollowing] = useState(false);
   const [layersOpen, setLayersOpen] = useState(false);
+  const [cam, setCam] = useState(false);
   const layersBox = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!layersOpen) return;
@@ -111,7 +113,7 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
         const g = new GlobeGL(host.current!, L.theme, L.label);
         g.onImagery = setImageryLabel;
         g.onLost = () => setGpuLost(true);
-        g.onMarker = (m) => { setCard(m); setFollowing(false); if (m) setLayersOpen(false); };
+        g.onMarker = (m) => { setCard(m); setFollowing(false); setCam(false); if (m) setLayersOpen(false); };
         g.setLayers(layersRef.current);
         v = g;
       } catch (e) { console.warn("[h247] GPU globe failed, canvas globe instead:", e); v = new GlobeView(host.current!, L.theme, L.label); }
@@ -180,14 +182,14 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
         </div>
       ) : null}
       {card ? (
-        <div className="fade absolute right-[4.25rem] top-4 z-20 border border-border bg-surface w-[min(300px,calc(100%-6rem))] rounded-2xl p-3 text-sm shadow-lg">
+        <div className={`fade absolute right-[4.25rem] top-4 z-20 border border-border bg-surface ${cam ? "w-[min(380px,calc(100%-6rem))]" : "w-[min(300px,calc(100%-6rem))]"} rounded-2xl p-3 text-sm shadow-lg`}>
           <div className="flex items-start gap-3">
             {card.photo ? <img src={card.photo} alt="" width={56} height={56} className="h-14 w-14 shrink-0 rounded-lg object-cover" /> : null}
             <div className="min-w-0 flex-1">
               <p className="font-semibold leading-snug">{card.title}</p>
               {card.lines.map((l, k) => <p key={k} className={k ? "text-xs leading-snug text-text-3" : "leading-snug text-text-2"}>{l}</p>)}
             </div>
-            <button type="button" aria-label={lang === "es" ? "Cerrar" : "Close"} onClick={() => { setCard(null); setFollowing(false); const v = view.current; if (v instanceof GlobeGL) v.unpick(); }}
+            <button type="button" aria-label={lang === "es" ? "Cerrar" : "Close"} onClick={() => { setCard(null); setFollowing(false); setCam(false); const v = view.current; if (v instanceof GlobeGL) v.unpick(); }}
               className="-mr-1 -mt-1 rounded-full px-2 text-lg leading-none text-text-3 hover:text-text">×</button>
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -197,8 +199,15 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
                 {following ? (lang === "es" ? "Siguiendo" : "Following") : lang === "es" ? "Seguir" : "Follow"}
               </button>
             ) : null}
+            {card.iss ? (
+              <button type="button" onClick={() => setCam((v) => !v)} aria-pressed={cam}
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${cam ? "bg-accent text-on-accent" : "border border-border"}`}>
+                <span className="live-dot" aria-hidden="true" />{lang === "es" ? "Cámara en vivo" : "Live camera"}
+              </button>
+            ) : null}
             {card.url ? <a href={card.url} target="_blank" rel="noreferrer" className="rounded-full border border-border px-3 py-1 text-xs font-semibold">{lang === "es" ? "Fuente" : "Source"} ↗</a> : null}
           </div>
+          {card.iss && cam ? <div className="mt-2"><IssCam lang={lang} compact /></div> : null}
         </div>
       ) : null}
       {/* Imagery, view and the 3D scene are chosen in «Vista del mapa» (MapPanel), not here. */}

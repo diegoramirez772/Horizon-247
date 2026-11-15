@@ -544,7 +544,7 @@ export class MapView {
     let down: { x: number; y: number; tx: number; ty: number; moved: boolean } | null = null;
     this.on("pointerdown", (e) => {
       cancelAnimationFrame(this.anim);
-      this.canvas.setPointerCapture(e.pointerId);
+      try { this.canvas.setPointerCapture(e.pointerId); } catch { /* synthetic pointer (hand, voice): nothing to capture */ }
       down = { x: e.offsetX, y: e.offsetY, tx: this.tx, ty: this.ty, moved: false };
     });
     this.on("pointermove", (e) => {

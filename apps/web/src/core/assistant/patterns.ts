@@ -60,6 +60,8 @@ export const P = {
   events: has(["incendio", "tormenta", "huracan", "ciclon", "volcan", "evento", "desastre", "que esta pasando en el mundo", "iceberg",
     "wildfire", "fire", "storm", "hurricane", "cyclone", "volcano", "event", "disaster"]),
   infrared: has(["infrarroj", "nubes", "satelite", "en vivo", "tiempo real", "infrared", "clouds", "satellite", "live", "real time"]),
+  cameras: has(["camara", "video en vivo", "en vivo desde", "transmision", "webcam", "camera", "live feed", "live video", "stream", "como se ve el cielo", "el cielo ahora", "cielo en vivo", "foto del satelite", "imagen del satelite", "sky now", "satellite image", "satellite photo"]),
+  joint: has(["cambio conjunto", "cambian? juntos?", "cambia junto", "cambian a la vez", "al mismo tiempo", "dos variables", "mas calor y menos", "mas calor y mas", "joint change", "change together", "changing together", "warmer and less", "warmer and more"]),
   alerts: has(["alerta", "anomal", "algo raro", "algo extrano", "pasa algo", "hay algo", "algo fuera de lo comun", "alert", "anything unusual", "anything wrong", "unusual"]),
   report: has(["^reporta", "^reporte", "^quiero reportar", "^aviso", "^report ", "^i want to report"]),
   swarm: has(["red enjambre", "enjambre", "reportes de la red", "que reporta la gente", "reportes ciudadanos", "swarm", "citizen reports"]),

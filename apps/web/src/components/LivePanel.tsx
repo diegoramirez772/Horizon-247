@@ -10,6 +10,7 @@ import type { Lang } from "@/core/i18n/texts";
 import { LAYERS, liveSlot } from "@/core/map/imagery";
 import { type LiveDetection, type WeatherFrame, distanceKm, subscribeWeather } from "@/core/map/weather";
 import { EventsWidget, NowWidget } from "./genui/Widgets";
+import { IssCam, SkyCam } from "./genui/LiveViews";
 
 const PLACES_STORE = "h247-places-v1";
 
@@ -72,11 +73,13 @@ export function LivePanel({ lang, imagery, onImagery, onLook }: {
 
   return (
     <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
-      <LiveDetections lang={lang} places={places} onLook={onLook} />
-
       <section>
-        <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-3"><span className="live-dot" aria-hidden="true" />{es ? "Satélites ahora" : "Satellites now"}</h2>
-        <p className="mt-1 text-sm text-text-2">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-3"><span className="live-dot" aria-hidden="true" />{es ? "Satélites y cámaras ahora" : "Satellites and cameras now"}</h2>
+        <div className="@container mt-2"><div className="grid gap-3 @xl:grid-cols-2">
+          <IssCam lang={lang} />
+          <SkyCam lang={lang} near={places[0] ?? null} />
+        </div></div>
+        <p className="mt-3 text-sm text-text-2">
           {es ? `Infrarrojo térmico de las ${slot.slice(11, 16)} UTC: lo brillante son nubes frías y altas, también de noche. Se actualiza cada 10 minutos.`
             : `Thermal infrared at ${slot.slice(11, 16)} UTC: bright means cold, high clouds, day or night. Updated every 10 minutes.`}
         </p>
@@ -95,6 +98,8 @@ export function LivePanel({ lang, imagery, onImagery, onLook }: {
           </button>
         ) : null}
       </section>
+
+      <LiveDetections lang={lang} places={places} onLook={onLook} />
 
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-3">{es ? "Tus lugares" : "Your places"}</h2>
@@ -149,7 +154,7 @@ function LiveDetections({ lang, places, onLook }: { lang: Lang; places: Where[];
     return near && near.km < 1500 ? `${ll} · ${es ? "a" : ""} ${Math.round(near.km).toLocaleString(lang)} km ${es ? "de" : "from"} ${near.p.name}` : ll;
   };
   const hhmm = (t: string | null) => (t ? `${t.slice(11, 16)} UTC` : "—");
-  const list = f?.detections.slice(0, 10) ?? [];
+  const list = f?.detections.slice(0, 6) ?? [];
   return (
     <section>
       <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-3"><span className="live-dot" aria-hidden="true" />{es ? "Detección en vivo" : "Live detection"}</h2>
