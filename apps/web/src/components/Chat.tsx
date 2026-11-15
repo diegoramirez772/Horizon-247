@@ -164,6 +164,8 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, h
   );
 }
 
+const noSub = () => () => {};
+
 // ---------------------------------------------------------------- one answer
 
 function Answer({ card, lang, register, latest, ctx, onCommand, onShow, onEvidence, actions }: {
@@ -298,6 +300,8 @@ function Composer({ conv, lang, register, onSend, simulated, autoFocus = false, 
   const hub = useHub();
   const hs = useHubState();
   const listening = hs.voice.listening && hs.mode !== "dictation";
+  // The server cannot know if the browser has speech: render the send button first, the mic after hydration.
+  const hydrated = useSyncExternalStore(noSub, () => true, () => false);
   const [draft, setDraft] = useState("");
   const box = useRef<HTMLTextAreaElement>(null);
   const spokenId = useRef(0);
@@ -336,7 +340,7 @@ function Composer({ conv, lang, register, onSend, simulated, autoFocus = false, 
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(draft, "text"); } }}
           placeholder={listening ? t.listening : t.placeholder}
           className="max-h-[180px] min-h-11 flex-1 resize-none bg-transparent py-2.5 text-base leading-6 text-text outline-none placeholder:text-text-3 focus:outline-none focus-visible:outline-none" />
-        {hs.voice.supported ? (
+        {hydrated && hs.voice.supported ? (
           <button type="button" onClick={() => hub.talk()}
             aria-label={hs.voice.listening ? t.stop : t.mic} title={`${hs.voice.listening ? t.stop : t.mic} (Alt+V)`} aria-pressed={hs.voice.listening}
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors ${hs.voice.listening ? "bg-accent text-on-accent" : "text-text-2 hover:bg-surface-2 hover:text-text"}`}>
