@@ -118,7 +118,7 @@ def explain_cell(rule: Rule, i: int, out: dict, la: dict, lb: dict, units: dict 
     va, vb = int(la["verdict"][i]), int(lb["verdict"][i])
     from .verdict import CODES
     def part(var, e, v, lang):
-        u = units.get(var, "")
+        u = {"C": "°C", "degC": "°C", "1": "", "fraction": ""}.get(units.get(var, ""), units.get(var, ""))
         per = "/década" if lang == "es" else "/decade"
         return f"{_words(var, e, lang)} ({e:+.3g} {u}{per}, {CODES[v]})".replace("  ", " ")
     q = float(out["q_joint"][i])

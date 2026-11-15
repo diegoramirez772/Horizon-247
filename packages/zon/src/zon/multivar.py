@@ -89,7 +89,8 @@ def build_joint(results: dict, cubes: dict, rels: dict, start: int, end: int, bu
     layers = {v: {"effect": r.effect, "p_cons": r.p_cons, "verdict": r.verdict} for v, r in results.items()}
     units = {v: c.meta.get("variable", {}).get("unit", "") for v, c in cubes.items()}
     out = run_joint(layers)
-    rel = f"earth/joint_{start}-{end}"
+    tag = "-".join(v.lower() for v in results)                    # one bundle per set of variables: no collisions
+    rel = f"earth/joint_{tag}_{start}-{end}"
     d = bundles / rel
     d.mkdir(parents=True, exist_ok=True)
     rules, arrays = [], {}
@@ -114,8 +115,9 @@ def build_joint(results: dict, cubes: dict, rels: dict, start: int, end: int, bu
         variables[v] = {"layer": rels[v], "unit": units[v], "dataset": m.get("dataset", {}).get("name") or cubes[v].meta.get("dataset", {}).get("name"),
                         "kind": cubes[v].meta.get("dataset", {}).get("kind"), "delta_per_decade": m.get("params", {}).get("delta_per_decade"),
                         "probado_cells": int((r.verdict == 1).sum())}
-    manifest = {"contract": "0.4", "kind": "joint", "id": f"joint_{start}-{end}", "profile": "earth",
-                "title": {"es": f"Cambio conjunto {start}–{end}", "en": f"Joint change {start}–{end}"},
+    names = " + ".join(results)
+    manifest = {"contract": "0.4", "kind": "joint", "id": f"joint_{tag}_{start}-{end}", "profile": "earth",
+                "title": {"es": f"Cambio conjunto {names}, {start}–{end}", "en": f"Joint change {names}, {start}–{end}"},
                 "variable": {"name": "JOINT", "unit": ""},
                 "grid": {"type": "latlon", "nlat": 180, "nlon": 360, "lat0": 89.5, "dlat": -1.0, "lon0": -179.5, "dlon": 1.0},
                 "window": {"start": start, "end": end, "n": end - start + 1, "step": "annual"},

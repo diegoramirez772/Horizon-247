@@ -1,11 +1,11 @@
 {
  "contract": "0.4",
  "kind": "joint",
- "id": "joint_1981-2025",
+ "id": "joint_t2m-aod_1981-2025",
  "profile": "earth",
  "title": {
-  "es": "Cambio conjunto 1981–2025",
-  "en": "Joint change 1981–2025"
+  "es": "Cambio conjunto T2M + AOD, 1981–2025",
+  "en": "Joint change T2M + AOD, 1981–2025"
  },
  "variable": {
   "name": "JOINT",
@@ -84,8 +84,8 @@
       "T2M": -0.2398
      },
      "text": {
-      "es": "Aquí subieron los aerosoles (+0.0855 1/década, PROBADO) y bajó la temperatura (-0.24 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
-      "en": "Here aerosols rose (+0.0855 1/decade, PROBADO) and temperature fell (-0.24 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "es": "Aquí subieron los aerosoles (+0.0855 /década, PROBADO) y bajó la temperatura (-0.24 °C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.0855 /decade, PROBADO) and temperature fell (-0.24 °C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
       "rule": "J7",
       "level": "AMBAS_PROBADO"
      }
@@ -100,8 +100,8 @@
       "T2M": -0.1754
      },
      "text": {
-      "es": "Aquí subieron los aerosoles (+0.085 1/década, PROBADO) y bajó la temperatura (-0.175 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
-      "en": "Here aerosols rose (+0.085 1/decade, PROBADO) and temperature fell (-0.175 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "es": "Aquí subieron los aerosoles (+0.085 /década, PROBADO) y bajó la temperatura (-0.175 °C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.085 /decade, PROBADO) and temperature fell (-0.175 °C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
       "rule": "J7",
       "level": "AMBAS_PROBADO"
      }
@@ -116,8 +116,8 @@
       "T2M": -0.3265
      },
      "text": {
-      "es": "Aquí subieron los aerosoles (+0.0823 1/década, PROBADO) y bajó la temperatura (-0.326 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
-      "en": "Here aerosols rose (+0.0823 1/decade, PROBADO) and temperature fell (-0.326 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "es": "Aquí subieron los aerosoles (+0.0823 /década, PROBADO) y bajó la temperatura (-0.326 °C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.0823 /decade, PROBADO) and temperature fell (-0.326 °C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
       "rule": "J7",
       "level": "AMBAS_PROBADO"
      }
@@ -132,8 +132,8 @@
       "T2M": -0.1883
      },
      "text": {
-      "es": "Aquí subieron los aerosoles (+0.0808 1/década, PROBADO) y bajó la temperatura (-0.188 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
-      "en": "Here aerosols rose (+0.0808 1/decade, PROBADO) and temperature fell (-0.188 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "es": "Aquí subieron los aerosoles (+0.0808 /década, PROBADO) y bajó la temperatura (-0.188 °C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.0808 /decade, PROBADO) and temperature fell (-0.188 °C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
       "rule": "J7",
       "level": "AMBAS_PROBADO"
      }
@@ -148,8 +148,8 @@
       "T2M": -0.1604
      },
      "text": {
-      "es": "Aquí subieron los aerosoles (+0.0763 1/década, PROBADO) y bajó la temperatura (-0.16 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
-      "en": "Here aerosols rose (+0.0763 1/decade, PROBADO) and temperature fell (-0.16 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "es": "Aquí subieron los aerosoles (+0.0763 /década, PROBADO) y bajó la temperatura (-0.16 °C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.0763 /decade, PROBADO) and temperature fell (-0.16 °C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
       "rule": "J7",
       "level": "AMBAS_PROBADO"
      }
@@ -164,8 +164,8 @@
       "T2M": -0.1044
      },
      "text": {
-      "es": "Aquí subieron los aerosoles (+0.064 1/década, PROBADO) y bajó la temperatura (-0.104 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
-      "en": "Here aerosols rose (+0.064 1/decade, PROBADO) and temperature fell (-0.104 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "es": "Aquí subieron los aerosoles (+0.064 /década, PROBADO) y bajó la temperatura (-0.104 °C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.064 /decade, PROBADO) and temperature fell (-0.104 °C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
       "rule": "J7",
       "level": "AMBAS_PROBADO"
      }
@@ -180,8 +180,8 @@
       "T2M": -0.1065
      },
      "text": {
-      "es": "Aquí subieron los aerosoles (+0.0481 1/década, PROBADO) y bajó la temperatura (-0.107 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
-      "en": "Here aerosols rose (+0.0481 1/decade, PROBADO) and temperature fell (-0.107 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "es": "Aquí subieron los aerosoles (+0.0481 /década, PROBADO) y bajó la temperatura (-0.107 °C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.0481 /decade, PROBADO) and temperature fell (-0.107 °C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
       "rule": "J7",
       "level": "AMBAS_PROBADO"
      }
