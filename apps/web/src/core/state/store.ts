@@ -52,7 +52,11 @@ export interface AppState {
   imagery: string | null;
   /** «Evolución de la Tierra»: the globe plays the years of the layer on screen. */
   evolution: boolean;
+  /** The generated 3D scene open in the panel (place + whether its timeline starts playing); null = none. */
+  scene: SceneTarget | null;
 }
+
+export interface SceneTarget { name: string; lat: number; lon: number; timeline: boolean }
 
 /** Server and first client render use this; the URL is read after hydration. */
 export const DEFAULT_STATE: AppState = {
@@ -72,6 +76,7 @@ export const DEFAULT_STATE: AppState = {
   hydrated: false,
   imagery: null,
   evolution: false,
+  scene: null,
 };
 
 type Listener = () => void;

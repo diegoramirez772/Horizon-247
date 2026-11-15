@@ -34,15 +34,18 @@ export type Intent =
   | { t: "topic"; topic: Topic; where: Where | null }
   | { t: "imagery"; layer: string }
   | { t: "evolution" }
+  | { t: "variable"; v: "T2M" | "PRECTOTCORR" }
+  | { t: "report"; text: string; where: Where | null }
+  | { t: "scene"; where: Where | null; timeline: boolean }
   | { t: "unknown" };
 
 /** What the answer is about when it brings its own components (clima, ganado, astronauta, Marte, planetas, eventos). */
-export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos";
+export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos" | "red";
 
 /** What a command may carry besides its intent: a place to look at first. */
 export type Place = { kind: "region"; id: string } | { kind: "coord"; lat: number; lon: number } | null;
 
-export interface Command { intent: Intent; place: Place }
+export interface Command { intent: Intent; place: Place; /** The named place, for follow-ups («¿y en Chihuahua?»). */ where?: Where | null }
 
 function findRegion(text: string, regions: Region[]): string | null {
   for (const r of regions) {
@@ -75,7 +78,7 @@ function filterOf(text: string): number[] | null {
 }
 
 /** A place for a live question: a named city, else the coordinates typed, else none (the caller picks a default). */
-function whereOf(raw: string, place: Place): Where | null {
+export function whereOf(raw: string, place: Place): Where | null {
   const named = findPlace(raw);
   if (named) return named;
   return place?.kind === "coord" ? { name: `${place.lat.toFixed(2)}°, ${place.lon.toFixed(2)}°`, lat: place.lat, lon: place.lon } : null;
@@ -84,7 +87,9 @@ function whereOf(raw: string, place: Place): Where | null {
 export function parse(raw: string, regions: Region[]): Command {
   const text = normalize(raw);
   const regionId = findRegion(text, regions);
-  const coord = regionId ? null : findCoord(text);
+  // Regions from the bundle first; then coordinates; then the gazetteer of known places (Chihuahua, Torreón…).
+  const named = regionId ? null : findPlace(raw);
+  const coord = regionId ? null : findCoord(text) ?? (named ? { lat: named.lat, lon: named.lon } : null);
   const place: Place = regionId ? { kind: "region", id: regionId } : coord ? { kind: "coord", ...coord } : null;
   const year = text.match(P.year);
   const win = text.match(P.window);
@@ -92,6 +97,8 @@ export function parse(raw: string, regions: Region[]): Command {
   // Order matters: limits first (advice, causes), then questions, then commands, then a bare place.
   const intent: Intent =
     !text ? { t: "unknown" }
+    : P.report.test(text) ? { t: "report", text: raw.replace(/^\s*(quiero reportar|reporta(r)?|reporte|aviso|i want to report|report)\s*(:|que)?\s*/i, "").trim(), where: whereOf(raw, place) }
+    : P.swarm.test(text) ? { t: "topic", topic: "red", where: whereOf(raw, place) }
     : P.advice.test(text) ? { t: "advice" }
     : P.cause.test(text) ? { t: "cause" }
     : P.undo.test(text) ? { t: "undo" }
@@ -118,7 +125,8 @@ export function parse(raw: string, regions: Region[]): Command {
     : P.plain.test(text) ? { t: "register", r: "sencillo" }
     : P.dark.test(text) ? { t: "theme", th: "dark" }
     : P.light.test(text) ? { t: "theme", th: "light" }
-    : P.evolution.test(text) ? { t: "evolution" }
+    : P.scene.test(text) ? { t: "scene", where: whereOf(raw, place), timeline: P.timeline.test(text) || P.evolution.test(text) }
+    : P.evolution.test(text) || P.timeline.test(text) ? { t: "evolution" }
     : P.infrared.test(text) && !P.events.test(text) ? { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }
     : P.livestock.test(text) ? { t: "topic", topic: "ganado", where: whereOf(raw, place) }
     : P.astronaut.test(text) ? { t: "topic", topic: "astronauta", where: null }
@@ -126,6 +134,8 @@ export function parse(raw: string, regions: Region[]): Command {
     : P.planets.test(text) ? { t: "topic", topic: "planetas", where: null }
     : P.events.test(text) ? { t: "topic", topic: "eventos", where: whereOf(raw, place) }
     : P.weatherNow.test(text) ? { t: "topic", topic: "clima", where: whereOf(raw, place) }
+    : P.rainVar.test(text) ? { t: "variable", v: "PRECTOTCORR" }
+    : P.tempVar.test(text) && !P.livestock.test(text) ? { t: "variable", v: "T2M" }
     : P.person.test(text) && !place ? { t: "profile", p: "person" }
     : P.earth.test(text) ? { t: "profile", p: "earth" }
     : place ? { t: "area" }
@@ -136,6 +146,7 @@ export function parse(raw: string, regions: Region[]): Command {
     : { t: "unknown" };
 
   // «¿Qué cambió en Durango?» is about the place, not the whole map.
-  if (intent.t === "summary" && place) return { intent: { t: "area" }, place };
-  return { intent, place };
+  const where = whereOf(raw, place);
+  if (intent.t === "summary" && place) return { intent: { t: "area" }, place, where };
+  return { intent, place, where };
 }

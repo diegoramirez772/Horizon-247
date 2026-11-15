@@ -5,10 +5,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Widget } from "@/core/genui/topic";
-import type { Where } from "@/core/genui/places";
+import { findPlace, type Where } from "@/core/genui/places";
 import type { Lang } from "@/core/i18n/texts";
-import { CAT_LABEL, fetchEvents, km, type NaturalEvent } from "@/core/live/eonet";
+import { CAT_LABEL, CAT_PLURAL, fetchEvents, km, type NaturalEvent } from "@/core/live/eonet";
 import { fetchPowerPoint, thiDays, type PowerPoint, type ThiLevel } from "@/core/live/power";
+import { dbConfigured, listSwarmReports, sendSwarmReport, type SwarmReport } from "@/core/live/db";
 import { loadLayer, loadSeries } from "@/core/contract/loader";
 import { BUNDLES } from "../useBundles";
 import { DailyLine, LevelBars } from "../charts";
@@ -38,6 +39,7 @@ export function Widgets({ widgets, lang, actions }: { widgets: Widget[]; lang: L
             : w.w === "events" ? <EventsWidget near={w.near} lang={lang} actions={actions} />
             : w.w === "astronaut" ? <AstronautWidget lang={lang} />
             : w.w === "mars" ? <MarsWidget lang={lang} />
+            : w.w === "swarm" ? <SwarmWidget where={w.where} draft={w.draft} lang={lang} actions={actions} />
             : <PlanetsWidget lang={lang} />}
         </div>
       ))}
@@ -183,7 +185,7 @@ export function EventsWidget({ near, lang, actions }: { near: Where | null; lang
       foot={es ? "EONET reúne reportes de otras fuentes (InciWeb, GDACS, centros de tormentas…); HORI no detectó estos eventos." : "EONET gathers reports from other sources (InciWeb, GDACS, storm centres…); HORI did not detect these events."}>
       <p className="mb-2 flex flex-wrap gap-1.5 text-xs text-text-2">
         {Object.entries(counts).map(([c, n]) => (
-          <span key={c} className="rounded-full bg-surface px-2 py-0.5">{CAT_LABEL[c as keyof typeof CAT_LABEL].icon} {n} {CAT_LABEL[c as keyof typeof CAT_LABEL][lang].toLocaleLowerCase(lang)}{n > 1 && lang === "es" ? (c === "floods" || c === "wildfires" ? "es" : "s") : n > 1 ? "s" : ""}</span>
+          <span key={c} className="rounded-full bg-surface px-2 py-0.5">{CAT_LABEL[c as keyof typeof CAT_LABEL].icon} {n} {n > 1 ? CAT_PLURAL[c as keyof typeof CAT_PLURAL][lang] : CAT_LABEL[c as keyof typeof CAT_LABEL][lang].toLocaleLowerCase(lang)}</span>
         ))}
       </p>
       <ul className="divide-y divide-border">
@@ -382,4 +384,83 @@ function PlanetsWidget({ lang }: { lang: Lang }) {
       </p>
     </Frame>
   );
+}
+
+// ---------------------------------------------------------------- red enjambre
+
+/** Send a report to the public swarm (Supabase, anonymous session) and see the latest ones. Never verified here. */
+function SwarmWidget({ where, draft, lang, actions }: { where: Where | null; draft: string | null; lang: Lang; actions: WidgetActions }) {
+  const es = lang === "es";
+  const [text, setText] = useState(draft ?? "");
+  const [placeText, setPlaceText] = useState(where?.name ?? "");
+  const [phase, setPhase] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [err, setErr] = useState("");
+  const [list, setList] = useState<SwarmReport[] | null>(null);
+  const [listErr, setListErr] = useState(false);
+  const refresh = () => listSwarmReports(12).then((r) => { setList(r); setListErr(false); }).catch(() => setListErr(true));
+  useEffect(() => { if (dbConfigured()) void refresh(); }, []);
+  if (!dbConfigured()) {
+    return <Frame title={es ? "Red enjambre" : "Swarm"} badge={{ text: es ? "sin conexión" : "offline", kind: "ref" }}><p className="text-sm text-text-2">{es ? "Esta copia de la web no está conectada a la base de datos del equipo." : "This copy of the web is not connected to the team database."}</p></Frame>;
+  }
+  const place = placeFrom(placeText, where);
+  const send = async () => {
+    if (!place) { setErr(es ? "Escribe un lugar conocido o coordenadas (24.5, -104.6)." : "Type a known place or coordinates (24.5, -104.6)."); setPhase("error"); return; }
+    setPhase("sending");
+    try {
+      await sendSwarmReport({ text, lat: place.lat, lon: place.lon, lang });
+      setPhase("sent"); setText(""); void refresh();
+    } catch (e) {
+      const off = e instanceof Error && e.message === "anon-off";
+      setErr(off ? (es ? "La red todavía no acepta reportes: falta activar las sesiones anónimas en Supabase." : "The swarm does not accept reports yet: anonymous sessions must be enabled in Supabase.")
+        : (es ? "No se pudo enviar. Intenta de nuevo." : "Could not send. Try again."));
+      setPhase("error");
+    }
+  };
+  return (
+    <Frame title={es ? "Red enjambre" : "Swarm"} badge={{ text: es ? "fuente no verificada" : "unverified", kind: "ref" }}
+      foot={es ? "La ubicación se redondea a ~1 km. Licencia CC BY 4.0. Un revisor del equipo decide si se acepta." : "Location rounded to ~1 km. CC BY 4.0 licence. A team reviewer decides if it is accepted."}>
+      <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); void send(); }}>
+        <textarea value={text} onChange={(e) => { setText(e.target.value); setPhase("idle"); }} rows={2} maxLength={2000} required
+          aria-label={es ? "Qué ves" : "What you see"} placeholder={es ? "Qué ves: «el arroyo ya se secó», «granizo fuerte»…" : "What you see: «the creek dried up», «heavy hail»…"}
+          className="w-full resize-y rounded-xl border border-border-control bg-bg px-3 py-2 text-sm" />
+        <div className="flex gap-2">
+          <input value={placeText} onChange={(e) => { setPlaceText(e.target.value); setPhase("idle"); }} aria-label={es ? "Lugar" : "Place"}
+            placeholder={es ? "Lugar o «lat, lon»" : "Place or «lat, lon»"} className="min-w-0 flex-1 rounded-xl border border-border-control bg-bg px-3 py-2 text-sm" />
+          <button type="submit" disabled={phase === "sending" || !text.trim()} className="rounded-xl bg-accent px-3.5 text-sm font-medium text-on-accent disabled:opacity-50">
+            {phase === "sending" ? (es ? "Enviando…" : "Sending…") : (es ? "Enviar a la red" : "Send")}
+          </button>
+        </div>
+        {phase === "sent" ? <p role="status" className="text-sm text-text-2">{es ? "Enviado. Quedó como fuente no verificada, en espera de revisión." : "Sent. It is an unverified source awaiting review."}</p> : null}
+        {phase === "error" ? <p role="alert" className="text-sm text-text-2">{err}</p> : null}
+      </form>
+      <div className="mt-3 border-t border-border pt-2">
+        <p className="mb-1 text-xs font-semibold uppercase tracking-[0.1em] text-text-3">{es ? "Últimos reportes" : "Latest reports"}</p>
+        {listErr ? <p className="text-sm text-text-3">{es ? "Aún no se pueden leer (sesiones anónimas apagadas)." : "Cannot read them yet (anonymous sessions off)."}</p>
+          : list === null ? <p className="text-sm text-text-3">…</p>
+          : list.length === 0 ? <p className="text-sm text-text-3">{es ? "Todavía no hay reportes. Sé el primero." : "No reports yet. Be the first."}</p>
+          : (
+            <ul className="space-y-1.5 text-sm">
+              {list.map((r, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="min-w-0 flex-1">«{r.description}» <span className="text-xs text-text-3">· {r.at.slice(0, 10)}</span></span>
+                  {r.lat !== null && r.lon !== null ? <button type="button" onClick={() => actions.look(r.lat!, r.lon!)} className="shrink-0 text-xs font-medium underline underline-offset-2">{es ? "Ver" : "See"}</button> : null}
+                </li>
+              ))}
+            </ul>
+          )}
+      </div>
+    </Frame>
+  );
+}
+
+function placeFrom(text: string, fallback: Where | null): Where | null {
+  const t = text.trim();
+  if (!t) return fallback;
+  if (fallback && t === fallback.name) return fallback;
+  const named = findPlace(t);
+  if (named) return named;
+  const m = t.match(/^(-?\d{1,2}(?:[.,]\d+)?)\s*[ ,;]\s*(-?\d{1,3}(?:[.,]\d+)?)$/);
+  if (!m) return null;
+  const lat = Number(m[1].replace(",", ".")), lon = Number(m[2].replace(",", "."));
+  return Math.abs(lat) <= 90 && Math.abs(lon) <= 180 ? { name: `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`, lat, lon } : null;
 }

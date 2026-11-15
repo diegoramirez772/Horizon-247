@@ -112,7 +112,11 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
 
   useEffect(() => {
     const v = view.current;
-    if (v instanceof GlobeGL) v.setImagery(imagery);
+    if (v instanceof GlobeGL) {
+      v.setImagery(imagery);
+      // A live satellite picture must be seen: the trend colours step back to a faint veil while it is on.
+      v.setDataOpacity(def?.live ? 0.12 : null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the key says when the layer or its date really changed
   }, [imageryKey, projection, gpuLost]);
 

@@ -5,13 +5,14 @@ import { compose, hoverText, type Card, type Ctx } from "@/core/assistant/compos
 import { Conversation, type Via } from "@/core/assistant/conversation";
 import type { Command, Intent } from "@/core/assistant/parse";
 import { parse } from "@/core/assistant/parse";
+import { followUp } from "@/core/assistant/context";
 import { flushPending, run, type Deps } from "@/core/assistant/run";
 import { siblings } from "@/core/contract/extra";
 import { cellIndexAt, cellLatLon, type Layer } from "@/core/contract/loader";
 import { UI, type Lang } from "@/core/i18n/texts";
 import { Hub, type Here } from "@/core/interaction/hub";
 import type { MapData } from "@/core/map/MapView";
-import { effectiveMetric, stepRegister, Store, type AppState, type Metric, type TimeMode } from "@/core/state/store";
+import { effectiveMetric, stepRegister, Store, type AppState, type Metric, type SceneTarget, type TimeMode } from "@/core/state/store";
 import { Chat } from "./Chat";
 import { HubProvider } from "./interaccion/context";
 import { InteractionLayer } from "./interaccion/InteractionLayer";
@@ -27,7 +28,7 @@ const C = {
 };
 
 /** Questions that are about the map open the side panel; the rest stay in the conversation. */
-const STAYS_IN_CHAT: Intent["t"][] = ["topic", "help", "advice", "cause", "unknown", "undo", "clear", "lang", "register", "theme", "greet", "profile", "provenance", "certainty"];
+const STAYS_IN_CHAT: Intent["t"][] = ["topic", "report", "help", "advice", "cause", "unknown", "undo", "clear", "lang", "register", "theme", "greet", "profile", "provenance", "certainty"];
 
 /**
  * One main window (Diego's brief): the conversation stays centred and always visible; the map and the evidence
@@ -50,7 +51,7 @@ export function HorizonApp() {
   const [panel, setPanel] = useState<PanelTab | null>(null);
   // The installed app's «En vivo» shortcut opens straight on that tab (manifest.webmanifest).
   useEffect(() => {
-    { const p = new URLSearchParams(window.location.search).get("panel"); if (p === "live" || p === "map" || p === "evidence") setPanel(p); }
+    { const p = new URLSearchParams(window.location.search).get("panel"); if (p === "live" || p === "map" || p === "evidence" || p === "scene") setPanel(p); }
   }, []);
   const [wide, setWide] = useState(false);
   const [home, setHome] = useState(true);
@@ -106,10 +107,15 @@ export function HorizonApp() {
     flushPending(deps);
   }, [layer, store, deps, regions, entries]);
 
-  const onCommand = useCallback((cmd: Command, via: Via, label: string) => {
+  // The last question, so follow-ups («¿y en Chihuahua?», «¿y la lluvia?») keep what was being talked about.
+  const lastCmd = useRef<Command | null>(null);
+  const onCommand = useCallback((raw: Command, via: Via, label: string) => {
     setHome(false);
+    const cmd = followUp(lastCmd.current, raw, label);
+    if (cmd.intent.t !== "undo" && cmd.intent.t !== "unknown") lastCmd.current = cmd;
     run(cmd, via, label, deps);
-    if (!STAYS_IN_CHAT.includes(cmd.intent.t)) setPanel((p) => p ?? "map");
+    if (cmd.intent.t === "scene") setPanel("scene");
+    else if (!STAYS_IN_CHAT.includes(cmd.intent.t)) setPanel((p) => p ?? "map");
   }, [deps]);
 
   // ---- interaction layer (doc «Interacción v2»): voice, numbers, gamepad, hand and ZON all end here ----
@@ -156,6 +162,7 @@ export function HorizonApp() {
     imagery: (id: string | null) => { store.set({ imagery: id }); },
     look: (lat: number, lon: number) => actions.look(lat, lon),
     evolutionDone: () => { store.set({ evolution: false }); },
+    scene: (t: SceneTarget) => { store.set({ scene: t }); setPanel("scene"); },
     window: (id: string) => {
       store.set({ layerId: id, timeMode: "completa", year: null, windowEnd: null });
       conv.wait({ kind: store.get().selection ? "area" : "summary", source: "controls", correctable: false, waitLayer: id });

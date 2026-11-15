@@ -17,6 +17,14 @@ export interface NaturalEvent {
 
 const KNOWN: EventCat[] = ["wildfires", "severeStorms", "volcanoes", "seaLakeIce", "floods", "drought", "dustHaze", "landslides", "snow"];
 
+/** Plural names for counts («24 incendios»). */
+export const CAT_PLURAL: Record<EventCat, { es: string; en: string }> = {
+  wildfires: { es: "incendios", en: "wildfires" }, severeStorms: { es: "tormentas", en: "storms" }, volcanoes: { es: "volcanes", en: "volcanoes" },
+  seaLakeIce: { es: "hielos", en: "ice" }, floods: { es: "inundaciones", en: "floods" }, drought: { es: "sequías", en: "droughts" },
+  dustHaze: { es: "polvo o humo", en: "dust or haze" }, landslides: { es: "deslaves", en: "landslides" }, snow: { es: "nevadas", en: "snow" },
+  other: { es: "eventos", en: "events" },
+};
+
 export const CAT_LABEL: Record<EventCat, { es: string; en: string; icon: string }> = {
   wildfires: { es: "Incendio", en: "Wildfire", icon: "🔥" },
   severeStorms: { es: "Tormenta", en: "Storm", icon: "🌀" },

@@ -9,7 +9,7 @@ import { UI, verdictName, type Lang } from "@/core/i18n/texts";
 import type { BBox, MapData } from "@/core/map/MapView";
 import type { MapTheme } from "@/core/map/palette";
 import { shownLimits } from "@/core/honesty/limits";
-import { allowedMetrics, type Metric, type TimeMode } from "@/core/state/store";
+import { allowedMetrics, type Metric, type SceneTarget, type TimeMode } from "@/core/state/store";
 import { EvidenceDetails } from "./Evidence";
 import { LivePanel } from "./LivePanel";
 import { LegendBar } from "./Legend";
@@ -17,11 +17,11 @@ import { MapCanvas, type HoverInfo, type MapFocus, type Projection } from "./Map
 import { SeriesChart } from "./SeriesChart";
 import { Segmented } from "./ui";
 
-export type PanelTab = "map" | "live" | "evidence";
+export type PanelTab = "map" | "live" | "evidence" | "scene";
 
 const C = {
   es: {
-    map: "Monitoreo", live: "En vivo", evidence: "Evidencia", close: "Cerrar panel", expand: "Ampliar panel", shrink: "Reducir panel",
+    map: "Monitoreo", live: "En vivo", evidence: "Evidencia", scene: "Escena 3D", see3d: "Ver esta zona en 3D", close: "Cerrar panel", expand: "Ampliar panel", shrink: "Reducir panel",
     full: "Pantalla completa", exitFull: "Salir de pantalla completa (Esc)", view: "Vista", globe: "Globo 3D", flat: "Plano",
     years: "Datos", mode: { completa: "Tendencia", anual: "Año a año", acumulada: "Cómo crece la evidencia" },
     hint: "Pasa el cursor o toca una zona", simulated: "Simulado", viewMenu: "Vista del mapa",
@@ -37,7 +37,7 @@ const C = {
     notYet: "Aún no se sabe",
   },
   en: {
-    map: "Monitoring", live: "Live", evidence: "Evidence", close: "Close panel", expand: "Widen panel", shrink: "Narrow panel",
+    map: "Monitoring", live: "Live", evidence: "Evidence", scene: "3D scene", see3d: "See this area in 3D", close: "Close panel", expand: "Widen panel", shrink: "Narrow panel",
     full: "Full screen", exitFull: "Exit full screen (Esc)", view: "View", globe: "3D globe", flat: "Flat",
     years: "Data", mode: { completa: "Trend", anual: "Year by year", acumulada: "How evidence grows" },
     hint: "Hover or tap an area", simulated: "Simulated", viewMenu: "Map view",
@@ -68,6 +68,8 @@ export interface PanelControls {
   evolutionDone: () => void;
   /** Fly the globe to a point (from «En vivo»). */
   look: (lat: number, lon: number) => void;
+  /** Open the generated 3D scene of a place (from a zone on the map or the assistant). */
+  scene: (t: SceneTarget) => void;
 }
 
 /**
@@ -138,6 +140,18 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
                 <span role="status" className="rounded-full border border-border bg-surface px-4 py-2 text-sm text-text-2 shadow-md">{T.loading}</span>
               </div>
             ) : null}
+            {sel && m && m.profile === "earth" ? (
+              <button type="button" onClick={() => {
+                const p = sel.kind === "cell" ? cellLatLon(m, sel.index) : null;
+                const r = sel.kind === "region" ? ctx.regions.find((x) => x.id === sel.id) as (typeof ctx.regions[number] & { bbox?: BBox }) | undefined : undefined;
+                const pt = p ?? (r?.bbox ? { lat: (r.bbox[1] + r.bbox[3]) / 2, lon: (r.bbox[0] + r.bbox[2]) / 2 } : null);
+                if (pt) controls.scene({ name: r ? r.name[s.lang] : `${pt.lat.toFixed(1)}°, ${pt.lon.toFixed(1)}°`, lat: pt.lat, lon: pt.lon, timeline: true });
+              }}
+                className="absolute bottom-3 right-3 z-10 inline-flex h-10 items-center gap-2 rounded-full bg-accent px-4 text-sm font-semibold text-on-accent shadow-[0_8px_24px_rgba(16,24,40,0.22)] transition-transform hover:scale-[1.03]">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true"><path d="M8 1.5l5.5 3v7L8 14.5l-5.5-3v-7zM8 8l5.5-3.5M8 8v6.5M8 8L2.5 4.5" /></svg>
+                {c.see3d}
+              </button>
+            ) : null}
             {m ? (
               <ViewMenu label={c.viewMenu} summary={[c.mode[s.timeMode], siblings.length > 1 && entry ? T.years(entryWindow(entry)!.n) : null].filter(Boolean).join(" · ")}>
               {expert ? (
@@ -170,6 +184,8 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
             <Timeline years={m.windows.ends} value={s.windowEnd ?? m.windows.ends.at(-1)!} prefix={`${m.windows.start}–`} note={T.accumulatedNote} lang={s.lang} onChange={controls.windowEnd} />
           ) : null}
         </>
+      ) : tab === "scene" ? (
+        <SceneFrame ctx={ctx} />
       ) : tab === "live" ? (
         <LivePanel lang={s.lang} imagery={s.imagery} onImagery={(id) => { controls.imagery(id); setTab("map"); }}
           onLook={(lat, lon) => { controls.look(lat, lon); setTab("map"); }} />
@@ -220,6 +236,25 @@ function ViewMenu({ label, summary, children }: { label: string; summary: string
       ) : null}
     </div>
   );
+}
+
+/**
+ * The generated scene of a place, inside the panel. It is the /escena page in a frame (its own 3D view, readings and
+ * timeline); the frame gets the place, and the yearly series of the zone when the layer on screen has one.
+ */
+function SceneFrame({ ctx }: { ctx: Ctx }) {
+  const sc = ctx.state.scene ?? { name: "Durango", lat: 24.02, lon: -104.67, timeline: true };
+  const m = ctx.layer?.manifest;
+  const q = new URLSearchParams({ embed: "1", lat: sc.lat.toFixed(3), lon: sc.lon.toFixed(3), name: sc.name, lang: ctx.state.lang });
+  if (sc.timeline) q.set("t", "anos");
+  // The zone's yearly temperature from HORI (anomalies), when the layer on screen is temperature with a series.
+  const sel = ctx.state.selection;
+  if (m && ctx.layer?.series && m.series && m.variable.name === "T2M" && sel?.kind === "cell") {
+    const n = m.window.n, i = sel.index;
+    const vals = Array.from(ctx.layer.series.subarray(i * n, i * n + n));
+    if (vals.some(Number.isFinite)) { q.set("serie", vals.map((v) => (Number.isFinite(v) ? v.toFixed(2) : "")).join(",")); q.set("y0", String(m.series.years[0])); }
+  }
+  return <iframe key={q.toString()} title={sc.name} src={`escena?${q}`} className="min-h-0 w-full flex-1 border-0 bg-bg" allow="camera; microphone" />;
 }
 
 function IconButton({ label, onClick, children, pressed }: { label: string; onClick: () => void; children: React.ReactNode; pressed?: boolean }) {

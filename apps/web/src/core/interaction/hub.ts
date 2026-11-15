@@ -19,6 +19,7 @@ import { batteryLow, detectLevel, Pads, type LevelInfo, type PadEvent } from "./
 import { spokenToDigits } from "./numbers";
 import { Voice, type VoiceSnapshot } from "./voice";
 import { ALERT_NEXT, monitorId, reporterId, zon, zonConfig, ZonError, type ZonAlert } from "./zon";
+import { dbConfigured, listSwarmReports, sendSwarmReport } from "@/core/live/db";
 
 export interface Here { name: string; lat: number; lon: number; entityId: string; variable: { name: string; unit: string; long_name?: string } | null }
 
@@ -462,7 +463,9 @@ export class Hub {
     const m = this.m;
     const L = this.lang;
     if (what === "connect") { this.set({ palette: true, paletteView: "zon" }); return; }
-    if (!zonConfig()) { play("error"); this.deps.answer(zonCard(M.es.noZon, M.en.noZon)); return; }
+    // Reports and the swarm also work without a ZON server: they go to the team database (red pública).
+    const viaDb = !zonConfig() && dbConfigured() && (what === "report" || what === "swarm");
+    if (!zonConfig() && !viaDb) { play("error"); this.deps.answer(zonCard(M.es.noZon, M.en.noZon)); return; }
     // «esto / aquí» with the hand or pointer over the map = tap there first, so «here» is what you point at.
     if (deixis && this.snap.hand.visible) {
       const { x, y } = this.lastCursor;
@@ -553,6 +556,14 @@ export class Hub {
           return;
         }
         case "swarm": {
+          if (viaDb) {
+            const r = await listSwarmReports(5);
+            const top = r.map((x, i) => `${i + 1}. «${x.description}» · ${x.at.slice(0, 10)}`).join("\n");
+            this.deps.answer(zonCard(r.length ? `Últimos reportes de la red (fuente no verificada):\n${top}` : "La red todavía no tiene reportes.",
+              r.length ? `Latest swarm reports (unverified):\n${top}` : "The swarm has no reports yet."));
+            play("done");
+            return;
+          }
           const s = (await zon.signals()) as { theme?: string; level?: string; score?: number }[];
           const top = s.slice(0, 5).map((x, i) => `${i + 1}. ${x.theme ?? "?"} · ${x.level ?? "?"}${x.score !== undefined ? ` · ${x.score.toFixed(2)}` : ""}`).join("\n");
           this.deps.answer(zonCard(
@@ -589,7 +600,8 @@ export class Hub {
       },
       risk: "publicar",
       run: async () => {
-        await zon.report({ reporter: { id: reporterId(), type: "persona" }, lat: here.lat, lon: here.lon, time: new Date().toISOString().slice(0, 19) + "Z", text });
+        if (zonConfig()) await zon.report({ reporter: { id: reporterId(), type: "persona" }, lat: here.lat, lon: here.lon, time: new Date().toISOString().slice(0, 19) + "Z", text });
+        else await sendSwarmReport({ text, lat: here.lat, lon: here.lon, lang: this.lang });
         this.set({ reportDraft: null });
         this.deps.answer(zonCard("Reporte enviado como fuente no verificada.", "Report sent as an unverified source."));
       },

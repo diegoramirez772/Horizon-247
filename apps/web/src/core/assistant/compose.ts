@@ -78,7 +78,7 @@ export interface Ctx {
 export type CardKind =
   | "greet" | "area" | "summary" | "detect" | "compare" | "contrast" | "legend" | "provenance" | "help"
   | "advice" | "cause" | "unknown1" | "unknown2" | "unknown3" | "noSelection" | "year" | "accumulated"
-  | "undo" | "profile" | "noWindow" | "loading" | "done" | "filter" | "world" | "level" | "certainty" | "imagery" | "evolution";
+  | "undo" | "profile" | "noWindow" | "loading" | "done" | "filter" | "world" | "level" | "certainty" | "imagery" | "evolution" | "scene";
 
 const LANGS: Lang[] = ["es", "en"];
 const REGS: Register[] = REGISTERS;
@@ -242,6 +242,7 @@ const TOPIC_CHIPS: Record<Topic, Chip[]> = {
   astronauta: [chip(L("¿Y Marte?", "And Mars?"), { t: "topic", topic: "marte", where: null })],
   marte: [chip(L("Otros planetas", "Other planets"), { t: "topic", topic: "planetas", where: null }), chip(L("Volver a la Tierra", "Back to Earth"), { t: "summary" })],
   planetas: [chip(L("Polvo en Marte", "Dust on Mars"), { t: "topic", topic: "marte", where: null }), chip(L("Monitoreo de astronautas", "Astronaut monitoring"), { t: "topic", topic: "astronauta", where: null })],
+  red: [chip(L("Eventos naturales de la NASA", "NASA natural events"), { t: "topic", topic: "eventos", where: null })],
   eventos: [
     chip(L("Infrarrojo en vivo", "Live infrared"), { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }),
     chip(L("Clima en Durango", "Weather in Durango"), { t: "topic", topic: "clima", where: { name: "Durango", lat: 24.02, lon: -104.67 } }),
@@ -252,8 +253,8 @@ const TOPIC_CHIPS: Record<Topic, Chip[]> = {
  * An answer that builds its own interface (Plan de unión U3). For clima and ganado, when the layer on screen
  * covers the place, HORI's long-term reading is added to the text and the figure (the «now» and the «trend» together).
  */
-export function topicCard(topic: Topic, where: Where | null, ctx: Ctx, source: Source): Card {
-  const a = topicAnswer(topic, where);
+export function topicCard(topic: Topic, where: Where | null, ctx: Ctx, source: Source, draft: string | null = null): Card {
+  const a = topicAnswer(topic, where, draft);
   const r = (topic === "clima" || topic === "ganado") && ctx.state.selection?.kind === "cell" ? readSelection(ctx) : null;
   const text = { es: { sencillo: "", normal: "", tecnico: "" }, en: { sencillo: "", normal: "", tecnico: "" } } as Card["text"];
   for (const lang of LANGS) for (const reg of REGS) {
@@ -399,7 +400,7 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
       return ui(
         "Muestro qué cambia, dónde, cuánto y si ya se puede saber, con datos de la NASA. No doy consejos ni explico por qué ocurre un cambio. También te muestro lo último que midió la NASA en un lugar, el estrés por calor del ganado, los eventos naturales abiertos, el infrarrojo en vivo, el polvo de Marte y un monitoreo de astronautas (simulado). Puedes escribir, hablar o tocar el globo.",
         "I show what changes, where, how much and whether it is knowable yet, with NASA data. I don't give advice or explain why a change happens. I can also show the latest NASA measurements at a place, livestock heat stress, open natural events, live infrared, Mars dust and a (simulated) astronaut monitor. You can type, speak or tap the globe.",
-        [chip(L("La evolución de la Tierra", "How Earth has changed"), { t: "evolution" }), chip(L("¿Cómo está el ganado en Durango?", "How is the livestock in Durango?"), { t: "topic", topic: "ganado", where: null }), chip(L("¿Qué está pasando en el mundo?", "What is happening in the world?"), { t: "topic", topic: "eventos", where: null })],
+        [chip(L("La evolución de la Tierra", "How Earth has changed"), { t: "evolution" }), chip(L("Durango en 3D", "Durango in 3D"), { t: "scene", where: null, timeline: true }), chip(L("¿Cómo está el ganado en Durango?", "How is the livestock in Durango?"), { t: "topic", topic: "ganado", where: null }), chip(L("¿Qué está pasando en el mundo?", "What is happening in the world?"), { t: "topic", topic: "eventos", where: null })],
       );
     case "advice":
       return ui("No doy consejos. Sí puedo mostrar qué cambió en tu zona y con qué datos.", "I don't give advice. I can show what changed in your area and with what data.",
@@ -466,6 +467,21 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
         chips: [
           ...others.slice(0, 2).map((x) => chip(L(x.title.replace("Infrarrojo en vivo · ", "Infrarrojo · "), x.title), { t: "imagery", layer: x.id })),
           chip(L("¿Qué está pasando en el mundo?", "What is happening in the world?"), { t: "topic", topic: "eventos", where: null }),
+        ],
+      };
+    }
+    case "scene": {
+      const sc = ctx.state.scene;
+      const name = sc?.name ?? "Durango";
+      return {
+        ...base, origin: "zon", evidence: null,
+        action: L("Monitoreo · escena 3D", "Monitoring · 3D scene"),
+        text: allRegs(L(
+          `Abrí la escena 3D de ${name}. Está hecha con lo último que midió la NASA (POWER) en ese punto${sc?.timeline ? ", y la línea de tiempo recorre los años con la serie de HORI" : ""}. Es una ilustración de los datos, no una foto.`,
+          `I opened the 3D scene of ${name}. It is built from NASA POWER's latest values at that point${sc?.timeline ? ", and the timeline walks through the years with HORI's series" : ""}. It illustrates the data; it is not a photo.`)),
+        chips: [
+          chip(L("Con línea de tiempo", "With timeline"), { t: "scene", where: sc ? { name, lat: sc.lat, lon: sc.lon } : null, timeline: true }),
+          chip(L("¿Mis vacas tienen calor?", "Is my cattle too hot?"), { t: "topic", topic: "ganado", where: sc ? { name, lat: sc.lat, lon: sc.lon } : null }),
         ],
       };
     }

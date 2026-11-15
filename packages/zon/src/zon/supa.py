@@ -28,6 +28,7 @@ import numpy as np
 PROJECT_REF = "lrxumkndviytplegtxna"
 _NS = uuid.UUID("6f1c2d0e-2470-4a1e-9e2b-247247247247")
 WORKSPACE_SLUG = "aethra-horizon247"
+SWARM_SLUG = "aethra-red-publica"
 RULE = "consenso-3-bh-q0.10"
 _DATASET_KINDS = {"observation", "analysis", "reanalysis", "reconstruction", "simulated", "community"}
 
@@ -291,6 +292,10 @@ def build_sql(bundles: str | Path, cell_limit: int = 500) -> tuple[str, dict[str
     p = _Push()
     p.add("workspaces", {"id": p.ws, "name": "AETHRA · HORIZON 247", "accepts_public_input": True},
           conflict="(id) do update set accepts_public_input = excluded.accepts_public_input")
+    # The public swarm lives in its own team: anonymous people only ever join this one (migration 20261115120000).
+    p.add("workspaces", {"id": uid("workspace", SWARM_SLUG), "name": "AETHRA · Red pública (enjambre)", "accepts_public_input": True,
+                         "settings": {"public_swarm": True}},
+          conflict="(id) do update set accepts_public_input = excluded.accepts_public_input, settings = excluded.settings")
     index = json.loads((root / "index.json").read_text())
     for entry in index:
         if (entry.get("kind") or "layer") == "layer":

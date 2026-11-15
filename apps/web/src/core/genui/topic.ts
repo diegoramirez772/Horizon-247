@@ -14,7 +14,8 @@ export type Widget =
   | { w: "events"; near: Where | null } // NASA EONET open natural events, nearest first
   | { w: "astronaut" } // simulated crew vitals + real context; always labelled SIMULADO
   | { w: "mars" } // HORI's Martian dust layer (real, MCS/Montabone) + the 2018 global storm
-  | { w: "planets" }; // NASA planetary fact sheet (constants, not measurements of today)
+  | { w: "planets" } // NASA planetary fact sheet (constants, not measurements of today)
+  | { w: "swarm"; where: Where | null; draft: string | null }; // red enjambre: send a report + the latest reports (unverified)
 
 export interface TopicAnswer {
   widgets: Widget[];
@@ -26,7 +27,7 @@ export interface TopicAnswer {
 
 const L = (es: string, en: string): Record<Lang, string> => ({ es, en });
 
-export function topicAnswer(topic: Topic, where: Where | null): TopicAnswer {
+export function topicAnswer(topic: Topic, where: Where | null, draft: string | null = null): TopicAnswer {
   const at = where ?? HOME_PLACE;
   switch (topic) {
     case "clima":
@@ -73,6 +74,19 @@ export function topicAnswer(topic: Topic, where: Where | null): TopicAnswer {
           "Datos de referencia de la NASA (ficha planetaria del NSSDC). Son constantes de cada planeta, no mediciones de hoy. De Marte sí tengo una serie analizada por HORI.",
           "NASA reference values (NSSDC planetary fact sheet). They are constants of each planet, not today's measurements. For Mars I do have a series analysed by HORI."),
         origin: "ui",
+      };
+    case "red":
+      return {
+        widgets: [{ w: "swarm", where, draft }],
+        action: L("Red enjambre · reportes de personas", "Swarm · people's reports"),
+        text: L(
+          draft
+            ? "Revisa tu reporte y el lugar, y envíalo a la red. Llega como fuente no verificada hasta que alguien del equipo lo revise; HORI lo usa como señal, no como evidencia firme."
+            : "Estos son los últimos reportes de la red enjambre: lo que la gente ve en su lugar. Son fuente no verificada hasta que alguien del equipo los revise. También puedes enviar el tuyo.",
+          draft
+            ? "Check your report and the place, then send it to the swarm. It arrives as an unverified source until someone on the team reviews it; HORI uses it as a signal, not as proof."
+            : "These are the latest reports of the swarm: what people see where they are. They are unverified until someone on the team reviews them. You can send yours too."),
+        origin: "zon",
       };
     case "eventos":
       return {
