@@ -9,7 +9,7 @@ export interface Pt { x: number; y: number; z?: number }
 export type Hand = Pt[]; // 21 landmarks
 
 export type HandEvent =
-  | { type: "pointer"; x: number; y: number; pinching: boolean }
+  | { type: "pointer"; x: number; y: number; pinching: boolean; pose: Pose; hold: number }
   | { type: "lost" }
   | { type: "tap"; x: number; y: number }
   | { type: "dragStart"; x: number; y: number }
@@ -19,15 +19,19 @@ export type HandEvent =
   | { type: "back" }
   | { type: "confirm" };
 
+/** What the hand is doing right now, for the on-screen feedback (cursor ring and label). */
+export type Pose = "point" | "pinch" | "palm" | "thumb" | "fist" | null;
+
 export const GESTURE_PARAMS = {
   /** Camera area mapped to the whole screen: you never have to reach the edge of the image. */
   reach: { x0: 0.18, x1: 0.82, y0: 0.15, y1: 0.75 },
-  pinchIn: 0.3,   // thumb–index distance / hand size to start a pinch
-  pinchOut: 0.45, // … and to release it (hysteresis)
-  tapMove: 0.025, // max pointer travel (screen fraction) for a pinch to count as a tap
-  tapMs: 650,
-  holdMs: 600,    // open palm / thumbs up must be held this long
-  rearmMs: 1000,  // after back/confirm, the same pose does nothing for this long
+  pinchIn: 0.33,  // thumb–index distance / hand size to start a pinch
+  pinchOut: 0.5,  // … and to release it (wide hysteresis: a shaky pinch does not flicker)
+  tapMove: 0.03,  // max pointer travel (screen fraction) for a pinch to count as a tap
+  tapMs: 700,
+  holdMs: 1000,   // open palm / thumbs up must be held this long, with the hand still
+  holdMove: 0.05, // … moving more than this (screen fraction) restarts the hold: showing the hand never goes back
+  rearmMs: 1500,  // after back/confirm, the same pose does nothing for this long
 };
 
 const d = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -47,6 +51,11 @@ export function isThumbsUp(h: Hand): boolean {
   return curled && h[4].y < h[3].y && h[3].y < h[2].y && (h[2].y - h[4].y) / size(h) > 0.45;
 }
 
+/** Fist: every finger curled and the thumb tucked. Used as a clutch: the pointer freezes so you can re-centre your hand. */
+export function isFist(h: Hand): boolean {
+  return !extended(h, 8, 6) && !extended(h, 12, 10) && !extended(h, 16, 14) && !extended(h, 20, 18) && d(h[4], h[9]) / size(h) < 0.75 && !isThumbsUp(h);
+}
+
 export function pinchRatio(h: Hand): number {
   return d(h[4], h[8]) / size(h);
 }
@@ -64,6 +73,10 @@ export class GestureMachine {
   private quietUntil = 0;
   private twoHand: number | null = null;
   private seen = false;
+  private holdAt = { x: 0, y: 0 };
+  private out = { x: 0.5, y: 0.5 };
+  private off = { x: 0, y: 0 };
+  private clutch = false;
 
   private p: typeof GESTURE_PARAMS;
   private mirror: boolean;
@@ -78,6 +91,7 @@ export class GestureMachine {
     if (!hands.length) {
       if (this.seen) { if (this.dragging) out.push({ type: "dragEnd" }); out.push({ type: "lost" }); }
       this.seen = false; this.pinching = false; this.dragging = false; this.twoHand = null; this.pose = null;
+      this.off = { x: 0, y: 0 }; this.clutch = false;
       this.fx.reset(); this.fy.reset();
       return out;
     }
@@ -98,17 +112,33 @@ export class GestureMachine {
     const h = hands[0];
     const r = this.p.reach;
     const rawX = this.mirror ? 1 - h[8].x : h[8].x;
-    const x = this.fx.filter(clamp01((rawX - r.x0) / (r.x1 - r.x0)), t / 1000);
-    const y = this.fy.filter(clamp01((h[8].y - r.y0) / (r.y1 - r.y0)), t / 1000);
+    const rx = this.fx.filter(clamp01((rawX - r.x0) / (r.x1 - r.x0)), t / 1000);
+    const ry = this.fy.filter(clamp01((h[8].y - r.y0) / (r.y1 - r.y0)), t / 1000);
+    // After a fist (clutch) the hand may be somewhere else: keep the pointer where it was and continue from there.
+    if (this.clutch && !(!this.pinching && isFist(h))) { this.off = { x: this.out.x - rx, y: this.out.y - ry }; this.clutch = false; }
+    const x = clamp01(rx + this.off.x);
+    const y = clamp01(ry + this.off.y);
 
-    // Poses (held): open palm = back, thumbs up = confirm. Never while pinching.
-    const pose = !this.pinching && t >= this.quietUntil ? (isOpenPalm(h) ? "palm" : isThumbsUp(h) ? "thumb" : null) : null;
-    if (pose !== this.pose) { this.pose = pose; this.poseSince = t; }
-    else if (pose && t - this.poseSince >= this.p.holdMs) {
-      out.push({ type: pose === "palm" ? "back" : "confirm" });
-      this.pose = null;
-      this.quietUntil = t + this.p.rearmMs;
+    // Fist = clutch: the pointer stays put while you move the hand back to a comfortable place.
+    if (!this.pinching && isFist(h)) {
+      this.pose = null; this.clutch = true;
+      out.push({ type: "pointer", x: this.out.x, y: this.out.y, pinching: false, pose: "fist", hold: 0 });
       return out;
+    }
+
+    // Poses (held still): open palm = back, thumbs up = confirm. Never while pinching.
+    const pose = !this.pinching && t >= this.quietUntil ? (isOpenPalm(h) ? "palm" : isThumbsUp(h) ? "thumb" : null) : null;
+    let hold = 0;
+    if (pose !== this.pose || (pose && Math.hypot(x - this.holdAt.x, y - this.holdAt.y) > this.p.holdMove)) {
+      this.pose = pose; this.poseSince = t; this.holdAt = { x, y };
+    } else if (pose) {
+      hold = Math.min(1, (t - this.poseSince) / this.p.holdMs);
+      if (hold >= 1) {
+        out.push({ type: pose === "palm" ? "back" : "confirm" });
+        this.pose = null;
+        this.quietUntil = t + this.p.rearmMs;
+        return out;
+      }
     }
 
     // Pinch with hysteresis: short and still = tap (activate); otherwise a drag (move).
@@ -130,7 +160,8 @@ export class GestureMachine {
       this.last = { x, y };
     }
     // While pinching, the pointer stays where the pinch began until it becomes a drag (a pinch should not slide off its target).
-    out.unshift({ type: "pointer", x: this.pinching && !this.dragging ? this.start.x : x, y: this.pinching && !this.dragging ? this.start.y : y, pinching: this.pinching });
+    this.out = { x: this.pinching && !this.dragging ? this.start.x : x, y: this.pinching && !this.dragging ? this.start.y : y };
+    out.unshift({ type: "pointer", ...this.out, pinching: this.pinching, pose: this.pinching ? "pinch" : pose ?? "point", hold });
     return out;
   }
 }

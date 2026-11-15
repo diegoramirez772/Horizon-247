@@ -11,7 +11,7 @@ import { normalize } from "@/core/assistant/patterns";
 import { applyDictation } from "./dictation";
 import { activate, isTextField, magnet, moveFocus, pressEscape, scrollBy, stepFocus, tapAt, targets, type Target } from "./dom";
 import { play } from "./earcons";
-import { GestureMachine, type HandEvent } from "./gestures";
+import { GestureMachine, type HandEvent, type Pose } from "./gestures";
 import { HandTracker, type HandStats } from "./hand";
 import { interpret, type Interpretation, type ManipKey, type MetaKey, type Mode, type SystemKey } from "./interpret";
 import { activeManipulable, isSpinning, manipulableAt, startSpin, stopSpin, touch, type Manipulable } from "./manipulate";
@@ -51,7 +51,7 @@ export interface Domain {
 const RANGE_UP = ["sube", "subele", "mas", "aumenta", "incrementa", "up", "more", "increase", "raise"];
 const RANGE_DOWN = ["baja", "bajale", "menos", "reduce", "disminuye", "down", "less", "decrease", "lower"];
 export interface Pending { title: T2; lines: Record<Lang, string[]>; risk: "escritura" | "publicar"; run: () => Promise<void>; expires: number; sending: boolean }
-export interface HandView { status: HandStats["status"]; x: number; y: number; visible: boolean; pinching: boolean; perSecond: number; inferMs: number; error?: string; snap: { x: number; y: number; w: number; h: number } | null }
+export interface HandView { status: HandStats["status"]; x: number; y: number; visible: boolean; pinching: boolean; pose?: Pose; hold?: number; perSecond: number; inferMs: number; error?: string; snap: { x: number; y: number; w: number; h: number } | null }
 export interface Notice { id: number; text: string; tone: "ok" | "error" | "info" }
 
 export interface HubSnapshot {
@@ -687,10 +687,14 @@ export class Hub {
   }
 
   // ---- hand (doc §2.6) ----
+  /** The camera image while gestures are on (for the small mirrored preview), or null. */
+  cameraVideo(): HTMLVideoElement | null { return this.tracker?.video ?? null; }
+
   async startGestures(): Promise<void> {
     if (this.tracker) return;
     const lv = this.snap.level;
-    if (lv.level < 2) { play("error"); this.notify(this.m.gesturesWeak, "error", true); return; }
+    // Any device with a camera may try: without a recognised GPU the model runs on the CPU at a lower rate.
+    if (lv.level < 1) { play("error"); this.notify(this.m.gesturesWeak, "error", true); return; }
     this.tracker = new HandTracker(lv.gpuHands);
     this.tracker.onStats = (s) => {
       this.set({ hand: { ...this.snap.hand, status: s.status, perSecond: s.perSecond, inferMs: s.inferMs, error: s.error } });
@@ -722,7 +726,7 @@ export class Hub {
       deltas.push(t - last); last = t;
       if (deltas.length > 60) deltas.shift();
       const med = [...deltas].sort((a, b) => a - b)[deltas.length >> 1];
-      if (med > 50 && !document.hidden) { slowSince ||= t; if (t - slowSince > 4000) { this.stopGestures(); this.notify(this.m.gesturesWeak, "error", true); return; } }
+      if (med > 90 && !document.hidden) { slowSince ||= t; if (t - slowSince > 10000) { this.stopGestures(); this.notify(this.m.gesturesWeak, "error", true); return; } }
       else slowSince = 0;
       this.frameWatch = requestAnimationFrame(loop);
     };
@@ -737,7 +741,7 @@ export class Hub {
         this.lastCursor = { x, y };
         const onView = manipulableAt(x, y);
         const t = onView || this.dragView ? null : magnet(x, y, 40);
-        this.set({ hand: { ...this.snap.hand, x, y, visible: true, pinching: ev.pinching, snap: t ? t.box : null } });
+        this.set({ hand: { ...this.snap.hand, x, y, visible: true, pinching: ev.pinching, pose: ev.pose, hold: ev.hold, snap: t && ev.pose !== "fist" ? t.box : null } });
         return;
       }
       case "lost": this.set({ hand: { ...this.snap.hand, visible: false, snap: null } }); this.dragView = null; return;

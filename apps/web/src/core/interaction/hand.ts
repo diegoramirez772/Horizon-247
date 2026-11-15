@@ -21,7 +21,7 @@ const importUrl = new Function("u", "return import(u)") as (u: string) => Promis
 export interface HandStats { status: "off" | "loading" | "on" | "error"; perSecond: number; inferMs: number; error?: string }
 
 export class HandTracker {
-  private video: HTMLVideoElement | null = null;
+  video: HTMLVideoElement | null = null;
   private stream: MediaStream | null = null;
   private lm: Landmarker | null = null;
   private timer = 0;
@@ -53,14 +53,16 @@ export class HandTracker {
       // Loaded on demand from a pinned version; nothing is downloaded until gestures are turned on.
       const mod = await importUrl(`${CDN}/vision_bundle.mjs`);
       const files = await mod.FilesetResolver.forVisionTasks(`${CDN}/wasm`);
-      this.lm = await mod.HandLandmarker.createFromOptions(files, {
-        baseOptions: { modelAssetPath: MODEL, delegate: this.gpu ? "GPU" : "CPU" },
+      const make = (delegate: "GPU" | "CPU") => mod.HandLandmarker.createFromOptions(files, {
+        baseOptions: { modelAssetPath: MODEL, delegate },
         runningMode: "VIDEO",
         numHands: 2,
-        minHandDetectionConfidence: 0.6,
-        minHandPresenceConfidence: 0.6,
+        minHandDetectionConfidence: 0.55,
+        minHandPresenceConfidence: 0.55,
         minTrackingConfidence: 0.5,
-      }) as Landmarker;
+      }) as Promise<Landmarker>;
+      // The GPU path fails on some Linux drivers: fall back to the CPU instead of giving up.
+      try { this.lm = await make(this.gpu ? "GPU" : "CPU"); } catch (e) { if (!this.gpu) throw e; this.lm = await make("CPU"); }
       if (!this.alive) { this.release(); return; }
       this.since = performance.now();
       this.report({ status: "on" });
