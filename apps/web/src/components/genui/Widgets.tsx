@@ -661,7 +661,7 @@ function AlertsWidget({ where, lang, actions }: { where: Where | null; lang: Lan
 
   return (
     <Frame title={`${es ? "Alertas cerca de" : "Alerts near"} ${p.name}`} badge={{ text: es ? "NASA en vivo + HORI" : "NASA live + HORI", kind: "live" }}
-      foot={es ? `Radio: tormentas ${STORM_KM} km, eventos ${EVENT_KM} km, fauna ~110 km. Una anomalía es una desviación frente al pasado del mismo lugar: no dice la causa.` : `Radius: storms ${STORM_KM} km, events ${EVENT_KM} km, fauna ~110 km. An anomaly is a departure from the same place's past: it does not say the cause.`}>
+      foot={es ? `Radio: tormentas ${STORM_KM} km, eventos ${EVENT_KM} km, fauna ~110 km. Una anomalía es una desviación frente al pasado del mismo lugar: no dice por qué.` : `Radius: storms ${STORM_KM} km, events ${EVENT_KM} km, fauna ~110 km. An anomaly is a departure from the same place's past: it does not say the cause.`}>
       <div className="mb-3 flex items-center gap-3">
         <p className={`text-2xl font-semibold leading-none ${ready && total ? "" : "text-text-2"}`}>
           {!ready ? (es ? "Revisando…" : "Checking…") : total ? (es ? `${total} ${total === 1 ? "alerta" : "alertas"}` : `${total} alert${total === 1 ? "" : "s"}`) : storms.ready ? (es ? "Sin alertas" : "No alerts") : (es ? "Sin alertas por ahora" : "No alerts so far")}

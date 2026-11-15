@@ -246,8 +246,8 @@ export function JointMap({ lang, hint, onLook }: { lang: Lang; hint: string | nu
         {example ? <button type="button" onClick={() => onLook(example.lat, example.lon)} className="ml-auto font-semibold underline underline-offset-2">{es ? "Ver una zona en el globo" : "See an area on the globe"}</button> : null}
       </p>
       <p className="text-xs text-text-3">
-        {es ? `${chosen.m.window.start}–${chosen.m.window.end}. Regla escrita antes de ver los datos; prueba unilateral intersección-unión y FDR (Benjamini-Hochberg) por regla. q mínima ${chosen.r.min_q_joint.toLocaleString(lang, { maximumFractionDigits: 3 })}. ` : `${chosen.m.window.start}–${chosen.m.window.end}. Rule written before seeing the data; one-sided intersection-union test and FDR (Benjamini-Hochberg) per rule. Minimum q ${chosen.r.min_q_joint.toLocaleString(lang, { maximumFractionDigits: 3 })}. `}
-        {chosen.m.honesty?.note?.[lang] ?? (es ? "Que dos cambios ocurran en el mismo lugar no prueba que uno cause el otro." : "Two changes at the same place do not prove one causes the other.")}
+        {es ? `${chosen.m.window.start}–${chosen.m.window.end}. Regla escrita antes de ver los datos; test unilateral de intersección-unión y FDR (Benjamini-Hochberg) por regla. q mínima ${chosen.r.min_q_joint.toLocaleString(lang, { maximumFractionDigits: 3 })}. ` : `${chosen.m.window.start}–${chosen.m.window.end}. Rule written before seeing the data; one-sided intersection-union test and FDR (Benjamini-Hochberg) per rule. Minimum q ${chosen.r.min_q_joint.toLocaleString(lang, { maximumFractionDigits: 3 })}. `}
+        {es ? "Que dos cambios ocurran en el mismo lugar no dice que uno provoque el otro." : "Two changes at the same place do not say that one drives the other."}
       </p>
     </div>
   );
