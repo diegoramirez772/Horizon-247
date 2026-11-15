@@ -316,6 +316,10 @@ export class MapView {
     const s = this.sctx;
     const th = this.theme;
     const dpr = this.dpr;
+    // Far away, cells are a few pixels wide and full-strength textures read as static noise:
+    // soften them, then bring them back as the user zooms in. They never disappear (meaning is not colour alone).
+    const px = this.k * Math.abs(this.data!.grid.dlon);
+    const soft = px < 3 ? 0.5 : px < 6 ? 0.75 : 1;
     s.globalCompositeOperation = "source-over";
     s.setTransform(1, 0, 0, 1, 0, 0);
     s.clearRect(0, 0, this.scratch.width, this.scratch.height);
@@ -324,7 +328,7 @@ export class MapView {
       s.fillStyle = th.ink;
       s.globalAlpha = 0.1;
       s.fillRect(0, 0, this.scratch.width, this.scratch.height);
-      s.globalAlpha = th.inkAlpha;
+      s.globalAlpha = th.inkAlpha * soft;
       s.strokeStyle = th.ink;
       s.lineWidth = 1.25 * dpr;
       const gap = 7 * Math.SQRT2 * dpr, W = this.scratch.width, H = this.scratch.height;
@@ -333,7 +337,7 @@ export class MapView {
       s.stroke();
     } else {
       s.fillStyle = pattern(s, "dot", th.ink, dpr);
-      s.globalAlpha = Math.min(1, th.inkAlpha + 0.3);
+      s.globalAlpha = Math.min(1, th.inkAlpha + 0.3) * soft;
       s.fillRect(0, 0, this.scratch.width, this.scratch.height);
     }
     s.globalAlpha = 1;

@@ -135,8 +135,11 @@ describe("answer cards", () => {
 
   it("«compara» reads both windows of the region from regions.json", () => {
     const c = compose("compare", ctx({ kind: "region", id: "mx-dgo" }), "user");
-    expect(c.text.es.sencillo).toContain("Con 24 años: aún no se puede saber.");
-    expect(c.text.es.sencillo).toContain("Con 45 años: cambio detectado.");
+    // Sencillo uses everyday words; Experto the contract's openings.
+    expect(c.text.es.sencillo).toContain("Con 24 años: aún no se sabe.");
+    expect(c.text.es.sencillo).toContain("Con 45 años: ya cambió.");
+    expect(c.text.es.tecnico).toContain("Con 24 años: aún no se puede saber.");
+    expect(c.text.es.tecnico).toContain("Con 45 años: cambio detectado.");
   });
 
   it("not understood three times → shows the menu and stops insisting", () => {

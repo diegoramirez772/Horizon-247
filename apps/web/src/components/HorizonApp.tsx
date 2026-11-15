@@ -168,10 +168,10 @@ export function HorizonApp() {
   }, []);
 
   return (
-    <div className="flex h-dvh flex-col bg-bg">
+    <div className="flex h-dvh flex-col overflow-x-hidden bg-bg">
       <a href="#ask" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-surface focus:p-2">{c.skip}</a>
 
-      <header className="relative z-10 flex h-16 shrink-0 items-center gap-3 px-4">
+      <header className="relative z-10 flex min-h-16 shrink-0 flex-wrap items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
         {!home && talked ? (
           <button type="button" onClick={goHome} aria-label={c.backLong} title={c.backLong}
             className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-3 text-sm font-medium text-text-2 transition-colors hover:bg-surface-2 hover:text-text">
@@ -182,19 +182,19 @@ export function HorizonApp() {
         <button type="button" onClick={goHome} className="rounded-xl px-1 py-1 hover:bg-surface-2" aria-label="HORIZON 247" title={c.backLong}>
           <Logo />
         </button>
-        <div className="ml-auto flex items-center gap-2">
-          <button type="button" onClick={() => setPanel(panel ? null : "map")} aria-pressed={!!panel}
-            className={`inline-flex h-9 items-center gap-2 rounded-full border px-3.5 text-sm font-medium transition-colors ${panel ? "border-accent bg-accent text-on-accent" : "border-border text-text hover:bg-surface-2"}`}>
-            <MapIcon />{c.map}
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+          <button type="button" onClick={() => setPanel(panel ? null : "map")} aria-pressed={!!panel} aria-label={c.map} title={c.map}
+            className={`inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors ${panel ? "border-accent bg-accent text-on-accent" : "border-border text-text hover:bg-surface-2"}`}>
+            <MapIcon /><span className="hidden sm:inline">{c.map}</span>
           </button>
           <Segmented label={T.registerLabel} value={s.register} onChange={(r) => store.set({ register: r })} compact
             options={[{ value: "sencillo", label: T.register.sencillo }, { value: "tecnico", label: T.register.tecnico }]} />
           <Segmented<Lang> label={T.lang} value={s.lang} compact onChange={(l) => store.set({ lang: l })}
             options={[{ value: "es", label: "ES", title: "Español" }, { value: "en", label: "EN", title: "English" }]} />
-          <HeaderIcon label={c.theme} onClick={() => theme.setPref(theme.pref === "light" ? "dark" : "light")}>
+          <HeaderIcon label={c.theme} onClick={() => theme.setPref(theme.pref === "light" ? "dark" : "light")} className="hidden sm:flex">
             {theme.pref === "light" ? <path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5z" /> : <><circle cx="8" cy="8" r="3" /><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3" /></>}
           </HeaderIcon>
-          <HeaderIcon label={c.newChat} onClick={newChat}><path d="M8 3v10M3 8h10" /></HeaderIcon>
+          <HeaderIcon label={c.newChat} onClick={newChat} className="hidden sm:flex"><path d="M8 3v10M3 8h10" /></HeaderIcon>
         </div>
       </header>
 
@@ -224,10 +224,10 @@ export function HorizonApp() {
   );
 }
 
-function HeaderIcon({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
+function HeaderIcon({ label, onClick, children, className = "flex" }: { label: string; onClick: () => void; children: React.ReactNode; className?: string }) {
   return (
     <button type="button" onClick={onClick} aria-label={label} title={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full text-text-2 hover:bg-surface-2 hover:text-text">
+      className={`${className} h-9 w-9 items-center justify-center rounded-full text-text-2 hover:bg-surface-2 hover:text-text`}>
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
     </button>
   );

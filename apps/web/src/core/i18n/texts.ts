@@ -74,7 +74,9 @@ export function verdictText(v: Verdict, reg: Register, lang: Lang, x: TemplateVa
     "{sube/baja}": x.rising ? "sube" : "baja",
     "{rising/falling}": x.rising ? "rising" : "falling",
   };
-  return t.replace(/\{[^}]+\}/g, (m) => map[m] ?? m);
+  return t.replace(/\{[^}]+\}/g, (m) => map[m] ?? m)
+    // The contract template is plural ("{N} zonas"); with N = 1 keep the sentence grammatical.
+    .replace(/(^|\D)1 zonas/g, "$11 zona").replace(/(^|\D)1 cells/g, "$11 cell");
 }
 
 /** Raw templates, exposed for the text lint and tests. */
@@ -102,6 +104,20 @@ export const LEGEND: Record<Lang, Record<Verdict, { phrase: string; texture: str
     0: { phrase: "Insufficient data", texture: "thin border" },
   },
 };
+
+/**
+ * Everyday names of the verdicts (Sencillo). The same words everywhere — legend, answers, hover, evidence —
+ * so a person never has to translate between two vocabularies. Experto uses LEGEND (contract §5 openings).
+ */
+export const PLAIN: Record<Lang, Record<Verdict, string>> = {
+  es: { 1: "Ya cambió", 2: "Aún no se sabe", 3: "Aún no se sabe", 4: "No cambió mucho", 0: "Sin datos" },
+  en: { 1: "It changed", 2: "Not known yet", 3: "Not known yet", 4: "Did not change much", 0: "No data" },
+};
+
+/** Verdict name for the register in use. */
+export function verdictName(v: Verdict, lang: Lang, reg: Register): string {
+  return reg === "sencillo" ? PLAIN[lang][v] : LEGEND[lang][v].phrase;
+}
 
 export const UI = {
   es: {

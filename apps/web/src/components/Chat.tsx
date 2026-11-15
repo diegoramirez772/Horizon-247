@@ -5,7 +5,7 @@ import type { Card, Ctx, Figure } from "@/core/assistant/compose";
 import type { Conversation, Via } from "@/core/assistant/conversation";
 import { parse, type Command } from "@/core/assistant/parse";
 import { digitsFor, num } from "@/core/format/format";
-import { LEGEND, type Lang, type Register } from "@/core/i18n/texts";
+import { verdictName, type Lang, type Register } from "@/core/i18n/texts";
 import { Emblem } from "./ui";
 import { useSpeech } from "./useSpeech";
 
@@ -223,7 +223,7 @@ function FigureBlock({ f, lang, register, onClick }: { f: Figure; lang: Lang; re
     <Tag type={onClick ? "button" : undefined} onClick={onClick}
       className={`mt-3 flex w-full items-center gap-4 rounded-2xl border border-border bg-surface-2/70 p-3.5 text-left ${onClick ? "transition-colors hover:border-accent" : ""}`}>
       <div className="min-w-0">
-        <p className="flex items-center gap-1.5 text-xs font-semibold"><VerdictGlyph v={f.verdict} />{LEGEND[lang][f.verdict].phrase}</p>
+        <p className="flex items-center gap-1.5 text-xs font-semibold"><VerdictGlyph v={f.verdict} />{verdictName(f.verdict, lang, register)}</p>
         {f.verdict === 1 && register === "sencillo" ? (
           <p className="mt-0.5 text-xl font-semibold leading-tight">
             {lang === "es" ? (f.effect > 0 ? "Sube" : "Baja") : (f.effect > 0 ? "Rising" : "Falling")}{" "}

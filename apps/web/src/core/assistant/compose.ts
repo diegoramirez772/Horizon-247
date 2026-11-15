@@ -6,8 +6,8 @@
 import type { CellFinding, Verdict } from "@/contract/types";
 import { entryWindow, siblings, type IndexEntry, type RegionGeo } from "@/core/contract/extra";
 import { cellFinding, type Layer } from "@/core/contract/loader";
-import { capitalise, count, digitsFor, num, templateValues } from "@/core/format/format";
-import { LEGEND, UI, verdictText, type Lang, type Register } from "@/core/i18n/texts";
+import { capitalise, count, digitsFor, num, shortLabel, templateValues } from "@/core/format/format";
+import { LEGEND, UI, verdictName, verdictText, type Lang, type Register } from "@/core/i18n/texts";
 import type { AppState, Selection } from "@/core/state/store";
 import type { Command } from "./parse";
 
@@ -164,10 +164,10 @@ function originOf(ctx: Ctx): Origin {
   return ctx.layer?.manifest.honesty.simulated ? "sim" : "hori";
 }
 
+/** Short context line of an answer: "La temperatura simulada · Durango · 1980–2024". */
 function showing(ctx: Ctx, lang: Lang, place?: string): string {
   const m = ctx.layer!.manifest;
-  const base = `${m.title[lang]} · ${m.window.start}–${m.window.end}`;
-  return `${lang === "es" ? "Mostrando" : "Showing"}: ${base}${place ? ` · ${capitalise(place)}` : ""}`;
+  return [capitalise(shortLabel(m, lang)), place ? capitalise(place) : null, `${m.window.start}–${m.window.end}`].filter(Boolean).join(" · ");
 }
 
 function sentence(ctx: Ctx, r: Reading, lang: Lang, reg: Register, v: Verdict = r.finding.verdict): string {
@@ -264,9 +264,9 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
       const rows = sibs.map((e) => ({ w: entryWindow(e)!, v: region.layers[e.id]?.verdict })).filter((x) => x.v !== undefined);
       return {
         ...base, origin: originOf(ctx), evidence: { layerId: m!.id, selection: sel! },
-        ...both((lang) => ({
+        ...both((lang, reg) => ({
           action: showing(ctx, lang, short(region.name[lang])),
-          text: rows.map((x) => `${lang === "es" ? "Con" : "With"} ${x.w.n} ${lang === "es" ? "años" : "years"}: ${LEGEND[lang][x.v as Verdict].phrase.toLocaleLowerCase(lang)}.`).join(" ")
+          text: rows.map((x) => `${lang === "es" ? "Con" : "With"} ${x.w.n} ${lang === "es" ? "años" : "years"}: ${verdictName(x.v as Verdict, lang, reg).toLocaleLowerCase(lang)}.`).join(" ")
             + (lang === "es" ? " Con más años de datos se notan cambios más pequeños." : " With more years of data, smaller changes show up."),
         })),
         chips: chips(ctx, m!.windows && C.accumulated, C.data, C.legend),
@@ -352,7 +352,7 @@ export function compose(kind: CardKind, ctx: Ctx, source: Source, extra: { corre
         ...both((lang) => ({
           action: showing(ctx, lang),
           text: (lang === "es" ? "Resaltando solo: " : "Highlighting only: ")
-            + f.map((v) => `${LEGEND[lang][v as Verdict].phrase.toLocaleLowerCase(lang)} (${count(s[key[v]] ?? NaN, lang)} ${lang === "es" ? "zonas" : "areas"})`).join(", ")
+            + f.map((v) => `${verdictName(v as Verdict, lang, ctx.state.register).toLocaleLowerCase(lang)} (${count(s[key[v]] ?? NaN, lang)} ${lang === "es" ? "zonas" : "areas"})`).join(", ")
             + (lang === "es" ? ". Lo demás queda atenuado." : ". Everything else is dimmed."),
         })),
         chips: chips(ctx, C.showAll, placeChip(ctx), C.detect),
@@ -426,7 +426,7 @@ export function hoverText(ctx: Ctx, index: number, shown?: Shown): { title: stri
     const end = ctx.state.windowEnd ?? m.windows?.ends.at(-1);
     return {
       where: capitalise(r.name[lang]),
-      title: LEGEND[lang][shown.verdict as Verdict].phrase,
+      title: verdictName(shown.verdict as Verdict, lang, reg),
       line: es0 ? `Con los datos de ${m.windows?.start ?? m.window.start} a ${end}` : `With data from ${m.windows?.start ?? m.window.start} to ${end}`,
     };
   }
@@ -461,5 +461,5 @@ export function hoverText(ctx: Ctx, index: number, shown?: Shown): { title: stri
     default:
       line = es ? "No hay suficientes años con datos" : "Not enough years with data";
   }
-  return { title: LEGEND[lang][f.verdict].phrase, line, where: capitalise(r.name[lang]) };
+  return { title: verdictName(f.verdict, lang, reg), line, where: capitalise(r.name[lang]) };
 }

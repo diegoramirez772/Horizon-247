@@ -35,6 +35,9 @@ export class GlobeView {
   private raf = 0;
   private anim = 0;
   private ro: ResizeObserver;
+  /** Coarse rendering while the globe moves. */
+  private fast = false;
+  private settle = 0;
   private cleanup: (() => void)[] = [];
   lastTiming: Timing = { buildMs: 0, drawMs: 0 };
   onCellClick: (index: number) => void = () => {};
@@ -56,6 +59,7 @@ export class GlobeView {
   }
 
   destroy(): void {
+    window.clearTimeout(this.settle);
     cancelAnimationFrame(this.raf);
     cancelAnimationFrame(this.anim);
     this.ro.disconnect();
@@ -118,7 +122,7 @@ export class GlobeView {
     this.flyTo((y0 + y1) / 2, (x0 + x1) / 2, Math.max(x1 - x0, (y1 - y0) * 1.5) * 6);
   }
 
-  zoomBy(f: number): void { this.zoom = Math.max(0.8, Math.min(12, this.zoom * f)); this.requestDraw(); }
+  zoomBy(f: number): void { this.zoom = Math.max(0.8, Math.min(12, this.zoom * f)); this.moving(); this.requestDraw(); }
 
   private moveTo(lon: number, lat: number, zoom: number, animate: boolean): void {
     cancelAnimationFrame(this.anim);
@@ -134,6 +138,7 @@ export class GlobeView {
       this.lat0 = from.lat + (lat - from.lat) * p;
       // A gentle "pull back then dive" so the flight reads as a camera move.
       this.zoom = Math.exp(from.z + (Math.log(zoom) - from.z) * p) * (1 - 0.25 * Math.sin(Math.PI * p));
+      this.moving();
       this.draw();
       if (p < 1) this.anim = requestAnimationFrame(step);
     };
@@ -151,6 +156,13 @@ export class GlobeView {
     this.off.width = this.w;
     this.off.height = this.h;
     this.draw();
+  }
+
+  /** Draw coarse now, and full detail once the motion has stopped for a moment. */
+  private moving(): void {
+    this.fast = true;
+    window.clearTimeout(this.settle);
+    this.settle = window.setTimeout(() => { this.fast = false; this.draw(); }, 140);
   }
 
   private requestDraw(): void {
@@ -202,11 +214,10 @@ export class GlobeView {
     const t0 = performance.now();
     const th = this.theme, w = this.w, h = this.h, R = this.R();
     const cx = w / 2, cy = h / 2;
-    const bg = getComputedStyle(this.canvas).getPropertyValue("--surface-2").trim() || th.ocean;
     const g = this.ctx;
     g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    g.fillStyle = bg;
-    g.fillRect(0, 0, w, h);
+    // Transparent around the planet: the container provides the background (panel or start screen).
+    g.clearRect(0, 0, w, h);
 
     // Atmosphere halo.
     const halo = g.createRadialGradient(cx, cy, R * 0.92, cx, cy, R * 1.18);
@@ -226,9 +237,15 @@ export class GlobeView {
     const s0 = Math.sin(this.lat0 * RAD), c0 = Math.cos(this.lat0 * RAD);
     const fill = this.fill, tex = this.tex;
     const lightX = -0.45, lightY = 0.5, lightZ = 0.74; // light from the upper left
-    for (let y = y0; y < y1; y++) {
+    // Softer textures when cells are tiny on screen (see MapView.drawTexture).
+    const cellPx = d ? R * Math.abs(d.dlon) * RAD : 10;
+    const soft = cellPx < 3 ? 0.5 : cellPx < 6 ? 0.75 : 1;
+    const kFog = th.inkAlpha * soft, kDot = Math.min(1, th.inkAlpha + 0.3) * soft;
+    // While dragging or flying, paint 2×2 blocks: half the work, smooth motion; full detail when it stops.
+    const step = this.fast ? 2 : 1;
+    for (let y = y0; y < y1; y += step) {
       const py = -(y + 0.5 - cy) / R;
-      for (let x = x0; x < x1; x++) {
+      for (let x = x0; x < x1; x += step) {
         const px = (x + 0.5 - cx) / R;
         const rho2 = px * px + py * py;
         if (rho2 > 1) continue;
@@ -248,9 +265,9 @@ export class GlobeView {
             if (a > 0) { r += (fill[p4] - r) * a; gg += (fill[p4 + 1] - gg) * a; b += (fill[p4 + 2] - b) * a; }
             else if (tex[i] === 3) {
               r += (ink[0] - r) * 0.1; gg += (ink[1] - gg) * 0.1; b += (ink[2] - b) * 0.1;
-              if ((x + y) % 10 < 1.4) { const k = th.inkAlpha; r += (ink[0] - r) * k; gg += (ink[1] - gg) * k; b += (ink[2] - b) * k; }
+              if ((x + y) % 10 < 1.4 * step) { r += (ink[0] - r) * kFog; gg += (ink[1] - gg) * kFog; b += (ink[2] - b) * kFog; }
             } else if (tex[i] === 2) {
-              if (x % 6 < 2 && y % 6 < 2) { const k = Math.min(1, th.inkAlpha + 0.3); r += (ink[0] - r) * k; gg += (ink[1] - gg) * k; b += (ink[2] - b) * k; }
+              if (x % 6 < 2 && y % 6 < 2) { r += (ink[0] - r) * kDot; gg += (ink[1] - gg) * kDot; b += (ink[2] - b) * kDot; }
             }
           }
         }
@@ -259,8 +276,13 @@ export class GlobeView {
         const shade = 0.58 + 0.42 * lambert;
         const rim = 0.82 + 0.18 * z;
         const k = shade * rim;
-        const o = ((y - y0) * (x1 - x0) + (x - x0)) * 4;
-        out[o] = r * k; out[o + 1] = gg * k; out[o + 2] = b * k; out[o + 3] = 255;
+        const W0 = x1 - x0;
+        for (let dy = 0; dy < step && y + dy < y1; dy++) {
+          for (let dx = 0; dx < step && x + dx < x1; dx++) {
+            const o = ((y + dy - y0) * W0 + (x + dx - x0)) * 4;
+            out[o] = r * k; out[o + 1] = gg * k; out[o + 2] = b * k; out[o + 3] = 255;
+          }
+        }
       }
     }
     this.octx.putImageData(img, x0, y0);
@@ -386,6 +408,7 @@ export class GlobeView {
         this.lon0 = down.lon - dx * k;
         this.lat0 = Math.max(-85, Math.min(85, down.lat + dy * k));
         this.setHover(-1, 0, 0);
+        this.moving();
         this.requestDraw();
       }
     });

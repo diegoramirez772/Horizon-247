@@ -5,7 +5,7 @@ import { compose, readSelection, type Ctx } from "@/core/assistant/compose";
 import { entryWindow, type IndexEntry } from "@/core/contract/extra";
 import { cellLatLon } from "@/core/contract/loader";
 import { digitsFor, num } from "@/core/format/format";
-import { LEGEND, UI, type Lang } from "@/core/i18n/texts";
+import { UI, verdictName, type Lang } from "@/core/i18n/texts";
 import type { BBox, MapData } from "@/core/map/MapView";
 import type { MapTheme } from "@/core/map/palette";
 import type { Metric, TimeMode } from "@/core/state/store";
@@ -121,15 +121,18 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
         <>
           {m ? (
             <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-              <Segmented<Projection> label={c.view} value={projection} onChange={setProjection} compact
-                options={[{ value: "globe", label: c.globe }, { value: "flat", label: c.flat }]} />
+              {expert ? (
+                <Segmented<Projection> label={c.view} value={projection} onChange={setProjection} compact
+                  options={[{ value: "globe", label: c.globe }, { value: "flat", label: c.flat }]} />
+              ) : null}
               {siblings.length > 1 ? (
                 <Segmented label={c.years} value={entry?.id ?? ""} onChange={controls.window} compact
                   options={siblings.map((e) => ({ value: e.id, label: T.years(entryWindow(e)!.n), title: `${entryWindow(e)!.start}–${entryWindow(e)!.end}` }))} />
               ) : null}
               <Segmented<TimeMode> label={T.time} value={s.timeMode} onChange={controls.time} compact
                 options={(["completa", "anual", "acumulada"] as TimeMode[])
-                  .filter((x) => x === "completa" || (x === "anual" && m.series) || (x === "acumulada" && m.windows))
+                  // Sencillo keeps two easy choices; "how evidence grows" is an Experto tool.
+                  .filter((x) => x === "completa" || (x === "anual" && m.series) || (x === "acumulada" && m.windows && (expert || s.timeMode === "acumulada")))
                   .map((x) => ({ value: x, label: expert ? c.mode[x] : c.plainTime[x] }))} />
               {expert && s.timeMode === "completa" ? (
                 <Segmented<Metric> label={c.metric} value={s.metric} onChange={controls.metric} compact
@@ -147,7 +150,7 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
             ) : (
               <MapCanvas data={data} theme={theme} selected={sel?.kind === "cell" ? sel.index : -1}
                 filter={s.timeMode === "anual" ? null : s.filter} region={region} focus={focus} lang={s.lang}
-                label={T.mapLabel(m ? m.title[s.lang] : "")} onPick={onPick} describe={describe} onHoverCell={expert ? setHover : undefined} projection={projection} />
+                label={T.mapLabel(m ? m.title[s.lang] : "")} onPick={onPick} describe={describe} onHoverCell={expert ? setHover : undefined} projection={expert ? projection : "globe"} />
             )}
             {loading && !error ? (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -173,7 +176,7 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
             <>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-3">{c.evidence}</p>
               <h2 className="mt-1 text-xl font-semibold leading-tight">{reading.name[s.lang].replace(/^(la zona|the area) /, "")}</h2>
-              <p className="text-sm text-text-2">{LEGEND[s.lang][reading.finding.verdict].phrase} · {m?.window.start}–{m?.window.end}</p>
+              <p className="text-sm text-text-2">{verdictName(reading.finding.verdict, s.lang, s.register)} · {m?.window.start}–{m?.window.end}</p>
               {expert ? <EvidenceDetails ctx={ctx} selection={sel} seriesReady={seriesReady} />
                 : <PlainEvidence ctx={ctx} onExpert={controls.expert} seriesReady={seriesReady} />}
             </>

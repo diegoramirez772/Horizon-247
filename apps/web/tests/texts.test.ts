@@ -42,6 +42,10 @@ describe("verdict sentences (SPEC §5 and §8.5, verbatim)", () => {
     expect(LEGEND.es[1].phrase).toBe("Cambio detectado");
     expect(LEGEND.en[1].phrase).toBe("Change detected");
   });
+  it("«1 zonas» becomes «1 zona» (the contract template is plural)", () => {
+    expect(verdictText(1, "tecnico", "es", { ...values, N: "1" })).toContain("mirar 1 zona a la vez");
+    expect(verdictText(1, "tecnico", "es", { ...values, N: "12" })).toContain("mirar 12 zonas a la vez");
+  });
   it("the selector says Sencillo / Experto (decision D3)", () => {
     expect(UI.es.register).toEqual({ sencillo: "Sencillo", tecnico: "Experto" });
   });

@@ -162,7 +162,7 @@ export function Logo({ compact = false }: { compact?: boolean }) {
     <span className="flex items-center gap-2.5">
       <Emblem size={42} />
       {compact ? null : (
-        <span className="flex items-center gap-1.5">
+        <span className="hidden items-center gap-1.5 sm:flex">
           <span className="text-[18px] font-bold tracking-[0.22em]">HORIZON</span>
           <span className="tabular rounded-md bg-text px-1.5 py-px font-mono text-[11px] font-bold tracking-wider text-bg">247</span>
         </span>

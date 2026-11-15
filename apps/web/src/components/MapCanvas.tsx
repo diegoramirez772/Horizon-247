@@ -15,7 +15,7 @@ export interface HoverInfo { title: string; line: string; where: string }
 
 export type Projection = "globe" | "flat";
 
-export function MapCanvas({ data, theme, selected, filter, region, focus, label, lang, onPick, describe, onHoverCell, projection = "globe" }: {
+export function MapCanvas({ data, theme, selected, filter, region, focus, label, lang, onPick, describe, onHoverCell, projection = "globe", minimal = false }: {
   data: MapData | null;
   theme: MapTheme;
   selected: number;
@@ -31,6 +31,8 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
   onHoverCell?: (index: number) => void;
   /** 3D globe (default) or flat equirectangular map. */
   projection?: Projection;
+  /** Preview (start screen): no zoom buttons. */
+  minimal?: boolean;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<MapView | GlobeView | null>(null);
@@ -98,13 +100,13 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
           <p className="leading-snug text-text-2">{tip.info.line}</p>
         </div>
       ) : null}
-      <div className="absolute right-4 top-4 z-10 flex flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-md">
+      {minimal ? null : <div className="absolute right-4 top-4 z-10 flex flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-md">
         <MapButton label={T.zoomIn} onClick={() => view.current?.zoomBy(1.4)}>+</MapButton>
         <MapButton label={T.zoomOut} onClick={() => view.current?.zoomBy(0.7)}>−</MapButton>
         <MapButton label={T.resetView} onClick={() => view.current?.fitWorld(true)}>
           <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.4" /><path d="M2 8h12M8 2c2 2 2 10 0 12M8 2c-2 2-2 10 0 12" fill="none" stroke="currentColor" strokeWidth="1.1" /></svg>
         </MapButton>
-      </div>
+      </div>}
     </div>
   );
 }

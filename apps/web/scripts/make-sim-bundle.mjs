@@ -20,7 +20,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "bund
 const FIRST = 1980, LAST = 2024;
 const ALL_YEARS = Array.from({ length: LAST - FIRST + 1 }, (_, i) => FIRST + i);
 const DELTA_SIGMA = 0.5; // simulated δ (σ per decade); the real one is Diego's (plan, duda #12)
-const VARIABLE = "sim_var";
+const VARIABLE = "temp_sim"; // simulated temperature anomaly, °C — labelled as simulated everywhere
 
 // ---- deterministic random numbers (mulberry32) ----
 let st = SEED >>> 0;
@@ -214,15 +214,15 @@ function writeLayer(start, end, withWindows) {
   }
 
   const title = {
-    es: `Variable simulada · ${n} años (no es un dato real)`,
-    en: `Simulated variable · ${n} years (not real data)`,
+    es: `Temperatura simulada · ${n} años (no es un dato real)`,
+    en: `Simulated temperature · ${n} years (not real data)`,
   };
   const manifest = {
     contract: "0.2",
     id,
     profile: "earth",
     title,
-    variable: { name: VARIABLE, unit: "u", unit_per_decade: "u/década", short_label: { es: "la variable simulada", en: "the simulated variable" }, color_more: "red" },
+    variable: { name: VARIABLE, unit: "°C", unit_per_decade: "°C/década", short_label: { es: "la temperatura simulada", en: "the simulated temperature" }, color_more: "red" },
     entity: { kind: "region_cell", body: "earth", count: cells, valid: summary.cells_valid },
     grid: { type: "latlon", nlat, nlon, lat0, dlat: -deg, lon0, dlon: deg, native_resolution_deg: deg, effective_resolution_note: "Simulado" },
     dataset: { name: "Generador simulado de la web", provider: "HORIZON 247 (simulado)", url: "", version: "sim-2", sha256: "", licence: "no aplica", kind: "simulated" },
