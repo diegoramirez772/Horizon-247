@@ -41,3 +41,5 @@ Data and services (fetched at run time or shipped as derived bundles)
   - NASA MODIS MOD13C2 v061 NDVI (doi:10.5067/MODIS/MOD13C2.061), NSIDC-0051 sea-ice concentration v2,
       MERRA-2 M2TMNXAER (aerosols) and M2TMNXLND (snow cover) via NASA Earthdata — NASA open data.
   - NSIDC Sea Ice Index (G02135) v4 — used to validate the sea-ice processing.
+  - OpenStreetMap contributors (via Nominatim) — bounding boxes of the 32 Mexican states in
+      apps/web/public/bundles/regions.json; © OpenStreetMap contributors, ODbL 1.0.

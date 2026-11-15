@@ -27,7 +27,8 @@ export function ZoneView({ zone, lang, reading, onScene, drapeFor, layerName }: 
   const [status, setStatus] = useState<TerrainStatus>({ phase: "loading", text: "" });
   const [ex, setEx] = useState(1.6);
   const [noGL, setNoGL] = useState(false);
-  const [drapeOn, setDrapeOn] = useState(true);
+  // HORI's colour over the real picture: on when the zone is a focus (that is the point), off for a place (see it as it is).
+  const [drapeOn, setDrapeOn] = useState(!!zone.focus);
   const [drape, setDrape] = useState<Drape | null>(null);
   const drapeRef = useRef(drapeFor);
   useEffect(() => { drapeRef.current = drapeFor; }, [drapeFor]);

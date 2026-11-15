@@ -126,8 +126,8 @@ export function zoneHalfKm(lat: number, box?: Box): number {
   return Math.max(6, Math.min(450, (Math.max(w, h) / 2) * 1.1));
 }
 
-/** Base relief factor of a zone: 1 for 12 km, larger for a focus hundreds of km wide (it would look flat). */
-export function reliefBase(halfKm: number): number { return Math.max(1, (halfKm / 6) ** 0.6); }
+/** Base relief factor of a zone: 1 for 12 km, gently larger for a zone hundreds of km wide (it would look flat), capped at 2.5 so a state still looks like itself (×10 made Guanajuato a spike). */
+export function reliefBase(halfKm: number): number { return Math.max(1, Math.min(2.5, (halfKm / 6) ** 0.3)); }
 
 function img(url: string, signal: AbortSignal): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
@@ -154,7 +154,7 @@ export class TerrainView {
   private drape: Drape | null = null;
   private drapeAlpha = 1;
   private readonly N: number;
-  private yaw = 0.6;
+  private yaw = 0.15; // almost from the south, north up: a landscape, not a diamond seen from a corner
   private pitch = 0.55;
   private dist = 2.6;
   private spin = true;

@@ -390,7 +390,7 @@ function zoneOf(ctx: Ctx): ZoneTarget {
   if (m && sel?.kind === "cell") { const p = cellLatLon(m, sel.index); return { name: `${p.lat.toFixed(2)}°, ${p.lon.toFixed(2)}°`, ...p }; }
   if (sel?.kind === "region") {
     const r = ctx.regions.find((x) => x.id === sel.id) as (typeof ctx.regions[number] & { bbox?: BBox }) | undefined;
-    if (r?.bbox) return { name: r.name[ctx.state.lang], lat: (r.bbox[1] + r.bbox[3]) / 2, lon: (r.bbox[0] + r.bbox[2]) / 2 };
+    if (r?.bbox) return { name: r.name[ctx.state.lang], lat: (r.bbox[1] + r.bbox[3]) / 2, lon: (r.bbox[0] + r.bbox[2]) / 2, box: r.bbox };
   }
   return ctx.state.zone ?? { name: "Durango", lat: 24.02, lon: -104.67 };
 }
