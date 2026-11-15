@@ -55,11 +55,10 @@ CI runs the same checks on every pull request.
 
 ## Team workflow (AETHRA)
 
-| Area | Owner | Folders |
-|---|---|---|
-| Model, runtime, integration | Diego | `packages/hori`, `packages/zon`, `contract`, `sim`, `supabase` |
-| Web | William | `apps/web` |
-| Design, brand, pitch | Estela | `design`, `brand`, `pitch` |
-| Context, business, content | Carolina | `content` |
+| Area | Folders |
+|---|---|
+| HORI — the model | `packages/hori`, `contract` |
+| ZON — the runtime and the database | `packages/zon`, `supabase` |
+| Web | `apps/web` |
 
 One branch per person, merged to `main` through a reviewed pull request.
