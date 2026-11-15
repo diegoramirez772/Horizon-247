@@ -22,3 +22,10 @@ class LayerResult:
     naive_sig: np.ndarray
     series: np.ndarray          # [cells, n]
     manifest: dict = field(default_factory=dict)
+    # v0.2 (contract section 8)
+    windows: dict = field(default_factory=dict)          # {end_year: {verdict, effect, q_cons, mde, years_more, flags}}
+    emergence_year: np.ndarray | None = None             # [cells], NaN if never
+    regions: list = field(default_factory=list)          # regions.json layer entries (snake_case, SPEC 8.2)
+
+    ARRAY_NAMES = ("effect", "ci_lo", "ci_hi", "sigma", "r1", "p_cons", "q_cons", "mde", "years_more",
+                   "verdict", "flags", "nvalid", "nsig_methods", "naive_sig")

@@ -1,6 +1,14 @@
 id: temp_gistemp_1980-2024
 profile: earth
-variable: {name: tempanomaly, unit: "°C"}
+title: {es: "Temperatura del aire (anomalía)", en: "Surface air temperature anomaly"}
+variable:
+  name: tempanomaly
+  unit: "°C"
+  unit_per_decade: "°C/década"
+  short_label: {es: "la temperatura", en: "temperature"}
+  color_more: red
 source: gistemp
 window: {start: 1980, end: 2024, step: annual}
 grid: {native_resolution_deg: 2.0}
+effective_resolution_note: "GISTEMP suaviza a 1200 km; las celdas vecinas no son independientes"
+regions: [mx-dgo]

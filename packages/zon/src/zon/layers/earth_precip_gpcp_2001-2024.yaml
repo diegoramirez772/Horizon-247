@@ -1,0 +1,14 @@
+id: precip_gpcp_2001-2024
+profile: earth
+title: {es: "Lluvia (anomalía)", en: "Precipitation anomaly"}
+variable:
+  name: precipitation
+  unit: "mm/año"
+  unit_per_decade: "mm/año por década"
+  short_label: {es: "la lluvia", en: "rainfall"}
+  color_more: blue
+source: gpcp             # GPCP v2.3 monthly, no login (NOAA PSL), ~20 MB
+window: {start: 2001, end: 2024, step: annual}
+grid: {native_resolution_deg: 2.5}
+effective_resolution_note: "Celdas de 2.5°: en zonas sin pluviómetros depende sobre todo de satélites"
+regions: [mx-dgo]

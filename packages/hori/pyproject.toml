@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hori"
-version = "0.0.1"
+version = "0.1.0"
 description = "HORI — non-generative monitoring model (HORIZON 247)"
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.26"]
