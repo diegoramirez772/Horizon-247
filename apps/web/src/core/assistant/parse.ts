@@ -13,6 +13,18 @@ import { type HowKey, howtoOf, speedOf } from "./howto";
 const OPEN_PANEL = /\b(abre|abrir|open)\b/;
 const OPEN_VERB = /\b(abre|abrir|muestra|muestrame|ver|ve|revisa|vigila|vigilar|ensename|open|show|check|watch)\b/;
 const FAUNA = /\b(fauna|animales|aves|pajaros|mariposas|anfibios|insectos|mamiferos|reptiles|senales de fauna|wildlife|birds|animal signals)\b/;
+/** The step of the «Ficha de HORI» a question asks for (null = the whole file, undefined = not a file question). */
+export function fichaFocus(text: string): string | null | undefined {
+  if (/(que estamos (viendo|observando)|que estoy (viendo|observando)|como (lo |la )?(identificas|identifican|verificas|verifican)|como sabes que es real|es real o (es )?simulad|what are we (looking at|seeing|observing)|how do you (identify|verify)|is (it|this) real)/.test(text)) return "identifica";
+  if (/(que tan buenos son los datos|calidad de los datos|data quality)/.test(text)) return "observa";
+  if (/(que esta ocurriendo|que esta pasando en (?!el mundo)|que pasa en (?!el mundo)|what is happening in)/.test(text)) return "detecta";
+  if (/(que ha cambiado|desde cuando cambio|como (le )?(damos|das|dan) seguimiento|seguimiento|what has changed|follow up)/.test(text)) return "supervisa";
+  if (/(requiere atencion|que es lo mas importante|que priorizas|prioridades|que deberia ver primero|needs attention|what matters most|priorit)/.test(text)) return "prioriza";
+  if (/(que no sabes|lo que no se sabe|que no se sabe|what (do you )?not know|what don.?t you know)/.test(text)) return "nosabe";
+  if (/(ficha|expediente|analiza|analisis completo|todo sobre|dame todo de|explicame todo|explica todo|full report|analy[sz]e|everything about)/.test(text)) return null;
+  return undefined;
+}
+
 /** Which group of animals a question names (null = all six). */
 export function faunaGroupOf(text: string): FaunaGroup | null {
   return /\b(mariposas?|polillas?|butterfl\w*|moths?)\b/.test(text) ? "mariposas"
@@ -73,7 +85,7 @@ export type Intent =
   | { t: "unknown" };
 
 /** What the answer is about when it brings its own components (clima, ganado, astronauta, Marte, planetas, eventos). */
-export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos" | "red" | "alertas" | "fauna" | "camaras" | "conjunto";
+export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos" | "red" | "alertas" | "fauna" | "camaras" | "conjunto" | "ficha";
 
 /** What a command may carry besides its intent: a place to look at first. */
 export type Place = { kind: "region"; id: string } | { kind: "coord"; lat: number; lon: number } | null;
@@ -150,6 +162,8 @@ export function parse(raw: string, regions: Region[]): Command {
     : how ? { t: "howto", key: how }
     // «¿hay alertas por mi casa?», «¿algo raro aquí?»: everything watched around the place, each anomaly with its component
     : P.alerts.test(text) ? { t: "topic", topic: "alertas", where: whereOf(raw, place) }
+    // The six questions of HORI and «analiza Durango»: the file of the place, opened at the step the question asks for
+    : fichaFocus(text) !== undefined ? { t: "topic", topic: "ficha", where: whereOf(raw, place), hint: fichaFocus(text) ?? undefined }
     // «cámara de la ISS», «¿cómo se ve el cielo ahora?»: the live views
     : P.cameras.test(text) ? { t: "topic", topic: "camaras", where: whereOf(raw, place), hint: text }
     // «¿qué cambia junto?», «más calor y menos nieve»: HORI's joint change

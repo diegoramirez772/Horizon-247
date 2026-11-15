@@ -145,6 +145,8 @@ export function run(cmd: Command, via: Via, label: string | null, d: Deps): void
     case "greet":
       store.set({ ...patch, timeMode: "completa" });
       answerWhenReady(d, store.get().selection ? "area" : i.t === "greet" ? "help" : "noSelection", source, correctable, null);
+      // A named place also gets HORI's file: the seven capacities on it, step by step.
+      if (i.t === "area" && cmd.where) conv.answer(topicCard("ficha", cmd.where, { ...d.ctx(), state: store.get() }, source, null, null));
       return;
     case "summary": store.set({ ...patch, selection: patch.selection ?? null }); answerWhenReady(d, "summary", source, correctable, null); return;
     case "world": store.set({ selection: null }); answerWhenReady(d, "world", source, correctable, null); return;
