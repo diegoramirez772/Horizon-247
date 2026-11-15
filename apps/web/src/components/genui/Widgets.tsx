@@ -3,7 +3,8 @@
 // The components the assistant builds for a topic (Plan de unión U3). Each one fetches or computes its own numbers
 // and says where they come from: NASA en vivo (POWER, EONET), HORI, or SIMULADO.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { askLogin, currentUser, subscribe } from "@/core/live/auth";
 import type { Widget } from "@/core/genui/topic";
 import { findPlace, type Where } from "@/core/genui/places";
 import type { Lang } from "@/core/i18n/texts";
@@ -397,8 +398,9 @@ function SwarmWidget({ where, draft, lang, actions }: { where: Where | null; dra
   const [err, setErr] = useState("");
   const [list, setList] = useState<SwarmReport[] | null>(null);
   const [listErr, setListErr] = useState(false);
+  const user = useSyncExternalStore(subscribe, currentUser, () => null);
   const refresh = () => listSwarmReports(12).then((r) => { setList(r); setListErr(false); }).catch(() => setListErr(true));
-  useEffect(() => { if (dbConfigured()) void refresh(); }, []);
+  useEffect(() => { if (dbConfigured() && user) void refresh(); }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!dbConfigured()) {
     return <Frame title={es ? "Red enjambre" : "Swarm"} badge={{ text: es ? "sin conexión" : "offline", kind: "ref" }}><p className="text-sm text-text-2">{es ? "Esta copia de la web no está conectada a la base de datos del equipo." : "This copy of the web is not connected to the team database."}</p></Frame>;
   }
@@ -410,9 +412,8 @@ function SwarmWidget({ where, draft, lang, actions }: { where: Where | null; dra
       await sendSwarmReport({ text, lat: place.lat, lon: place.lon, lang });
       setPhase("sent"); setText(""); void refresh();
     } catch (e) {
-      const off = e instanceof Error && e.message === "anon-off";
-      setErr(off ? (es ? "La red todavía no acepta reportes: falta activar las sesiones anónimas en Supabase." : "The swarm does not accept reports yet: anonymous sessions must be enabled in Supabase.")
-        : (es ? "No se pudo enviar. Intenta de nuevo." : "Could not send. Try again."));
+      if (e instanceof Error && e.message === "login") { setPhase("idle"); askLogin(); return; }
+      setErr(es ? "No se pudo enviar. Intenta de nuevo." : "Could not send. Try again.");
       setPhase("error");
     }
   };
@@ -426,16 +427,23 @@ function SwarmWidget({ where, draft, lang, actions }: { where: Where | null; dra
         <div className="flex gap-2">
           <input value={placeText} onChange={(e) => { setPlaceText(e.target.value); setPhase("idle"); }} aria-label={es ? "Lugar" : "Place"}
             placeholder={es ? "Lugar o «lat, lon»" : "Place or «lat, lon»"} className="min-w-0 flex-1 rounded-xl border border-border-control bg-bg px-3 py-2 text-sm" />
-          <button type="submit" disabled={phase === "sending" || !text.trim()} className="rounded-xl bg-accent px-3.5 text-sm font-medium text-on-accent disabled:opacity-50">
-            {phase === "sending" ? (es ? "Enviando…" : "Sending…") : (es ? "Enviar a la red" : "Send")}
-          </button>
+          {user ? (
+            <button type="submit" disabled={phase === "sending" || !text.trim()} className="rounded-xl bg-accent px-3.5 text-sm font-medium text-on-accent disabled:opacity-50">
+              {phase === "sending" ? (es ? "Enviando…" : "Sending…") : (es ? "Enviar a la red" : "Send")}
+            </button>
+          ) : (
+            <button type="button" onClick={askLogin} className="rounded-xl bg-accent px-3.5 text-sm font-medium text-on-accent">
+              {es ? "Entra para enviar" : "Sign in to send"}
+            </button>
+          )}
         </div>
         {phase === "sent" ? <p role="status" className="text-sm text-text-2">{es ? "Enviado. Quedó como fuente no verificada, en espera de revisión." : "Sent. It is an unverified source awaiting review."}</p> : null}
         {phase === "error" ? <p role="alert" className="text-sm text-text-2">{err}</p> : null}
       </form>
       <div className="mt-3 border-t border-border pt-2">
         <p className="mb-1 text-xs font-semibold uppercase tracking-[0.1em] text-text-3">{es ? "Últimos reportes" : "Latest reports"}</p>
-        {listErr ? <p className="text-sm text-text-3">{es ? "Aún no se pueden leer (sesiones anónimas apagadas)." : "Cannot read them yet (anonymous sessions off)."}</p>
+        {!user ? <p className="text-sm text-text-3">{es ? "Entra con tu cuenta para ver los reportes de la red." : "Sign in to see the swarm's reports."}</p>
+          : listErr ? <p className="text-sm text-text-3">{es ? "No se pudieron leer ahora." : "Could not read them now."}</p>
           : list === null ? <p className="text-sm text-text-3">…</p>
           : list.length === 0 ? <p className="text-sm text-text-3">{es ? "Todavía no hay reportes. Sé el primero." : "No reports yet. Be the first."}</p>
           : (

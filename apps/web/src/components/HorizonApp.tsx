@@ -19,6 +19,7 @@ import { InteractionLayer } from "./interaccion/InteractionLayer";
 import { useAppState, useTheme, useUrlSync } from "./hooks";
 import type { MapFocus, Projection } from "./MapCanvas";
 import { MapPanel, type PanelTab } from "./MapPanel";
+import { LoginDialog } from "./LoginDialog";
 import { Sidebar } from "./Sidebar";
 import { useHome, useIndex, useLayer, useMapData, useSeries } from "./useBundles";
 
@@ -49,9 +50,20 @@ export function HorizonApp() {
   const { index, regions } = useIndex();
   const [attempt, setAttempt] = useState(0);
   const [panel, setPanel] = useState<PanelTab | null>(null);
+  // Sign-in dialog: from the sidebar, or from any action that needs a person (askLogin → «h247:login»).
+  // The address as it arrived (the URL sync rewrites it right after): «?panel=…» and «?login=1» are read from here.
+  const [boot] = useState(() => (typeof window === "undefined" ? "" : window.location.search));
+  const [login, setLogin] = useState(false);
+  const closeLogin = useCallback(() => setLogin(false), []);
+  useEffect(() => {
+    const open = () => setLogin(true);
+    if (new URLSearchParams(boot).get("login") === "1") setLogin(true);
+    addEventListener("h247:login", open);
+    return () => removeEventListener("h247:login", open);
+  }, []);
   // The installed app's «En vivo» shortcut opens straight on that tab (manifest.webmanifest).
   useEffect(() => {
-    { const p = new URLSearchParams(window.location.search).get("panel"); if (p === "live" || p === "map" || p === "evidence" || p === "scene") setPanel(p); }
+    { const p = new URLSearchParams(boot).get("panel"); if (p === "live" || p === "map" || p === "evidence" || p === "scene") setPanel(p); }
   }, []);
   const [wide, setWide] = useState(false);
   const [home, setHome] = useState(true);
@@ -210,7 +222,7 @@ export function HorizonApp() {
     <HubProvider value={hub}>
     <div className="flex h-dvh overflow-x-hidden bg-bg">
       <Sidebar lang={s.lang} setLang={(l) => store.set({ lang: l })} panel={panel} setPanel={setPanel} home={home}
-        onHome={goHome} dark={theme.pref !== "light"} toggleTheme={() => theme.setPref(theme.pref === "light" ? "dark" : "light")} />
+        onHome={goHome} onLogin={() => setLogin(true)} dark={theme.pref !== "light"} toggleTheme={() => theme.setPref(theme.pref === "light" ? "dark" : "light")} />
       <div className="flex min-w-0 flex-1 flex-col">
       <a href="#ask" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-surface focus:p-2">{c.skip}</a>
 
@@ -239,6 +251,7 @@ export function HorizonApp() {
       </div>
       </div>
       <InteractionLayer lang={s.lang} />
+      <LoginDialog lang={s.lang} open={login} onClose={closeLogin} />
     </div>
     </HubProvider>
   );

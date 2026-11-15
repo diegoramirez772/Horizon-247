@@ -1,5 +1,5 @@
--- HORIZON 247 · red enjambre pública (15-nov). La web no tiene cuentas: una persona entra con una sesión ANÓNIMA de
--- Supabase (auth.uid() existe, sin correo ni nombre) y aporta reportes a un equipo aparte, «AETHRA · Red pública»,
+-- HORIZON 247 · red enjambre pública (15-nov). Una persona con cuenta (correo y contraseña de Supabase Auth; ver la
+-- web no la necesita) aporta reportes a un equipo aparte, «AETHRA · Red pública»,
 -- marcado con settings.public_swarm = true. Nunca entra al equipo de la ciencia (hallazgos, corridas, monitores):
 -- solo ve los reportes de la red pública, que de todos modos se muestran como «fuente no verificada».
 --
@@ -25,7 +25,7 @@ begin
   if not horizon_private.is_public_swarm(p_workspace_id) then
     raise exception 'HORIZON: este equipo no es la red pública' using errcode = 'HZ403';
   end if;
-  pid := public.ensure_profile('Persona de la red');
+  pid := public.ensure_profile(coalesce(nullif(trim((select u.raw_user_meta_data ->> 'name' from auth.users u where u.id = (select auth.uid()))), ''), 'Persona de la red'));
   insert into public.memberships (workspace_id, profile_id, role)
   values (p_workspace_id, pid, 'contributor')
   on conflict (workspace_id, profile_id) do nothing;

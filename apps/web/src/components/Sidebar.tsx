@@ -4,7 +4,8 @@
 // Evidencia, and language + theme at the bottom. Collapses to icons on desktop; on phones it is a drawer behind a
 // floating button. The reading level is NOT here: it lives inside the question box, next to what it changes.
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { authConfigured, currentUser, signOut, subscribe } from "@/core/live/auth";
 import type { Lang } from "@/core/i18n/texts";
 import type { PanelTab } from "./MapPanel";
 import { Logo } from "./ui";
@@ -24,11 +25,12 @@ const T = {
 
 const STORE = "h247-rail";
 
-export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, dark, toggleTheme }: {
+export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, dark, toggleTheme, onLogin }: {
   lang: Lang; setLang: (l: Lang) => void; panel: PanelTab | null; setPanel: (p: PanelTab | null) => void;
-  home: boolean; onHome: () => void; dark: boolean; toggleTheme: () => void;
+  home: boolean; onHome: () => void; dark: boolean; toggleTheme: () => void; onLogin: () => void;
 }) {
   const t = T[lang];
+  const user = useSyncExternalStore(subscribe, currentUser, () => null);
   const [slim, setSlim] = useState(false);
   const [drawer, setDrawer] = useState(false);
   useEffect(() => { try { setSlim(localStorage.getItem(STORE) === "slim"); } catch { /* default: wide */ } }, []);
@@ -100,7 +102,36 @@ export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, dark, to
           ))}
         </div>
 
-        <div className={`mt-auto flex gap-2 border-t border-border p-3 ${wide ? "items-center" : "flex-col items-center"}`}>
+        {authConfigured() ? (
+          <div className={`mt-auto border-t border-border p-2 ${wide ? "" : "flex justify-center"}`}>
+            {user ? (
+              <div className={`flex items-center gap-2.5 rounded-xl ${wide ? "px-2 py-1.5" : ""}`}>
+                <span aria-hidden="true" title={user.email}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2563eb] to-[#0ea5e9] text-sm font-semibold text-white">
+                  {(user.name || user.email).slice(0, 1).toUpperCase()}
+                </span>
+                {wide ? (
+                  <>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">{user.name || user.email}</span>
+                      <span className="block truncate text-xs text-text-3">{user.email}</span>
+                    </span>
+                    <button type="button" onClick={() => void signOut()} className="rounded-lg px-2 py-1 text-xs font-medium text-text-2 hover:bg-surface hover:text-text">
+                      {lang === "es" ? "Salir" : "Sign out"}
+                    </button>
+                  </>
+                ) : null}
+              </div>
+            ) : (
+              <button type="button" onClick={go(onLogin)} title={wide ? undefined : (lang === "es" ? "Entrar" : "Sign in")}
+                className={`flex h-10 items-center gap-3 rounded-xl text-sm font-medium text-text-2 hover:bg-surface hover:text-text ${wide ? "w-full px-3" : "w-10 justify-center"}`}>
+                <Icon><><circle cx="8" cy="5.5" r="2.5" /><path d="M3 13.5c.8-2.4 2.7-3.5 5-3.5s4.2 1.1 5 3.5" /></></Icon>
+                {wide ? <span>{lang === "es" ? "Entrar o crear cuenta" : "Sign in or sign up"}</span> : <span className="sr-only">{lang === "es" ? "Entrar" : "Sign in"}</span>}
+              </button>
+            )}
+          </div>
+        ) : null}
+        <div className={`${authConfigured() ? "" : "mt-auto "}flex gap-2 border-t border-border p-3 ${wide ? "items-center" : "flex-col items-center"}`}>
           <div role="radiogroup" aria-label={t.lang}
             className={`relative flex rounded-full bg-surface-2 p-1 shadow-[inset_0_0_0_1px_var(--border)] ${wide ? "flex-1" : "flex-col"}`}>
             {(["es", "en"] as const).map((l) => (
