@@ -19,7 +19,7 @@ const T = {
     stop: "Dejar de escuchar",
     listening: "Te escucho…",
     voice: "Responder en voz alta",
-    note: "Demo con datos simulados · HORIZON no da consejos ni explica por qué ocurre un cambio",
+    note: "HORIZON no da consejos ni explica por qué ocurre un cambio",
     simNote: "Demo con datos simulados",
     kicker: "Monitor del sistema Tierra",
     resume: "Volver a la conversación",
@@ -51,7 +51,7 @@ const T = {
     stop: "Stop listening",
     listening: "Listening…",
     voice: "Answer out loud",
-    note: "Demo with simulated data · HORIZON gives no advice and does not explain why a change happens",
+    note: "HORIZON gives no advice and does not explain why a change happens",
     simNote: "Demo with simulated data",
     kicker: "Earth system monitor",
     resume: "Back to the conversation",
@@ -90,6 +90,8 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence }:
   const snap = useSyncExternalStore(conv.subscribe, conv.get, conv.get);
   const { lang, register } = ctx.state;
   const t = T[lang];
+  // The "simulated data" notice is shown only when the layer on screen says so (honesty.simulated).
+  const simulated = ctx.layer?.manifest.honesty.simulated === true;
   const end = useRef<HTMLDivElement>(null);
   const msgs = snap.messages;
   const lastAssistantId = [...msgs].reverse().find((m) => m.role === "assistant")?.id;
@@ -108,7 +110,7 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence }:
           <div className="mb-4 flex justify-center"><Emblem size={92} /></div>
           <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.28em] text-text-3">{t.kicker}</p>
           <h1 className="mb-6 text-center text-[clamp(1.75rem,3.2vw,2.5rem)] font-semibold leading-tight tracking-tight text-balance">{t.hello}</h1>
-          <Composer conv={conv} lang={lang} onSend={(x, v) => { onHome(false); ask(x, v); }} autoFocus bare />
+          <Composer conv={conv} lang={lang} simulated={simulated} onSend={(x, v) => { onHome(false); ask(x, v); }} autoFocus bare />
           {msgs.length > 0 ? (
             <button type="button" onClick={() => onHome(false)} className="mx-auto mt-4 text-sm font-medium text-text-2 underline-offset-4 hover:text-text hover:underline">
               {t.resume} →
@@ -116,7 +118,7 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence }:
           ) : null}
         </div>
         <Discover lang={lang} onTry={(cmd, label) => { onHome(false); onCommand(cmd, "chip", label); }} />
-        <p className="relative px-4 pb-4 pt-2 text-center text-xs text-text-3">{t.simNote}</p>
+        {simulated ? <p className="relative px-4 pb-4 pt-2 text-center text-xs text-text-3">{t.simNote}</p> : null}
       </div>
     );
   }
@@ -144,7 +146,7 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence }:
       <div className="relative px-4 pb-4 pt-2">
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-bg to-transparent" />
         <div className="mx-auto w-full max-w-[760px]">
-          <Composer conv={conv} lang={lang} onSend={ask} />
+          <Composer conv={conv} lang={lang} simulated={simulated} onSend={ask} />
         </div>
       </div>
     </div>
@@ -276,8 +278,10 @@ function VerdictGlyph({ v }: { v: number }) {
 
 // ---------------------------------------------------------------- composer
 
-function Composer({ conv, lang, onSend, autoFocus = false, bare = false }: {
+function Composer({ conv, lang, onSend, simulated, autoFocus = false, bare = false }: {
   conv: Conversation; lang: Lang; onSend: (text: string, via: Via) => void; autoFocus?: boolean;
+  /** The layer on screen is simulated (manifest honesty.simulated): only then the "simulated" notice shows. */
+  simulated: boolean;
   /** Start screen: no note and no voice option under the box. */
   bare?: boolean;
 }) {
@@ -335,7 +339,7 @@ function Composer({ conv, lang, onSend, autoFocus = false, bare = false }: {
         </button>
       </form>
       {bare ? null : <div className="mt-2 flex flex-wrap items-center justify-between gap-2 px-2 text-xs text-text-3">
-        <span>{t.note}</span>
+        <span>{simulated ? `${t.simNote} · ` : ""}{t.note}</span>
         <label className="flex cursor-pointer items-center gap-1.5 hover:text-text">
           <input type="checkbox" checked={snap.voiceReply} onChange={(e) => { conv.setVoiceReply(e.target.checked); if (!e.target.checked) speech.hush(); }} className="h-3.5 w-3.5 accent-[var(--accent)]" />
           {t.voice}
