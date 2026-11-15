@@ -112,7 +112,7 @@ function Dock({ lang }: { lang: Lang }) {
         className={`pointer-events-auto relative flex h-12 w-12 items-center justify-center rounded-full shadow-[0_8px_24px_rgba(16,24,40,0.18)] transition-all hover:scale-105 ${open || busy ? "bg-accent text-on-accent" : "border border-border bg-surface text-text"}`}>
         {v.listening ? <span aria-hidden="true" className="absolute inset-0 animate-ping rounded-full bg-[#e5484d]/30" /> : null}
         <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          {open ? <path d="M4 4l8 8M12 4l-8 8" /> : <path d="M8 2.5a2 2 0 0 1 2 2v3a2 2 0 0 1-4 0v-3a2 2 0 0 1 2-2zM4.5 7.5a3.5 3.5 0 0 0 7 0M8 11v2.5" />}
+          {open ? <path d="M4 4l8 8M12 4l-8 8" /> : <path d="M5.5 8V3.5a1 1 0 0 1 2 0V7m0-3.5v-.5a1 1 0 0 1 2 0V7m0-3a1 1 0 0 1 2 0v4.5a4.5 4.5 0 0 1-9 0V7a1 1 0 0 1 2 0v1" />}
         </svg>
       </button>
     </nav>

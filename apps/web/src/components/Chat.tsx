@@ -116,11 +116,13 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, h
     return (
       <div className="relative flex h-full flex-col overflow-y-auto overflow-x-hidden">
         <HorizonBackdrop />
-        <div className="relative my-auto flex w-full flex-col py-8">
+        <div className="relative flex min-h-full w-full flex-col">
+        <div className="flex flex-1 flex-col justify-center pb-6 pt-10">
         <h1 className="mx-auto mb-6 max-w-[720px] px-4 text-center text-[clamp(1.75rem,3.2vw,2.5rem)] font-semibold leading-tight tracking-tight text-balance">{t.hello}</h1>
         <Deck homeDoc={homeDoc} lang={lang} register={register} onAsk={(x) => { onHome(false); ask(x, "chip"); }}
           onTry={(cmd, label) => { onHome(false); onCommand(cmd, "chip", label); }} />
-        <div className="relative mx-auto flex w-full max-w-[720px] flex-col px-4 pt-6">
+        </div>
+        <div className="sticky bottom-0 mx-auto flex w-full max-w-[760px] flex-col px-4 pb-5 pt-2">
           <Composer conv={conv} lang={lang} register={register} onRegister={onRegister} simulated={simulated} onSend={(x, v) => { onHome(false); ask(x, v); }} autoFocus bare />
           {msgs.length > 0 ? (
             <button type="button" onClick={() => onHome(false)} className="mx-auto mt-4 text-sm font-medium text-text-2 underline-offset-4 hover:text-text hover:underline">

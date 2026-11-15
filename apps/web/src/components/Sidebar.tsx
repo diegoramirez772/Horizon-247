@@ -11,12 +11,12 @@ import { Logo } from "./ui";
 
 const T = {
   es: {
-    home: "Inicio", map: "Mapa y globo", assistant: "Asistente", monitoring: "Monitoreo", prefs: "Preferencias", live: "En vivo", evidence: "Evidencia",
+    home: "Asistente", map: "Mapa y globo", assistant: "Asistente", monitoring: "Monitoreo", prefs: "Preferencias", live: "En vivo", evidence: "Evidencia",
     theme: "Tema", dark: "Oscuro", light: "Claro", lang: "Idioma", collapse: "Contraer menú", expand: "Expandir menú",
     open: "Abrir menú", close: "Cerrar menú", sections: "Secciones",
   },
   en: {
-    home: "Home", map: "Map and globe", assistant: "Assistant", monitoring: "Monitoring", prefs: "Preferences", live: "Live", evidence: "Evidence",
+    home: "Assistant", map: "Map and globe", assistant: "Assistant", monitoring: "Monitoring", prefs: "Preferences", live: "Live", evidence: "Evidence",
     theme: "Theme", dark: "Dark", light: "Light", lang: "Language", collapse: "Collapse menu", expand: "Expand menu",
     open: "Open menu", close: "Close menu", sections: "Sections",
   },
@@ -46,13 +46,13 @@ export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, dark, to
 
   type Item = { key: string; label: string; icon: React.ReactNode; on: boolean; run: () => void };
   const items: Item[] = [
-    { key: "home", label: t.home, icon: <path d="M2.5 7.5L8 3l5.5 4.5V13a.5.5 0 0 1-.5.5H9.5v-3.5h-3V13.5H3a.5.5 0 0 1-.5-.5z" />, on: home && !panel, run: go(onHome) },
+    { key: "home", label: t.home, icon: <path d="M8 1.8l1.5 3.9 3.9 1.5-3.9 1.5L8 12.6 6.5 8.7 2.6 7.2l3.9-1.5zM12.5 11l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" />, on: home && !panel, run: go(onHome) },
     { key: "map", label: t.map, icon: <><path d="M1.5 3.5l4-1.5 5 2 4-1.5v10l-4 1.5-5-2-4 1.5z" /><path d="M5.5 2v10M10.5 4v10" /></>, on: panel === "map", run: tab("map") },
     { key: "live", label: t.live, icon: <><circle cx="8" cy="8" r="2" /><path d="M4.5 4.5a5 5 0 0 0 0 7M11.5 4.5a5 5 0 0 1 0 7M2.5 2.5a8 8 0 0 0 0 11M13.5 2.5a8 8 0 0 1 0 11" /></>, on: panel === "live", run: tab("live") },
     { key: "evidence", label: t.evidence, icon: <path d="M2 13.5h12M3 10l3-3 3 2 4-5" />, on: panel === "evidence", run: tab("evidence") },
   ];
   const groups: { label: string; items: Item[] }[] = [
-    { label: t.assistant, items: items.slice(0, 1) },
+    { label: "", items: items.slice(0, 1) },
     { label: t.monitoring, items: items.slice(1) },
   ];
 
@@ -79,8 +79,8 @@ export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, dark, to
 
         <div className="flex flex-col gap-5 px-2 pt-2">
           {groups.map((g, gi) => (
-            <div key={g.label}>
-              {wide ? <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-text-3">{g.label}</p>
+            <div key={gi}>
+              {wide && g.label ? <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-text-3">{g.label}</p>
                 : gi > 0 ? <div aria-hidden="true" className="mx-3 mb-3 border-t border-border" /> : null}
               <ul className="flex flex-col gap-1" aria-label={g.label}>
                 {g.items.map((it) => (
