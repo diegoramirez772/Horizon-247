@@ -1,0 +1,231 @@
+{
+ "contract": "0.4",
+ "kind": "joint",
+ "id": "joint_1981-2025",
+ "profile": "earth",
+ "title": {
+  "es": "Cambio conjunto 1981–2025",
+  "en": "Joint change 1981–2025"
+ },
+ "variable": {
+  "name": "JOINT",
+  "unit": ""
+ },
+ "grid": {
+  "type": "latlon",
+  "nlat": 180,
+  "nlon": 360,
+  "lat0": 89.5,
+  "dlat": -1.0,
+  "lon0": -179.5,
+  "dlon": 1.0
+ },
+ "window": {
+  "start": 1981,
+  "end": 2025,
+  "n": 45,
+  "step": "annual"
+ },
+ "variables": {
+  "T2M": {
+   "layer": "earth/t2m_1deg_1981-2025",
+   "unit": "C",
+   "dataset": "NASA POWER ARD (MERRA-2), Zarr on AWS",
+   "kind": "reanalysis",
+   "delta_per_decade": 0.3,
+   "probado_cells": 40449
+  },
+  "AOD": {
+   "layer": "earth/aod_1deg_1981-2025",
+   "unit": "1",
+   "dataset": "M2TMNXAER v5.12.4 — MERRA-2 tavgM_2d_aer_Nx: 2d,Monthly mean,Time-averaged,Single-Level,Assimilation,Aerosol Diagnostics 0.625 x 0.5 degree V5.12.4 (M2TMNXAER) ",
+   "kind": "reanalysis",
+   "delta_per_decade": 0.02,
+   "probado_cells": 1361
+  }
+ },
+ "rules": [
+  {
+   "rule": "J7",
+   "name": {
+    "es": "Más aerosoles y menos calor",
+    "en": "More aerosols and cooler"
+   },
+   "a": "AOD",
+   "sign_a": 1,
+   "b": "T2M",
+   "sign_b": -1,
+   "usable_cells": 64800,
+   "counts": {
+    "NADA": 61593,
+    "SOLO_UNA": 3199,
+    "CONJUNTO_CANDIDATO": 1,
+    "AMBAS_PROBADO": 7,
+    "CONJUNTO_PROBADO": 0
+   },
+   "fraction_probado_a": 0.0153,
+   "fraction_probado_b": 0.0448,
+   "observed_both_probado": 0.0001,
+   "expected_if_unrelated": 0.0007,
+   "min_q_joint": 1.0,
+   "ratio": 0.16,
+   "note": {
+    "es": "Coincidir en el mismo lugar no prueba que una cosa cause la otra; la correlación espacial hace ruidosa la comparación con el azar.",
+    "en": "Coinciding in place does not prove that one causes the other; spatial correlation makes the comparison with chance noisy."
+   },
+   "examples": [
+    {
+     "cell": 24028,
+     "lat": 23.5,
+     "lon": 88.5,
+     "q_joint": 1.0,
+     "effect": {
+      "AOD": 0.0855,
+      "T2M": -0.2398
+     },
+     "text": {
+      "es": "Aquí subieron los aerosoles (+0.0855 1/década, PROBADO) y bajó la temperatura (-0.24 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.0855 1/decade, PROBADO) and temperature fell (-0.24 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J7",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 24027,
+     "lat": 23.5,
+     "lon": 87.5,
+     "q_joint": 1.0,
+     "effect": {
+      "AOD": 0.085,
+      "T2M": -0.1754
+     },
+     "text": {
+      "es": "Aquí subieron los aerosoles (+0.085 1/década, PROBADO) y bajó la temperatura (-0.175 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.085 1/decade, PROBADO) and temperature fell (-0.175 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J7",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 24029,
+     "lat": 23.5,
+     "lon": 89.5,
+     "q_joint": 1.0,
+     "effect": {
+      "AOD": 0.0823,
+      "T2M": -0.3265
+     },
+     "text": {
+      "es": "Aquí subieron los aerosoles (+0.0823 1/década, PROBADO) y bajó la temperatura (-0.326 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.0823 1/decade, PROBADO) and temperature fell (-0.326 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J7",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 24389,
+     "lat": 22.5,
+     "lon": 89.5,
+     "q_joint": 1.0,
+     "effect": {
+      "AOD": 0.0808,
+      "T2M": -0.1883
+     },
+     "text": {
+      "es": "Aquí subieron los aerosoles (+0.0808 1/década, PROBADO) y bajó la temperatura (-0.188 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.0808 1/decade, PROBADO) and temperature fell (-0.188 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J7",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 24390,
+     "lat": 22.5,
+     "lon": 90.5,
+     "q_joint": 1.0,
+     "effect": {
+      "AOD": 0.0763,
+      "T2M": -0.1604
+     },
+     "text": {
+      "es": "Aquí subieron los aerosoles (+0.0763 1/década, PROBADO) y bajó la temperatura (-0.16 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.0763 1/decade, PROBADO) and temperature fell (-0.16 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J7",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 24031,
+     "lat": 23.5,
+     "lon": 91.5,
+     "q_joint": 1.0,
+     "effect": {
+      "AOD": 0.064,
+      "T2M": -0.1044
+     },
+     "text": {
+      "es": "Aquí subieron los aerosoles (+0.064 1/década, PROBADO) y bajó la temperatura (-0.104 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.064 1/decade, PROBADO) and temperature fell (-0.104 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J7",
+      "level": "AMBAS_PROBADO"
+     }
+    },
+    {
+     "cell": 24032,
+     "lat": 23.5,
+     "lon": 92.5,
+     "q_joint": 1.0,
+     "effect": {
+      "AOD": 0.0481,
+      "T2M": -0.1065
+     },
+     "text": {
+      "es": "Aquí subieron los aerosoles (+0.0481 1/década, PROBADO) y bajó la temperatura (-0.107 C/década, PROBADO): cada cambio está probado en su propio mapa, pero como afirmación conjunta sobre todo el mapa todavía no alcanza (q conjunto = 1.00). HORI no dice que una cause la otra.",
+      "en": "Here aerosols rose (+0.0481 1/decade, PROBADO) and temperature fell (-0.107 C/decade, PROBADO): each change is proven in its own map, but as a joint claim over the whole map it is not there yet (joint q = 1.00). HORI does not say that one causes the other.",
+      "rule": "J7",
+      "level": "AMBAS_PROBADO"
+     }
+    }
+   ]
+  }
+ ],
+ "levels": {
+  "0": "NADA",
+  "1": "SOLO_UNA",
+  "2": "CONJUNTO_CANDIDATO",
+  "3": "AMBAS_PROBADO",
+  "4": "CONJUNTO_PROBADO"
+ },
+ "arrays": {
+  "level_J7": {
+   "file": "level_J7.u8",
+   "dtype": "u8",
+   "codes": {
+    "0": "NADA",
+    "1": "SOLO_UNA",
+    "2": "CONJUNTO_CANDIDATO",
+    "3": "AMBAS_PROBADO",
+    "4": "CONJUNTO_PROBADO"
+   }
+  },
+  "q_J7": {
+   "file": "q_J7.f32",
+   "dtype": "f32"
+  }
+ },
+ "method": {
+  "p_joint": "max(p_a, p_b) / 2 when both effects have the rule's (pre-declared) sign: one-sided intersection-union test",
+  "fdr": "Benjamini-Hochberg q = 0.10 per rule over cells where both variables are usable",
+  "level_4": "CONJUNTO_PROBADO: q_joint <= 0.10 and both variables PROBADO in their own layer",
+  "level_3": "AMBAS_PROBADO: both PROBADO in their own layers; the joint claim over the map is not reached",
+  "calibration": "sim/results_joint_calibration.json"
+ },
+ "honesty": {
+  "data_real": true,
+  "not_causal": true,
+  "note": {
+   "es": "Que dos cambios ocurran en el mismo lugar no prueba que uno cause el otro.",
+   "en": "Two changes at the same place do not prove that one causes the other."
+  }
+ }
+}
