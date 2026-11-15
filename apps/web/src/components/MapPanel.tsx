@@ -24,7 +24,7 @@ const C = {
     map: "Monitoreo", live: "En vivo", evidence: "Evidencia", close: "Cerrar panel", expand: "Ampliar panel", shrink: "Reducir panel",
     full: "Pantalla completa", exitFull: "Salir de pantalla completa (Esc)", view: "Vista", globe: "Globo 3D", flat: "Plano",
     years: "Datos", mode: { completa: "Tendencia", anual: "Año a año", acumulada: "Cómo crece la evidencia" },
-    hint: "Pasa el cursor o toca una zona", simulated: "Simulado",
+    hint: "Pasa el cursor o toca una zona", simulated: "Simulado", viewMenu: "Vista del mapa",
     noSel: "Toca una zona del mapa o pregunta por una región para ver su evidencia.",
     play: "Reproducir los años", pause: "Pausar",
     metric: "Métrica", metrics: { verdict: "Veredicto", effect: "Efecto", mde: "MDE", years: "Años que faltan" },
@@ -40,7 +40,7 @@ const C = {
     map: "Monitoring", live: "Live", evidence: "Evidence", close: "Close panel", expand: "Widen panel", shrink: "Narrow panel",
     full: "Full screen", exitFull: "Exit full screen (Esc)", view: "View", globe: "3D globe", flat: "Flat",
     years: "Data", mode: { completa: "Trend", anual: "Year by year", acumulada: "How evidence grows" },
-    hint: "Hover or tap an area", simulated: "Simulated",
+    hint: "Hover or tap an area", simulated: "Simulated", viewMenu: "Map view",
     noSel: "Tap an area on the map or ask about a region to see its evidence.",
     play: "Play the years", pause: "Pause",
     metric: "Metric", metrics: { verdict: "Verdict", effect: "Effect", mde: "MDE", years: "Years needed" },
@@ -96,20 +96,11 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
   return (
     <div className="flex h-full min-h-0 flex-col bg-surface">
       <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-        <div role="tablist" aria-label={c.map} className="flex gap-1 rounded-full bg-surface-2 p-1">
-          {(["map", "live", "evidence"] as PanelTab[]).map((x) => (
-            <button key={x} role="tab" aria-selected={tab === x} type="button" onClick={() => setTab(x)}
-              className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${tab === x ? "bg-surface text-text shadow-sm" : "text-text-2 hover:text-text"}`}>
-              {c[x]}
-            </button>
-          ))}
-        </div>
-        {m ? (
-          <p className="ml-1 hidden min-w-0 truncate text-sm text-text-2 md:block">
-            {m.title[s.lang]} · <span className="tabular">{m.window.start}–{m.window.end}</span>
-            {m.honesty.simulated ? <span className="ml-2 rounded-full bg-sim/70 px-2 py-0.5 text-xs font-medium text-on-sim">{c.simulated}</span> : null}
-          </p>
-        ) : null}
+        {/* The sections (Monitoreo / En vivo / Evidencia) live in the sidebar: here only what is on screen. */}
+        <p className="min-w-0 truncate pl-1 text-sm font-semibold">
+          {tab === "map" && m ? <>{m.title[s.lang]} <span className="tabular font-normal text-text-2">· {m.window.start}–{m.window.end}</span></> : c[tab]}
+          {tab === "map" && m?.honesty.simulated ? <span className="ml-2 rounded-full bg-sim/70 px-2 py-0.5 text-xs font-medium text-on-sim">{c.simulated}</span> : null}
+        </p>
         <div className="ml-auto flex items-center gap-1">
           {!full ? (
             <IconButton label={expanded ? c.shrink : c.expand} onClick={() => setExpanded(!expanded)}>
@@ -129,27 +120,6 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
 
       {tab === "map" ? (
         <>
-          {m ? (
-            <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-              {expert ? (
-                <Segmented<Projection> label={c.view} value={projection} onChange={setProjection} compact
-                  options={[{ value: "globe", label: c.globe }, { value: "flat", label: c.flat }]} />
-              ) : null}
-              {siblings.length > 1 ? (
-                <Segmented label={c.years} value={entry?.id ?? ""} onChange={controls.window} compact
-                  options={siblings.map((e) => ({ value: e.id, label: T.years(entryWindow(e)!.n), title: `${entryWindow(e)!.start}–${entryWindow(e)!.end}` }))} />
-              ) : null}
-              <Segmented<TimeMode> label={T.time} value={s.timeMode} onChange={controls.time} compact
-                options={(["completa", "anual", "acumulada"] as TimeMode[])
-                  // Simple keeps two easy choices; "how evidence grows" appears from Normal up.
-                  .filter((x) => x === "completa" || (x === "anual" && m.series) || (x === "acumulada" && m.windows && (!plain || s.timeMode === "acumulada")))
-                  .map((x) => ({ value: x, label: plain ? c.plainTime[x] : c.mode[x] }))} />
-              {!plain && s.timeMode === "completa" ? (
-                <Segmented<Metric> label={c.metric} value={s.metric} onChange={controls.metric} compact
-                  options={allowedMetrics(s.register).map((x) => ({ value: x, label: c.metrics[x] }))} />
-              ) : null}
-            </div>
-          ) : null}
           <div className="relative min-h-[300px] flex-1 bg-surface-2">
             {error ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-6 text-center" role="alert">
@@ -168,8 +138,26 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
                 <span role="status" className="rounded-full border border-border bg-surface px-4 py-2 text-sm text-text-2 shadow-md">{T.loading}</span>
               </div>
             ) : null}
-            {data && s.timeMode === "completa" ? (
-              <p className="pointer-events-none absolute left-3 top-3 rounded-full border border-border bg-surface/90 px-3 py-1 text-xs text-text-2 shadow-sm">{c.hint}</p>
+            {m ? (
+              <ViewMenu label={c.viewMenu} summary={[c.mode[s.timeMode], siblings.length > 1 && entry ? T.years(entryWindow(entry)!.n) : null].filter(Boolean).join(" · ")}>
+              {expert ? (
+                    <Segmented<Projection> label={c.view} value={projection} onChange={setProjection} compact
+                      options={[{ value: "globe", label: c.globe }, { value: "flat", label: c.flat }]} />
+                  ) : null}
+                  {siblings.length > 1 ? (
+                    <Segmented label={c.years} value={entry?.id ?? ""} onChange={controls.window} compact
+                      options={siblings.map((e) => ({ value: e.id, label: T.years(entryWindow(e)!.n), title: `${entryWindow(e)!.start}–${entryWindow(e)!.end}` }))} />
+                  ) : null}
+                  <Segmented<TimeMode> label={T.time} value={s.timeMode} onChange={controls.time} compact
+                    options={(["completa", "anual", "acumulada"] as TimeMode[])
+                      // Simple keeps two easy choices; "how evidence grows" appears from Normal up.
+                      .filter((x) => x === "completa" || (x === "anual" && m.series) || (x === "acumulada" && m.windows && (!plain || s.timeMode === "acumulada")))
+                      .map((x) => ({ value: x, label: plain ? c.plainTime[x] : c.mode[x] }))} />
+                  {!plain && s.timeMode === "completa" ? (
+                    <Segmented<Metric> label={c.metric} value={s.metric} onChange={controls.metric} compact
+                      options={allowedMetrics(s.register).map((x) => ({ value: x, label: c.metrics[x] }))} />
+                  ) : null}
+              </ViewMenu>
             ) : null}
           </div>
           {expert ? <Readout ctx={ctx} index={hover} hint={c.readout} /> : null}
@@ -200,6 +188,36 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/** All the map's view options behind one small button over the map (instead of rows of toggles above it). */
+function ViewMenu({ label, summary, children }: { label: string; summary: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const wrap = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const off = (e: PointerEvent) => { if (!wrap.current?.contains(e.target as Node)) setOpen(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    addEventListener("pointerdown", off);
+    addEventListener("keydown", esc);
+    return () => { removeEventListener("pointerdown", off); removeEventListener("keydown", esc); };
+  }, [open]);
+  return (
+    <div ref={wrap} className="absolute left-3 top-3 z-10">
+      <button type="button" onClick={() => setOpen((x) => !x)} aria-expanded={open} aria-label={`${label}: ${summary}`}
+        className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-surface/95 px-3 text-sm font-medium shadow-sm backdrop-blur hover:border-text-3">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h3M8 12h6" /><circle cx="10.5" cy="4" r="1.5" /><circle cx="6.5" cy="12" r="1.5" /></svg>
+        <span className="max-w-[220px] truncate">{summary}</span>
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" className={open ? "rotate-180" : ""}><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+      </button>
+      {open ? (
+        <div className="widget-in mt-2 flex w-max max-w-[min(92vw,420px)] flex-col items-start gap-2.5 rounded-2xl border border-border bg-surface p-3 shadow-[0_14px_40px_rgba(16,24,40,0.16)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-3">{label}</p>
+          {children}
+        </div>
+      ) : null}
     </div>
   );
 }

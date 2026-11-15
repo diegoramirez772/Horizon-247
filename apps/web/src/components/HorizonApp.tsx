@@ -50,7 +50,7 @@ export function HorizonApp() {
   const [panel, setPanel] = useState<PanelTab | null>(null);
   // The installed app's «En vivo» shortcut opens straight on that tab (manifest.webmanifest).
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("panel") === "live") setPanel("live");
+    { const p = new URLSearchParams(window.location.search).get("panel"); if (p === "live" || p === "map" || p === "evidence") setPanel(p); }
   }, []);
   const [wide, setWide] = useState(false);
   const [home, setHome] = useState(true);
