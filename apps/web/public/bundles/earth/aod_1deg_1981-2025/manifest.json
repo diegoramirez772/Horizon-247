@@ -1,0 +1,326 @@
+{
+  "contract": "0.4",
+  "id": "earthdata_aod_1981-2025",
+  "profile": "earth",
+  "variable": {
+    "name": "AOD",
+    "unit": "1",
+    "unit_per_decade": "1/década"
+  },
+  "entity": {
+    "kind": "region_cell",
+    "body": "earth",
+    "count": 64800,
+    "valid": 64800,
+    "id": "earth-bbox-89-5s-179-5w-89-5n-179-5e",
+    "type": "region",
+    "name": {
+      "es": "Recuadro [-89.5, -179.5, 89.5, 179.5]",
+      "en": "Box [-89.5, -179.5, 89.5, 179.5]"
+    },
+    "status": "real",
+    "version": "1",
+    "source": {
+      "place": {
+        "name": "recuadro de la consulta"
+      },
+      "dataset": "M2TMNXAER v5.12.4 — MERRA-2 tavgM_2d_aer_Nx: 2d,Monthly mean,Time-averaged,Single-Level,Assimilation,Aerosol Diagnostics 0.625 x 0.5 degree V5.12.4 (M2TMNXAER) ",
+      "dataset_url": "",
+      "dataset_version": "",
+      "variable": "AOD",
+      "input_sha256": "e41ef44f875b1305d6f8bc55d27e81432045563d20ac9e36d4168cc1e50e88f9",
+      "card_sha256": "dfee47f52059682117e5b51aa0749503e395196cd6bdb351b2fa07d2b833dd61"
+    },
+    "geometry": {
+      "type": "bbox",
+      "bbox": [
+        -89.5,
+        -179.5,
+        89.5,
+        179.5
+      ]
+    },
+    "relations": []
+  },
+  "grid": {
+    "type": "latlon",
+    "nlat": 180,
+    "nlon": 360,
+    "lat0": 89.5,
+    "dlat": -1.0,
+    "lon0": -179.5,
+    "dlon": 1.0,
+    "native_resolution_deg": 1.0
+  },
+  "dataset": {
+    "name": "M2TMNXAER v5.12.4 — MERRA-2 tavgM_2d_aer_Nx: 2d,Monthly mean,Time-averaged,Single-Level,Assimilation,Aerosol Diagnostics 0.625 x 0.5 degree V5.12.4 (M2TMNXAER) ",
+    "kind": "reanalysis",
+    "doi": "10.5067/FH9A0MLJPC7N",
+    "concept_id": "C1276812866-GES_DISC",
+    "provider": "GES_DISC",
+    "licence": "NASA EOSDIS data: no restrictions on use; cite the DOI",
+    "sha256": "8e544ee14f17dae753c4c4ebcfdb28ed7e65fd143fb092c393eebdd7d620f265"
+  },
+  "window": {
+    "start": 1981,
+    "end": 2025,
+    "n": 45,
+    "step": "annual",
+    "aggregation": "mean of monthly anomalies; >= 9/12 months per year"
+  },
+  "params": {
+    "alpha": 0.05,
+    "fdr_q": 0.1,
+    "delta_sigma_per_decade": 2.0,
+    "delta_per_decade": 0.02,
+    "delta_source": "profile",
+    "memory_hurst": 0.7,
+    "min_valid_years": 10,
+    "min_months": 9
+  },
+  "detectability": {
+    "cells": 64800,
+    "n_years": 45,
+    "share_detectable_now": 0.3329,
+    "share_needs_more_than_60_years": 0.0054,
+    "years_more_p50": 7.0,
+    "years_more_p90": 21.0,
+    "not_yet_knowable": 31355,
+    "note": "MDE <= delta: a change of size delta would have been detected with >= 80 % power (noise model)."
+  },
+  "methods": [
+    "MK-VC",
+    "TFPW-WS",
+    "OLS-AR1"
+  ],
+  "verdict_codes": {
+    "0": "INSUFICIENTE",
+    "1": "PROBADO",
+    "2": "CANDIDATA",
+    "3": "NO_CONCLUYENTE",
+    "4": "SIN_CAMBIO_MAYOR_QUE_DELTA"
+  },
+  "flag_bits": {
+    "1": "depende_del_metodo",
+    "2": "cambio_de_version",
+    "4": "cobertura_baja",
+    "8": "resolucion_gruesa",
+    "16": "reconstruccion",
+    "32": "simulado",
+    "64": "autocorrelacion_alta",
+    "128": "quiebre_posible"
+  },
+  "summary": {
+    "cells_valid": 64800,
+    "naive_marked": 28766,
+    "ebh_discoveries": 1180,
+    "probado_robusto_memoria": 1361,
+    "bh_discoveries": 1361,
+    "quiebre_posible": 7919,
+    "insuficiente": 0,
+    "probado": 1361,
+    "candidata": 13777,
+    "no_concluyente": 31355,
+    "sin_cambio_mayor_que_delta": 18307
+  },
+  "calibration": {
+    "note": "Measured by simulation (AR(1) Gaussian noise, n=23): false alarms 5.2% (phi=0.3) and 6.8% (phi=0.5); power 92% / 78% at 2 sigma per decade. Illustrates, does not prove, behaviour on real data. See sim/."
+  },
+  "honesty": {
+    "data_real": true,
+    "simulated": false,
+    "label_es": "Datos reales: M2TMNXAER v5.12.4 — MERRA-2 tavgM_2d_aer_Nx: 2d,Monthly mean,Time-averaged,Single-Level,Assimilation,Aerosol Diagnostics 0.625 x 0.5 degree V5.12.4 (M2TMNXAER) ",
+    "label_en": "Real data: M2TMNXAER v5.12.4 — MERRA-2 tavgM_2d_aer_Nx: 2d,Monthly mean,Time-averaged,Single-Level,Assimilation,Aerosol Diagnostics 0.625 x 0.5 degree V5.12.4 (M2TMNXAER) "
+  },
+  "warnings": [
+    "Reanalysis, not a direct measurement: a model that assimilates satellite aerosol optical depth (MODIS, MISR, AVHRR) and AERONET.",
+    "Native grid 0.5 x 0.625 degrees; averaged to 1 degree boxes."
+  ],
+  "build": {
+    "hori": "0.0.1",
+    "python": "3.14.8",
+    "numpy": "2.5.4",
+    "seed": 247,
+    "input_sha256": "e41ef44f875b1305d6f8bc55d27e81432045563d20ac9e36d4168cc1e50e88f9",
+    "created_at": "2026-11-15T18:20:12Z"
+  },
+  "profile_spec": {
+    "id": "auto.profundidad_optica_aerosol.aod",
+    "version": "auto-1",
+    "body": "earth",
+    "mode": "trend",
+    "variables": [
+      "AOD"
+    ],
+    "unit": "1",
+    "aggregation": {
+      "step": "annual",
+      "method": "mean_monthly_anomaly",
+      "min_months": 9
+    },
+    "delta_per_decade": 0.02,
+    "delta_rationale": "0.02/década: del orden del 14 % de la profundidad óptica media global (0.142 en MERRA-2 a 550 nm, 1981–2025, media por área medida en nuestro cubo). Valor de trabajo, por revisar.",
+    "review": "automatico",
+    "methods": [
+      "MK-VC",
+      "TFPW-WS",
+      "OLS-AR1"
+    ],
+    "name": {
+      "es": "Total aerosol extinction optical depth at 550 nm (MERRA-2)",
+      "en": "Total aerosol extinction optical depth at 550 nm (MERRA-2)"
+    },
+    "physical_class": "profundidad_optica_aerosol",
+    "decisions": [
+      "Clase física «Profundidad óptica de aerosoles» porque units = '1' y el nombre dice 'optical depth'; δ = 0.02 1/década (tabla curada).",
+      "Agregación anual = media de anomalías mensuales (≥ 9 de 12 meses); la fuente no declara cell_methods = mean, se asume que los meses son medias.",
+      "Medido en los datos: 0.0% de meses en cero, 0.0% en los límites válidos, 0.0% de años con media cero.",
+      "Tras correr: σ interanual mediana 0.03, φ̂ mediana 0.6079, MDE mediano 0.0219 1/década frente a δ 0.02."
+    ],
+    "flags": [],
+    "measured": {
+      "sigma_median": 0.03,
+      "r1_median": 0.6079,
+      "mde_median": 0.0219,
+      "delta_used_median": 0.02
+    },
+    "catalog_version": "auto-1"
+  },
+  "title": {
+    "es": "AOD",
+    "en": "AOD"
+  },
+  "arrays": {
+    "effect": {
+      "file": "effect.f32",
+      "dtype": "f32"
+    },
+    "ci_lo": {
+      "file": "ci_lo.f32",
+      "dtype": "f32"
+    },
+    "ci_hi": {
+      "file": "ci_hi.f32",
+      "dtype": "f32"
+    },
+    "sigma": {
+      "file": "sigma.f32",
+      "dtype": "f32"
+    },
+    "r1": {
+      "file": "r1.f32",
+      "dtype": "f32"
+    },
+    "p_cons": {
+      "file": "p_cons.f32",
+      "dtype": "f32"
+    },
+    "q_cons": {
+      "file": "q_cons.f32",
+      "dtype": "f32"
+    },
+    "mde": {
+      "file": "mde.f32",
+      "dtype": "f32"
+    },
+    "years_more": {
+      "file": "years_more.f32",
+      "dtype": "f32"
+    },
+    "verdict": {
+      "file": "verdict.u8",
+      "dtype": "u8"
+    },
+    "flags": {
+      "file": "flags.u8",
+      "dtype": "u8"
+    },
+    "nvalid": {
+      "file": "nvalid.u8",
+      "dtype": "u8"
+    },
+    "nsig_methods": {
+      "file": "nsig_methods.u8",
+      "dtype": "u8"
+    },
+    "naive_sig": {
+      "file": "naive_sig.u8",
+      "dtype": "u8"
+    },
+    "delta": {
+      "file": "delta.f32",
+      "dtype": "f32"
+    },
+    "e_cons": {
+      "file": "e_cons.f32",
+      "dtype": "f32"
+    },
+    "ebh_sig": {
+      "file": "ebh_sig.u8",
+      "dtype": "u8"
+    },
+    "robust_mem": {
+      "file": "robust_mem.u8",
+      "dtype": "u8"
+    },
+    "break_year": {
+      "file": "break_year.f32",
+      "dtype": "f32"
+    }
+  },
+  "series": {
+    "file": "series.f32",
+    "dtype": "f32",
+    "shape": [
+      "cells",
+      "n"
+    ],
+    "years": [
+      1981,
+      1982,
+      1983,
+      1984,
+      1985,
+      1986,
+      1987,
+      1988,
+      1989,
+      1990,
+      1991,
+      1992,
+      1993,
+      1994,
+      1995,
+      1996,
+      1997,
+      1998,
+      1999,
+      2000,
+      2001,
+      2002,
+      2003,
+      2004,
+      2005,
+      2006,
+      2007,
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ]
+  }
+}
