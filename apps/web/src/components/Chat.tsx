@@ -335,7 +335,7 @@ function Composer({ conv, lang, register, onRegister, onSend, simulated, autoFoc
   return (
     <div>
       <form onSubmit={(e) => { e.preventDefault(); send(draft, "text"); }}
-        className={`flex flex-col gap-1 rounded-3xl border border-border bg-surface p-2 shadow-[0_6px_30px_rgba(16,24,40,0.08)] transition-shadow focus-within:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent),0_6px_30px_rgba(16,24,40,0.08)] ${listening ? "shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent)]" : ""}`}>
+        className={`flex flex-col gap-1 rounded-3xl border border-border/70 bg-surface p-2 shadow-[0_8px_32px_rgba(16,24,40,0.08)] transition-[border-color,box-shadow] focus-within:border-text-3/40 focus-within:shadow-[0_10px_36px_rgba(16,24,40,0.12)] ${listening ? "border-[#e5484d]/50" : ""}`}>
         <label htmlFor="ask" className="sr-only">{t.placeholder}</label>
         <textarea id="ask" ref={box} rows={1} value={listening && hs.voice.interim ? hs.voice.interim : draft}
           onChange={(e) => setDraft(e.target.value)}
