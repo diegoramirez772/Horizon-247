@@ -13,7 +13,7 @@ const FORBIDDEN = [/prueba/i, /causa/i, /predic/i, /recomend/i, /debería/i, /pe
 // Files that hold the list itself.
 const SKIP = new Set(["core/i18n/texts.ts"].map((p) => join(SRC, p)));
 // INPUT vocabulary of the assistant (what people may type or say; never shown on screen).
-const INPUT_ONLY = new Set(["core/assistant/patterns.ts"].map((p) => join(SRC, p)));
+const INPUT_ONLY = new Set(["core/assistant/patterns.ts", "core/interaction/vocab.ts"].map((p) => join(SRC, p)));
 
 function files(dir) {
   return readdirSync(dir).flatMap((f) => {

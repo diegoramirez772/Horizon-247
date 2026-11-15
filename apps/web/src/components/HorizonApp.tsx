@@ -4,13 +4,17 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { compose, hoverText, type Card, type Ctx } from "@/core/assistant/compose";
 import { Conversation, type Via } from "@/core/assistant/conversation";
 import type { Command, Intent } from "@/core/assistant/parse";
+import { parse } from "@/core/assistant/parse";
 import { flushPending, run, type Deps } from "@/core/assistant/run";
 import { siblings } from "@/core/contract/extra";
 import { cellIndexAt, cellLatLon, type Layer } from "@/core/contract/loader";
 import { UI, type Lang } from "@/core/i18n/texts";
+import { Hub, type Here } from "@/core/interaction/hub";
 import type { MapData } from "@/core/map/MapView";
 import { Store, type AppState, type Metric, type TimeMode } from "@/core/state/store";
 import { Chat, MapIcon } from "./Chat";
+import { HubProvider } from "./interaccion/context";
+import { InteractionLayer } from "./interaccion/InteractionLayer";
 import { useAppState, useTheme, useUrlSync } from "./hooks";
 import type { MapFocus, Projection } from "./MapCanvas";
 import { MapPanel, type PanelTab } from "./MapPanel";
@@ -98,6 +102,18 @@ export function HorizonApp() {
     if (!STAYS_IN_CHAT.includes(cmd.intent.t)) setPanel((p) => p ?? "map");
   }, [deps]);
 
+  // ---- interaction layer (doc «Interacción v2»): voice, numbers, gamepad, hand and ZON all end here ----
+  const onCommandRef = useRef(onCommand);
+  useEffect(() => { onCommandRef.current = onCommand; }, [onCommand]);
+  const [hub] = useState(() => new Hub({
+    lang: () => ctxRef.current.state.lang,
+    ask: (text, via, label) => onCommandRef.current(parse(text, ctxRef.current.regions), via, label),
+    answer: (card) => { setHome(false); conv.answer(card); },
+    here: () => hereOf(ctxRef.current),
+    openMap: () => setPanel((p) => p ?? "map"),
+  }));
+  useEffect(() => hub.install(), [hub]);
+
   const focusOn = useCallback((card: Card) => {
     if (card.evidence) store.set({ selection: card.evidence.selection, camera: store.get().camera + 1 });
   }, [store]);
@@ -168,6 +184,7 @@ export function HorizonApp() {
   }, []);
 
   return (
+    <HubProvider value={hub}>
     <div className="flex h-dvh flex-col overflow-x-hidden bg-bg">
       <a href="#ask" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-surface focus:p-2">{c.skip}</a>
 
@@ -220,8 +237,29 @@ export function HorizonApp() {
           </aside>
         ) : null}
       </div>
+      <InteractionLayer lang={s.lang} />
     </div>
+    </HubProvider>
   );
+}
+
+/** «esto / aquí»: the selected region or cell, with the variable of the layer on screen (for monitors and reports). */
+function hereOf(ctx: Ctx): Here | null {
+  const sel = ctx.state.selection;
+  const m = ctx.layer?.manifest;
+  if (!sel || !m) return null;
+  const variable = { name: m.variable.name, unit: m.variable.unit };
+  if (sel.kind === "region") {
+    const r = ctx.regions.find((x) => x.id === sel.id) as (Ctx["regions"][number] & { bbox?: [number, number, number, number] }) | undefined;
+    if (!r) return null;
+    const b = r.bbox;
+    if (!b) return null;
+    const lat = (b[1] + b[3]) / 2, lon = (b[0] + b[2]) / 2;
+    return { name: r.name[ctx.state.lang].replace(/\s*\(.*\)\s*$/, ""), lat, lon, entityId: r.id, variable };
+  }
+  const { lat, lon } = cellLatLon(m, sel.index);
+  const ns = lat >= 0 ? "N" : "S", ew = lon >= 0 ? "E" : (ctx.state.lang === "es" ? "O" : "W");
+  return { name: `${Math.abs(lat).toFixed(1)}°${ns} ${Math.abs(lon).toFixed(1)}°${ew}`, lat, lon, entityId: `celda-${lat.toFixed(2)}_${lon.toFixed(2)}`, variable };
 }
 
 function HeaderIcon({ label, onClick, children, className = "flex" }: { label: string; onClick: () => void; children: React.ReactNode; className?: string }) {

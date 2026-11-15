@@ -122,6 +122,18 @@ export class GlobeView {
     this.flyTo((y0 + y1) / 2, (x0 + x1) / 2, Math.max(x1 - x0, (y1 - y0) * 1.5) * 6);
   }
 
+  /** Interaction layer (doc «Interacción v2» §2.6): move as if dragged by (dx, dy) fractions of the view. */
+  orbit(dx: number, dy: number): void {
+    cancelAnimationFrame(this.anim);
+    const k = 1 / RAD / this.R(); // degrees per pixel at the centre, as when dragging
+    this.lon0 = ((this.lon0 - dx * this.w * k + 540) % 360) - 180;
+    this.lat0 = Math.max(-85, Math.min(85, this.lat0 + dy * this.h * k));
+    this.moving();
+    this.requestDraw();
+  }
+
+  reset(): void { this.fitWorld(true); }
+
   zoomBy(f: number): void { this.zoom = Math.max(0.8, Math.min(12, this.zoom * f)); this.moving(); this.requestDraw(); }
 
   private moveTo(lon: number, lat: number, zoom: number, animate: boolean): void {

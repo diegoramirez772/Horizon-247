@@ -219,6 +219,17 @@ export class MapView {
     this.anim = requestAnimationFrame(step);
   }
 
+  /** Interaction layer (doc «Interacción v2» §2.6): pan as if dragged by (dx, dy) fractions of the view. */
+  orbit(dx: number, dy: number): void {
+    cancelAnimationFrame(this.anim);
+    this.userMoved = true;
+    this.tx += dx * (this.canvas.width / this.dpr);
+    this.ty += dy * (this.canvas.height / this.dpr);
+    this.requestDraw();
+  }
+
+  reset(): void { this.fitWorld(true); }
+
   zoomBy(factor: number): void {
     this.zoomAt(this.canvas.width / this.dpr / 2, this.canvas.height / this.dpr / 2, factor);
   }

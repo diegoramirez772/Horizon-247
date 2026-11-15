@@ -11,7 +11,8 @@ import { LEGEND, UI, verdictName, verdictText, type Lang, type Register } from "
 import type { AppState, Selection } from "@/core/state/store";
 import type { Command } from "./parse";
 
-export type Origin = "hori" | "sim" | "ui";
+/** «zon»: a record or an operation of the ZON runtime (monitors, alerts, reports), not a HORI calculation (H20). */
+export type Origin = "hori" | "sim" | "ui" | "zon";
 export type Source = "user" | "map" | "controls" | "system";
 
 export interface Chip { label: Record<Lang, string>; cmd: Command }

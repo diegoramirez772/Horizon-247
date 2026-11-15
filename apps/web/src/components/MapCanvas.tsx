@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { registerView } from "@/core/interaction/manipulate";
 import { GlobeView } from "@/core/map/GlobeView";
 import { GlobeGL } from "@/core/map/GlobeGL";
 import { LAYERS } from "@/core/map/imagery";
@@ -90,7 +91,9 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
     const f = L.focus;
     if (f?.kind === "point") v.flyTo(f.lat, f.lon, f.span);
     else if (f?.kind === "box") v.flyToBox(f.bbox);
-    return () => { v.destroy(); view.current = null; };
+    // Voice, hand, gamepad and keys move it too (doc «Interacción v2» §2.6).
+    const unregister = registerView(v, projection === "globe" ? { es: "globo", en: "globe" } : { es: "mapa", en: "map" });
+    return () => { unregister(); v.destroy(); view.current = null; };
   }, [projection, gpuLost]);
 
   useEffect(() => {

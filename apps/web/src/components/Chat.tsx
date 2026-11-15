@@ -7,7 +7,7 @@ import { parse, type Command } from "@/core/assistant/parse";
 import { digitsFor, num } from "@/core/format/format";
 import { verdictName, type Lang, type Register } from "@/core/i18n/texts";
 import { Emblem } from "./ui";
-import { useSpeech } from "./useSpeech";
+import { useHub, useHubState } from "./interaccion/context";
 
 const T = {
   es: {
@@ -30,7 +30,7 @@ const T = {
     notThat: "No era eso",
     onMap: "Ver en el mapa",
     evidence: "Evidencia",
-    origin: { hori: "Calculado por HORI", sim: "Datos simulados", ui: null },
+    origin: { hori: "Calculado por HORI", sim: "Datos simulados", ui: null, zon: "Registro de ZON" },
     you: "Tú",
     starters: [
       { t: "¿Qué cambió en Durango?", d: "El cambio en una región, con su serie" },
@@ -62,7 +62,7 @@ const T = {
     notThat: "Not that",
     onMap: "Show on the map",
     evidence: "Evidence",
-    origin: { hori: "Calculated by HORI", sim: "Simulated data", ui: null },
+    origin: { hori: "Calculated by HORI", sim: "Simulated data", ui: null, zon: "ZON record" },
     you: "You",
     starters: [
       { t: "What changed in Durango?", d: "The change in one region, with its series" },
@@ -173,7 +173,7 @@ function Answer({ card, lang, register, latest, ctx, onCommand, onShow, onEviden
       <span className="mt-0.5 shrink-0"><Emblem size={32} /></span>
       <div className="min-w-0 flex-1">
         {card.action ? <p className="mb-1 truncate text-xs text-text-3">{card.action[lang]}</p> : null}
-        <p className="text-base leading-7 text-pretty">{card.text[lang][register]}</p>
+        <p className="whitespace-pre-line text-base leading-7 text-pretty">{card.text[lang][register]}</p>
         {figure ? <FigureBlock f={figure} lang={lang} register={register} onClick={live ? () => onEvidence(card) : undefined} /> : null}
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {origin ? (
@@ -287,7 +287,10 @@ function Composer({ conv, lang, onSend, simulated, autoFocus = false, bare = fal
 }) {
   const t = T[lang];
   const snap = useSyncExternalStore(conv.subscribe, conv.get, conv.get);
-  const speech = useSpeech(lang);
+  // Voice goes through the interaction hub: one microphone and one voice for the whole app (doc «Interacción v2»).
+  const hub = useHub();
+  const hs = useHubState();
+  const listening = hs.voice.listening && hs.mode !== "dictation";
   const [draft, setDraft] = useState("");
   const box = useRef<HTMLTextAreaElement>(null);
   const spokenId = useRef(0);
@@ -298,8 +301,8 @@ function Composer({ conv, lang, onSend, simulated, autoFocus = false, bare = fal
   useEffect(() => {
     if (!card || !snap.voiceReply || card.source === "map" || card.source === "controls" || card.id === spokenId.current) return;
     spokenId.current = card.id;
-    speech.speak(card.text[lang].sencillo);
-  }, [card, snap.voiceReply, speech, lang]);
+    hub.speakCard(card.text[lang].sencillo, true);
+  }, [card, snap.voiceReply, hub, lang]);
 
   useEffect(() => { if (autoFocus) box.current?.focus(); }, [autoFocus]);
   useEffect(() => {
@@ -319,17 +322,17 @@ function Composer({ conv, lang, onSend, simulated, autoFocus = false, bare = fal
   return (
     <div>
       <form onSubmit={(e) => { e.preventDefault(); send(draft, "text"); }}
-        className={`flex items-end gap-2 rounded-3xl border border-border bg-surface p-2 pl-4 shadow-[0_6px_30px_rgba(16,24,40,0.08)] transition-shadow focus-within:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent),0_6px_30px_rgba(16,24,40,0.08)] ${speech.listening ? "shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent)]" : ""}`}>
+        className={`flex items-end gap-2 rounded-3xl border border-border bg-surface p-2 pl-4 shadow-[0_6px_30px_rgba(16,24,40,0.08)] transition-shadow focus-within:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent),0_6px_30px_rgba(16,24,40,0.08)] ${listening ? "shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent)]" : ""}`}>
         <label htmlFor="ask" className="sr-only">{t.placeholder}</label>
-        <textarea id="ask" ref={box} rows={1} value={speech.listening ? speech.interim : draft}
+        <textarea id="ask" ref={box} rows={1} value={listening && hs.voice.interim ? hs.voice.interim : draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(draft, "text"); } }}
-          placeholder={speech.listening ? t.listening : t.placeholder}
+          placeholder={listening ? t.listening : t.placeholder}
           className="max-h-[180px] min-h-11 flex-1 resize-none bg-transparent py-2.5 text-base leading-6 text-text outline-none placeholder:text-text-3 focus:outline-none focus-visible:outline-none" />
-        {speech.supported ? (
-          <button type="button" onClick={() => (speech.listening ? speech.stop() : speech.listen((x) => send(x, "voice")))}
-            aria-label={speech.listening ? t.stop : t.mic} title={speech.listening ? t.stop : t.mic} aria-pressed={speech.listening}
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors ${speech.listening ? "bg-accent text-on-accent" : "text-text-2 hover:bg-surface-2 hover:text-text"}`}>
+        {hs.voice.supported ? (
+          <button type="button" onClick={() => hub.talk()}
+            aria-label={hs.voice.listening ? t.stop : t.mic} title={`${hs.voice.listening ? t.stop : t.mic} (Alt+V)`} aria-pressed={hs.voice.listening}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors ${hs.voice.listening ? "bg-accent text-on-accent" : "text-text-2 hover:bg-surface-2 hover:text-text"}`}>
             <MicIcon />
           </button>
         ) : null}
@@ -341,7 +344,7 @@ function Composer({ conv, lang, onSend, simulated, autoFocus = false, bare = fal
       {bare ? null : <div className="mt-2 flex flex-wrap items-center justify-between gap-2 px-2 text-xs text-text-3">
         <span>{simulated ? `${t.simNote} · ` : ""}{t.note}</span>
         <label className="flex cursor-pointer items-center gap-1.5 hover:text-text">
-          <input type="checkbox" checked={snap.voiceReply} onChange={(e) => { conv.setVoiceReply(e.target.checked); if (!e.target.checked) speech.hush(); }} className="h-3.5 w-3.5 accent-[var(--accent)]" />
+          <input type="checkbox" checked={snap.voiceReply} onChange={(e) => { conv.setVoiceReply(e.target.checked); if (!e.target.checked) hub.hush(); }} className="h-3.5 w-3.5 accent-[var(--accent)]" />
           {t.voice}
         </label>
       </div>}
