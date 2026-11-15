@@ -11,6 +11,7 @@
 // · City lights: VIIRS 2012 composite.
 // One shared store: the globe and «En vivo» read the same frame, fetched once (~2–4 MB) and then every 10 minutes.
 
+import { markStale, readSaved, saveBlob } from "@/core/live/lastgood";
 import { detectTier } from "./tier";
 import { layer, liveSlot, loadMosaic, type LayerDef, type Mosaic } from "./imagery";
 
@@ -99,15 +100,15 @@ export function rainStrength(r: number, g: number, b: number, a: number): { v: n
 
 const KM_PER_DEG = 111.32;
 
-interface Blob { kind: LiveKind; lat: number; lon: number; areaKm2: number; strength: number }
+interface Cluster { kind: LiveKind; lat: number; lon: number; areaKm2: number; strength: number }
 
 /**
  * Objects on a 1° grid: cells where the strong signal covers ≥ 20 % (rain ≥ 0.55, deep convection, or strong snow),
  * joined by 8-neighbourhood (wrapping in longitude). Objects under 3 cells are dropped as noise.
  * `rain`, `conv`, `snow` are 360×180 shares, row 0 = 90° N.
  */
-export function findObjects(rain: Float32Array, conv: Float32Array, snow: Float32Array): Blob[] {
-  const W = 360, H = 180, seen = new Uint8Array(W * H), out: Blob[] = [];
+export function findObjects(rain: Float32Array, conv: Float32Array, snow: Float32Array): Cluster[] {
+  const W = 360, H = 180, seen = new Uint8Array(W * H), out: Cluster[] = [];
   const hot = (i: number) => rain[i] >= 0.2 || conv[i] >= 0.2 || snow[i] >= 0.2;
   for (let s = 0; s < W * H; s++) {
     if (seen[s] || !hot(s)) continue;
@@ -150,7 +151,7 @@ export function distanceKm(aLat: number, aLon: number, bLat: number, bLon: numbe
 let nextId = 1;
 
 /** Follow objects between frames: same kind within 600 km = the same object (grew, weakened, kept going). */
-export function track(prev: LiveDetection[], blobs: Blob[], now: string, max = 24): LiveDetection[] {
+export function track(prev: LiveDetection[], blobs: Cluster[], now: string, max = 24): LiveDetection[] {
   const free = new Set(prev);
   return blobs.slice(0, max).map((b) => {
     let best: LiveDetection | null = null, bestD = 600;
@@ -222,6 +223,8 @@ async function compose(prev: LiveDetection[], signal: AbortSignal): Promise<Weat
   g.clearRect(0, 0, W, H);
   for (const m of irs) if (m && m.missing < m.total) place(g, m, W, H);
   const ir = irs.some((m) => m && m.missing < m.total) ? g.getImageData(0, 0, W, H).data : null;
+  // Nothing live arrived (offline, or a dead network): keep the last good sky instead of painting an empty one.
+  if (!ir && !(rainM && rainM.missing < rainM.total)) throw new Error("sin imágenes en vivo");
   const vi = read(viirsM), li = read(lightsM);
 
   const clouds = canvas(W, H), cg = clouds.getContext("2d")!;
@@ -271,18 +274,58 @@ let timer = 0;
 let ctrl: AbortController | null = null;
 const REFRESH_MS = 10 * 60e3;
 
+const SKY = "Nubes y lluvia (NASA GIBS)";
+
+/** Keep the last good sky (two PNGs + what was detected) so the next visit shows it at once, even without network. */
+async function saveFrame(f: WeatherFrame): Promise<void> {
+  const png = (c: HTMLCanvasElement) => new Promise<Blob | null>((ok) => c.toBlob((b) => ok(b), "image/png"));
+  const [cl, rn] = await Promise.all([png(f.clouds), png(f.rain)]);
+  if (!cl || !rn) return;
+  await Promise.all([
+    saveBlob("sky:clouds", cl, "image/png", f.at), saveBlob("sky:rain", rn, "image/png", f.at),
+    saveBlob("sky:meta", JSON.stringify({ irTime: f.irTime, rainTime: f.rainTime, cloudFillDate: f.cloudFillDate, detections: f.detections, at: f.at }), "application/json", f.at),
+  ]);
+}
+
+async function restoreFrame(): Promise<WeatherFrame | null> {
+  const [m, cl, rn] = await Promise.all([readSaved("sky:meta"), readSaved("sky:clouds"), readSaved("sky:rain")]);
+  if (!m || !cl || !rn) return null;
+  try {
+    const meta = JSON.parse(await m.res.text()) as Omit<WeatherFrame, "clouds" | "rain">;
+    const toCanvas = async (r: Response) => {
+      const bmp = await createImageBitmap(await r.blob());
+      const c = canvas(bmp.width, bmp.height);
+      c.getContext("2d")!.drawImage(bmp, 0, 0);
+      bmp.close();
+      return c;
+    };
+    return { ...meta, clouds: await toCanvas(cl.res), rain: await toCanvas(rn.res) };
+  } catch { return null; }
+}
+
 async function refresh(): Promise<void> {
   if (typeof document !== "undefined" && document.hidden) return;
   ctrl?.abort();
   const c = new AbortController();
   ctrl = c;
+  // first visit of this page: the last saved sky right away (labelled), while the new one is composed
+  if (!frame) {
+    void restoreFrame().then((old) => {
+      if (!old || frame || c.signal.aborted) return;
+      frame = old;
+      markStale(SKY, old.at);
+      for (const l of listeners) l(old);
+    });
+  }
   try {
     const f = await compose(frame?.detections ?? [], c.signal);
     if (c.signal.aborted) return;
     frame = f;
+    markStale(SKY, null);
     for (const l of listeners) l(f);
+    void saveFrame(f);
   } catch (e) {
-    if (!c.signal.aborted) console.warn("[h247] cielo en vivo:", e);
+    if (!c.signal.aborted) { console.warn("[h247] cielo en vivo:", e); if (frame) markStale(SKY, frame.at); }
   }
 }
 

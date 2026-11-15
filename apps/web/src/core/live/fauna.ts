@@ -5,6 +5,7 @@
 // same method as Python) says where the rate departs from its own past, and by how much. Never why (H16).
 
 import { type AnomalyEvent, detect, events } from "@/core/watch/anomaly";
+import { lastGood } from "./lastgood";
 
 const API = "https://api.inaturalist.org/v1/observations/histogram";
 const TTL_MS = 6 * 3600e3;
@@ -74,11 +75,9 @@ async function getJson(url: string, signal?: AbortSignal): Promise<unknown> {
     const hit = JSON.parse(localStorage.getItem(key) ?? "null") as { at: number; doc: unknown } | null;
     if (hit && Date.now() - hit.at < TTL_MS) return hit.doc;
   } catch { /* no storage: ask the network */ }
-  const res = await fetch(url, { signal, headers: { Accept: "application/json" } });
-  if (!res.ok) throw new Error(`iNaturalist ${res.status}`);
-  const doc = await res.json();
-  try { localStorage.setItem(key, JSON.stringify({ at: Date.now(), doc })); } catch { /* full or blocked: fine */ }
-  return doc;
+  const got = await lastGood<unknown>(url, { source: "Fauna (iNaturalist)", signal, init: { headers: { Accept: "application/json" } } });
+  if (!got.stale) try { localStorage.setItem(key, JSON.stringify({ at: Date.now(), doc: got.data })); } catch { /* full or blocked: fine */ }
+  return got.data;
 }
 
 /** Descriptive size of the latest level shift (never a test: HORI's CUSUM already flagged it). */
@@ -140,7 +139,7 @@ export function topSpecies(group: FaunaGroup, box: Box, lang: "es" | "en", signa
   const url = speciesUrl(box, GROUPS[group].taxonId, lang);
   let p = speciesCache.get(url);
   if (!p) {
-    p = fetch(url, { signal, headers: { Accept: "application/json" } }).then(async (r) => (r.ok ? parseSpecies(await r.json()) : []));
+    p = lastGood(url, { source: "Fauna (iNaturalist)", signal, parse: parseSpecies, init: { headers: { Accept: "application/json" } } }).then((g) => g.data);
     p.catch(() => speciesCache.delete(url));
     speciesCache.set(url, p);
   }

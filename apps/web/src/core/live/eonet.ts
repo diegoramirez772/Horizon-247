@@ -2,6 +2,8 @@
 // EONET curates events from other sources (InciWeb, GDACS, JTWC…): each one keeps its source link. HORI did not
 // detect them; the screen says so (SANTUARIO H4, H19).
 
+import { lastGood } from "./lastgood";
+
 export type EventCat = "wildfires" | "severeStorms" | "volcanoes" | "seaLakeIce" | "floods" | "drought" | "dustHaze" | "landslides" | "snow" | "other";
 
 export interface NaturalEvent {
@@ -75,11 +77,10 @@ let cache: { at: number; p: Promise<NaturalEvent[]> } | null = null;
 /** Open events of the last `days` days (refreshed at most every 10 minutes). */
 export function fetchEvents(days = 30): Promise<NaturalEvent[]> {
   if (cache && Date.now() - cache.at < 600e3) return cache.p;
-  const p = fetch(`https://eonet.gsfc.nasa.gov/api/v3/events?status=open&days=${days}`)
-    .then(async (r) => {
-      if (!r.ok) throw new Error(`EONET ${r.status}`);
-      return parseEonet(await r.json());
-    });
+  // last good answer when the network is slow or missing (core/live/lastgood.ts)
+  const p = lastGood(`https://eonet.gsfc.nasa.gov/api/v3/events?status=open&days=${days}`, {
+    source: "Eventos de la NASA", key: "eonet", parse: (d) => parseEonet(d as Parameters<typeof parseEonet>[0]),
+  }).then((g) => g.data);
   p.catch(() => { cache = null; });
   cache = { at: Date.now(), p };
   return p;
