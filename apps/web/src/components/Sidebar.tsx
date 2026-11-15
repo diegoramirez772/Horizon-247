@@ -11,12 +11,12 @@ import { Logo } from "./ui";
 
 const T = {
   es: {
-    home: "Inicio", newChat: "Nueva conversación", map: "Monitoreo", live: "En vivo", evidence: "Evidencia",
+    home: "Inicio", newChat: "Nueva pregunta", map: "Mapa y globo", assistant: "Asistente", monitoring: "Monitoreo", prefs: "Preferencias", live: "En vivo", evidence: "Evidencia",
     theme: "Tema", dark: "Oscuro", light: "Claro", lang: "Idioma", collapse: "Contraer menú", expand: "Expandir menú",
     open: "Abrir menú", close: "Cerrar menú", sections: "Secciones",
   },
   en: {
-    home: "Home", newChat: "New conversation", map: "Monitoring", live: "Live", evidence: "Evidence",
+    home: "Home", newChat: "New question", map: "Map and globe", assistant: "Assistant", monitoring: "Monitoring", prefs: "Preferences", live: "Live", evidence: "Evidence",
     theme: "Theme", dark: "Dark", light: "Light", lang: "Language", collapse: "Collapse menu", expand: "Expand menu",
     open: "Open menu", close: "Close menu", sections: "Sections",
   },
@@ -32,8 +32,6 @@ export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, onNew, d
   const [slim, setSlim] = useState(false);
   const [drawer, setDrawer] = useState(false);
   useEffect(() => { try { setSlim(localStorage.getItem(STORE) === "slim"); } catch { /* default: wide */ } }, []);
-  // The voice dock (InteractionLayer) sits just right of the rail: it reads this width.
-  useEffect(() => { document.documentElement.style.setProperty("--rail", slim ? "60px" : "240px"); }, [slim]);
   const toggleSlim = () => setSlim((x) => { try { localStorage.setItem(STORE, x ? "wide" : "slim"); } catch { /* fine */ } return !x; });
   useEffect(() => {
     if (!drawer) return;
@@ -46,12 +44,17 @@ export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, onNew, d
   const tab = (p: PanelTab) => go(() => setPanel(panel === p ? null : p));
   const wide = !slim || drawer;
 
-  const items: { key: string; label: string; icon: React.ReactNode; on: boolean; run: () => void }[] = [
+  type Item = { key: string; label: string; icon: React.ReactNode; on: boolean; run: () => void };
+  const items: Item[] = [
     { key: "home", label: t.home, icon: <path d="M2.5 7.5L8 3l5.5 4.5V13a.5.5 0 0 1-.5.5H9.5v-3.5h-3V13.5H3a.5.5 0 0 1-.5-.5z" />, on: home && !panel, run: go(onHome) },
     { key: "new", label: t.newChat, icon: <path d="M8 3v10M3 8h10" />, on: false, run: go(onNew) },
     { key: "map", label: t.map, icon: <><path d="M1.5 3.5l4-1.5 5 2 4-1.5v10l-4 1.5-5-2-4 1.5z" /><path d="M5.5 2v10M10.5 4v10" /></>, on: panel === "map", run: tab("map") },
     { key: "live", label: t.live, icon: <><circle cx="8" cy="8" r="2" /><path d="M4.5 4.5a5 5 0 0 0 0 7M11.5 4.5a5 5 0 0 1 0 7M2.5 2.5a8 8 0 0 0 0 11M13.5 2.5a8 8 0 0 1 0 11" /></>, on: panel === "live", run: tab("live") },
     { key: "evidence", label: t.evidence, icon: <path d="M2 13.5h12M3 10l3-3 3 2 4-5" />, on: panel === "evidence", run: tab("evidence") },
+  ];
+  const groups: { label: string; items: Item[] }[] = [
+    { label: t.assistant, items: items.slice(0, 2) },
+    { label: t.monitoring, items: items.slice(2) },
   ];
 
   return (
@@ -75,21 +78,30 @@ export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, onNew, d
           </button>
         </div>
 
-        <ul className="flex flex-col gap-0.5 px-2">
-          {items.map((it) => (
-            <li key={it.key}>
-              <button type="button" onClick={it.run} aria-current={it.on ? "page" : undefined} title={wide ? undefined : it.label}
-                className={`flex h-10 w-full items-center gap-3 rounded-xl text-sm font-medium transition-colors ${wide ? "px-3" : "justify-center"}
-                  ${it.on ? "bg-surface text-text shadow-[0_1px_0_var(--border),0_0_0_1px_var(--border)]" : "text-text-2 hover:bg-surface hover:text-text"}`}>
-                <Icon>{it.icon}</Icon>
-                {wide ? <span className="truncate">{it.label}</span> : <span className="sr-only">{it.label}</span>}
-                {wide && it.key === "live" ? <span className="live-dot ml-auto" aria-hidden="true" /> : null}
-              </button>
-            </li>
+        <div className="flex flex-col gap-5 px-2 pt-2">
+          {groups.map((g, gi) => (
+            <div key={g.label}>
+              {wide ? <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-text-3">{g.label}</p>
+                : gi > 0 ? <div aria-hidden="true" className="mx-3 mb-3 border-t border-border" /> : null}
+              <ul className="flex flex-col gap-1" aria-label={g.label}>
+                {g.items.map((it) => (
+                  <li key={it.key}>
+                    <button type="button" onClick={it.run} aria-current={it.on ? "page" : undefined} title={wide ? undefined : it.label}
+                      className={`flex h-10 w-full items-center gap-3 rounded-xl text-sm font-medium transition-colors ${wide ? "px-3" : "justify-center"}
+                        ${it.on ? "bg-surface text-text shadow-[0_0_0_1px_var(--border)]" : "text-text-2 hover:bg-surface hover:text-text"}`}>
+                      <Icon>{it.icon}</Icon>
+                      {wide ? <span className="truncate">{it.label}</span> : <span className="sr-only">{it.label}</span>}
+                      {wide && it.key === "live" ? <span className="live-dot ml-auto" aria-hidden="true" /> : null}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
 
-        <div className={`mt-auto flex flex-col gap-1 p-2 pb-3 ${wide ? "" : "items-center"}`}>
+        <div className={`mt-auto flex flex-col gap-2 border-t border-border p-2 pb-3 pt-3 ${wide ? "" : "items-center"}`}>
+          {wide ? <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-text-3">{t.prefs}</p> : null}
           <div role="radiogroup" aria-label={t.lang} className={`flex rounded-xl border border-border bg-surface p-0.5 ${wide ? "" : "flex-col"}`}>
             {(["es", "en"] as const).map((l) => (
               <button key={l} type="button" role="radio" aria-checked={lang === l} onClick={() => setLang(l)} title={l === "es" ? "Español" : "English"}

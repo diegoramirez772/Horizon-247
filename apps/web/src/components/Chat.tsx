@@ -9,10 +9,10 @@ import { digitsFor, num } from "@/core/format/format";
 import { shownLimits } from "@/core/honesty/limits";
 import { verdictName, type Lang, type Register } from "@/core/i18n/texts";
 import { FeedbackInline } from "./FeedbackInline";
-import { MonitorsHome } from "./Home";
+import { MonitorCards, MonitorExtras, useSeen } from "./Home";
 import { TrendChart } from "./charts";
 import { Widgets, type WidgetActions } from "./genui/Widgets";
-import { Emblem, Spark, VerdictGlyph } from "./ui";
+import { DeckCard, Emblem, Spark, VerdictGlyph } from "./ui";
 import { useHub, useHubState } from "./interaccion/context";
 
 const T = {
@@ -27,9 +27,8 @@ const T = {
     voice: "Responder en voz alta",
     note: "HORIZON no da consejos ni explica por qué ocurre un cambio",
     simNote: "Demo con datos simulados",
-    kicker: "Monitor del sistema Tierra",
     resume: "Volver a la conversación",
-    discover: "Descubre qué puede hacer HORIZON",
+    discover: "Descubre qué puede hacer HORIZON", deck: "Tus monitores y qué puede hacer HORIZON", tryTag: "Descubre",
     prev: "Anterior",
     next: "Siguiente",
     tryIt: "Probar",
@@ -59,9 +58,8 @@ const T = {
     voice: "Answer out loud",
     note: "HORIZON gives no advice and does not explain why a change happens",
     simNote: "Demo with simulated data",
-    kicker: "Earth system monitor",
     resume: "Back to the conversation",
-    discover: "Discover what HORIZON can do",
+    discover: "Discover what HORIZON can do", deck: "Your monitors and what HORIZON can do", tryTag: "Discover",
     prev: "Previous",
     next: "Next",
     tryIt: "Try it",
@@ -120,7 +118,6 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, h
         <HorizonBackdrop />
         <div className="relative mx-auto flex w-full max-w-[720px] flex-1 flex-col justify-center px-4 pb-6 pt-8">
           <div className="mb-4 flex justify-center"><Emblem size={92} /></div>
-          <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.28em] text-text-3">{t.kicker}</p>
           <h1 className="mb-6 text-center text-[clamp(1.75rem,3.2vw,2.5rem)] font-semibold leading-tight tracking-tight text-balance">{t.hello}</h1>
           <Composer conv={conv} lang={lang} register={register} onRegister={onRegister} simulated={simulated} onSend={(x, v) => { onHome(false); ask(x, v); }} autoFocus bare />
           {msgs.length > 0 ? (
@@ -129,8 +126,8 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, h
             </button>
           ) : null}
         </div>
-        {homeDoc ? <MonitorsHome doc={homeDoc} lang={lang} register={register} onAsk={(x) => { onHome(false); ask(x, "chip"); }} /> : null}
-        <Discover lang={lang} onTry={(cmd, label) => { onHome(false); onCommand(cmd, "chip", label); }} />
+        <Deck homeDoc={homeDoc} lang={lang} register={register} onAsk={(x) => { onHome(false); ask(x, "chip"); }}
+          onTry={(cmd, label) => { onHome(false); onCommand(cmd, "chip", label); }} />
         {simulated ? <p className="relative px-4 pb-4 pt-2 text-center text-xs text-text-3">{t.simNote}</p> : null}
       </div>
     );
@@ -507,7 +504,21 @@ const CARDS: Record<Lang, { art: Art; title: string; desc: string; cmd: Command;
   ],
 };
 
-function Discover({ lang, onTry }: { lang: Lang; onTry: (cmd: Command, label: string) => void }) {
+/** The start deck: «Mis monitores» first, then what HORIZON can do — one row of the same cards. */
+function Deck({ homeDoc, lang, register, onAsk, onTry }: {
+  homeDoc: HomeDoc | null; lang: Lang; register: Register; onAsk: (text: string) => void; onTry: (cmd: Command, label: string) => void;
+}) {
+  const { seen, see } = useSeen();
+  return (
+    <Discover lang={lang} onTry={onTry} title={homeDoc ? T[lang].deck : T[lang].discover}
+      lead={homeDoc ? <MonitorCards doc={homeDoc} lang={lang} register={register} onAsk={onAsk} seen={seen} see={see} /> : null}
+      footer={homeDoc ? <MonitorExtras doc={homeDoc} lang={lang} register={register} seen={seen} see={see} /> : null} />
+  );
+}
+
+function Discover({ lang, onTry, title, lead, footer }: {
+  lang: Lang; onTry: (cmd: Command, label: string) => void; title: string; lead: React.ReactNode; footer: React.ReactNode;
+}) {
   const t = T[lang];
   const row = useRef<HTMLUListElement>(null);
   const [edge, setEdge] = useState({ start: true, end: false });
@@ -529,7 +540,11 @@ function Discover({ lang, onTry }: { lang: Lang; onTry: (cmd: Command, label: st
     mq.addEventListener("change", sync);
     return () => mq.removeEventListener("change", sync);
   }, []);
-  const auto = !holding && !reduced;
+  // With «Mis monitores» first, the row stays put: they must be the first thing seen.
+  const auto = !holding && !reduced && !lead;
+  // Scroll snap keeps the card it was on when the monitors arrive later: bring the row back to its start.
+  const hasLead = !!lead;
+  useEffect(() => { if (hasLead) { row.current?.scrollTo({ left: 0 }); update(); } }, [hasLead]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!auto) return;
     const id = window.setInterval(() => {
@@ -541,33 +556,29 @@ function Discover({ lang, onTry }: { lang: Lang; onTry: (cmd: Command, label: st
     return () => window.clearInterval(id);
   }, [auto]);
   return (
-    <section aria-labelledby="discover" className="relative mx-auto w-full max-w-[1120px] px-4 pb-4" aria-roledescription="carrusel"
+    <section aria-labelledby="discover" className="relative mx-auto w-full max-w-[1120px] px-4 pb-4 md:pb-20" aria-roledescription="carrusel"
       onMouseEnter={() => setHolding(true)} onMouseLeave={() => setHolding(false)}
       onFocus={() => setHolding(true)} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setHolding(false); }}>
       <div className="mb-3 flex items-center justify-between gap-3 px-1">
-        <h2 id="discover" className="text-sm font-semibold">{t.discover}</h2>
+        <h2 id="discover" className="text-sm font-semibold">{title}</h2>
         <div className="flex gap-1.5">
           <ArrowButton label={t.prev} disabled={edge.start} onClick={() => go(-1)}><path d="M10 3L5 8l5 5" /></ArrowButton>
           <ArrowButton label={t.next} disabled={edge.end} onClick={() => go(1)}><path d="M6 3l5 5-5 5" /></ArrowButton>
         </div>
       </div>
-      <ul ref={row} onScroll={update} aria-label={t.discover}
-        className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      <ul ref={row} onScroll={update} aria-label={title}
+        className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-6 pb-3 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ maskImage: "linear-gradient(90deg, transparent, black 24px, black calc(100% - 24px), transparent)", WebkitMaskImage: "linear-gradient(90deg, transparent, black 24px, black calc(100% - 24px), transparent)" }}>
-        {CARDS[lang].map((c, i) => (
-          <li key={c.art} className={`snap-start ${i === 0 ? "pl-6" : ""} ${i === CARDS[lang].length - 1 ? "pr-6" : ""}`}>
-            <button type="button" onClick={() => onTry(c.cmd, c.label)}
-              className="group flex h-full w-[280px] flex-col overflow-hidden rounded-2xl border border-border bg-surface/90 text-left backdrop-blur transition-all hover:-translate-y-0.5 hover:border-text-3 hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)]">
-              <span className="flex h-[96px] items-center justify-center border-b border-border bg-surface-2/70"><CardArt art={c.art} /></span>
-              <span className="flex flex-1 flex-col p-4">
-                <span className="text-[15px] font-semibold">{c.title}</span>
-                <span className="mt-1 flex-1 text-sm leading-snug text-text-2">{c.desc}</span>
-                <span className="mt-3 text-sm font-semibold text-text group-hover:underline group-hover:underline-offset-4">{t.tryIt} →</span>
-              </span>
-            </button>
+        {lead}
+        {CARDS[lang].map((c) => (
+          <li key={c.art} className="snap-start">
+            <DeckCard tag={t.tryTag} art={<CardArt art={c.art} />} title={c.title} cta={t.tryIt} onClick={() => onTry(c.cmd, c.label)}>
+              {c.desc}
+            </DeckCard>
           </li>
         ))}
       </ul>
+      {footer}
     </section>
   );
 }

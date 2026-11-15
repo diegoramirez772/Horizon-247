@@ -22,8 +22,8 @@ import { Sidebar } from "./Sidebar";
 import { useHome, useIndex, useLayer, useMapData, useSeries } from "./useBundles";
 
 const C = {
-  es: { back: "Regresar", backLong: "Regresar al inicio", map: "Monitoreo", newChat: "Nueva conversación", theme: "Cambiar tema", skip: "Ir a la caja de preguntas", empty: "Aún no hay capas de datos." },
-  en: { back: "Back", backLong: "Back to the start", map: "Monitoring", newChat: "New conversation", theme: "Switch theme", skip: "Go to the question box", empty: "No data layers yet." },
+  es: { back: "Regresar", backLong: "Regresar al inicio", map: "Monitoreo", newChat: "Nueva pregunta", theme: "Cambiar tema", skip: "Ir a la caja de preguntas", empty: "Aún no hay capas de datos." },
+  en: { back: "Back", backLong: "Back to the start", map: "Monitoring", newChat: "New question", theme: "Switch theme", skip: "Go to the question box", empty: "No data layers yet." },
 };
 
 /** Questions that are about the map open the side panel; the rest stay in the conversation. */
