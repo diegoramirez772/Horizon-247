@@ -88,3 +88,19 @@ export const P = {
   year: /\b(19\d\d|20\d\d)\b/,
   coord: /(-?\d{1,2}(?:[.,]\d+)?)\s*[°]?\s*(n|s)?\s*[ ,;]\s*(-?\d{1,3}(?:[.,]\d+)?)\s*[°]?\s*(e|o|w)?\b/,
 };
+
+// A first-hand observation said in plain words («el río por mi casa se está secando», «hay humo en mi pueblo»):
+// it goes to the swarm as a report draft that the person reviews before sending. Questions never do («¿se está
+// secando…?», «por qué…»): those are for HORI. Needs a thing people can see AND a change or a «where I live».
+const OBS_THING = /\b(rios?|arroyos?|lagos?|laguna|presas?|pozos?|manantial|ojo de agua|agua|lluvia|llovio|llovido|llover|llueve|sequia|secos?|secas?|inunda\w*|granizo|humo|incendio|fuego|nieve|helada|hielo|arboles|plantas|pasto|cosechas?|milpa|siembra|ganado|vacas|peces|pajaros|abejas|polvo|neblina|calor|frio|river|creek|lake|well|water|rain|drought|flood\w*|hail|smoke|fire|snow|frost|trees|crops|fish|birds|dust)\b/;
+const OBS_CHANGE = /(se esta secando|se estan secando|se seco|se secaron|esta (muy )?sec[oa]|bajo (el nivel|mucho)|ya no (hay|tiene|corre|llueve|llega)|no ha llovido|no llueve|se inundo|se desbordo|crecio|subio el nivel|hay (humo|polvo|incendio|fuego)|murieron|se murieron|se estan muriendo|estan muriendo|se quemo|se quemaron|cayo granizo|hace mucho (calor|frio)|cambio de color|drying up|dried up|is dry|flooded|no rain|died|dying|burned|there is smoke)/;
+const OBS_HERE = /(por mi casa|en mi casa|cerca de mi casa|frente a mi casa|en mi (pueblo|colonia|rancho|comunidad|barrio|parcela|terreno|ciudad)|por aqui|aqui en|near my (house|home)|where i live|in my (town|village|farm))/;
+const QUESTION = /^(que|como|cual|cuanto|cuantos|cuando|donde|por que|porque|sabes|puedes|what|how|why|is|are|does|do|can|where|when)\b/;
+
+export function isObservation(raw: string): boolean {
+  if (/[¿?]/.test(raw)) return false;
+  const t = normalize(raw);
+  if (QUESTION.test(t)) return false;
+  return OBS_THING.test(t) && (OBS_CHANGE.test(t) || OBS_HERE.test(t));
+}
+

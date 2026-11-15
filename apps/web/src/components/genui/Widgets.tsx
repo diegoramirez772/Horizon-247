@@ -415,6 +415,14 @@ function SwarmWidget({ where, draft, lang, actions }: { where: Where | null; dra
     return <Frame title={es ? "Red enjambre" : "Swarm"} badge={{ text: es ? "sin conexión" : "offline", kind: "ref" }}><p className="text-sm text-text-2">{es ? "Esta copia de la web no está conectada a la base de datos del equipo." : "This copy of the web is not connected to the team database."}</p></Frame>;
   }
   const place = placeFrom(placeText, where);
+  // «En mi casa» has no name to look up: the device can say where it is (asked only when the person taps; ~1 km).
+  const locate = () => {
+    if (!navigator.geolocation) { setErr(es ? "Este navegador no da la ubicación: escribe el lugar." : "This browser cannot share location: type the place."); setPhase("error"); return; }
+    navigator.geolocation.getCurrentPosition(
+      (p) => { setPlaceText(`${p.coords.latitude.toFixed(2)}, ${p.coords.longitude.toFixed(2)}`); setPhase("idle"); },
+      () => { setErr(es ? "No se pudo obtener tu ubicación: escribe el lugar." : "Could not get your location: type the place."); setPhase("error"); },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 });
+  };
   const send = async () => {
     if (!place) { setErr(es ? "Escribe un lugar conocido o coordenadas (24.5, -104.6)." : "Type a known place or coordinates (24.5, -104.6)."); setPhase("error"); return; }
     setPhase("sending");
@@ -437,6 +445,11 @@ function SwarmWidget({ where, draft, lang, actions }: { where: Where | null; dra
         <div className="flex gap-2">
           <input value={placeText} onChange={(e) => { setPlaceText(e.target.value); setPhase("idle"); }} aria-label={es ? "Lugar" : "Place"}
             placeholder={es ? "Lugar o «lat, lon»" : "Place or «lat, lon»"} className="min-w-0 flex-1 rounded-xl border border-border-control bg-bg px-3 py-2 text-sm" />
+          {!place ? (
+            <button type="button" onClick={locate} className="shrink-0 rounded-xl border border-border-control px-3 text-sm text-text-2">
+              {es ? "Usar mi ubicación" : "Use my location"}
+            </button>
+          ) : null}
           {user ? (
             <button type="submit" disabled={phase === "sending" || !text.trim()} className="rounded-xl bg-accent px-3.5 text-sm font-medium text-on-accent disabled:opacity-50">
               {phase === "sending" ? (es ? "Enviando…" : "Sending…") : (es ? "Enviar a la red" : "Send")}
