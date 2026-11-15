@@ -120,3 +120,23 @@ export async function accessToken(): Promise<string> {
 
 /** Ask the app to open the sign-in dialog (from any component). */
 export function askLogin(): void { try { window.dispatchEvent(new Event("h247:login")); } catch { /* server */ } }
+
+/**
+ * The confirmation email brings you back with «#access_token=…&refresh_token=…»: take that session so the link
+ * itself signs you in, and clean the address. Returns true when it did.
+ */
+export async function consumeRedirect(): Promise<boolean> {
+  if (typeof window === "undefined" || !location.hash.includes("access_token=")) return false;
+  const h = new URLSearchParams(location.hash.slice(1));
+  const access = h.get("access_token"), refresh = h.get("refresh_token");
+  history.replaceState(null, "", location.pathname + location.search);
+  if (!access || !refresh) return false;
+  try {
+    const r = await fetch(`${URL_}/auth/v1/user`, { headers: { apikey: KEY, Authorization: `Bearer ${access}` } });
+    if (!r.ok) return false;
+    const user = await r.json();
+    const s = toSession({ access_token: access, refresh_token: refresh, expires_in: Number(h.get("expires_in")) || 3600, user });
+    if (s) save(s);
+    return !!s;
+  } catch { return false; }
+}

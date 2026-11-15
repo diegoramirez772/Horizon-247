@@ -19,6 +19,7 @@ import { InteractionLayer } from "./interaccion/InteractionLayer";
 import { useAppState, useTheme, useUrlSync } from "./hooks";
 import type { MapFocus, Projection } from "./MapCanvas";
 import { MapPanel, type PanelTab } from "./MapPanel";
+import { consumeRedirect } from "@/core/live/auth";
 import { LoginDialog } from "./LoginDialog";
 import { Sidebar } from "./Sidebar";
 import { useHome, useIndex, useLayer, useMapData, useSeries } from "./useBundles";
@@ -58,6 +59,7 @@ export function HorizonApp() {
   useEffect(() => {
     const open = () => setLogin(true);
     if (new URLSearchParams(boot).get("login") === "1") setLogin(true);
+    void consumeRedirect(); // the confirmation email's link signs you in by itself
     addEventListener("h247:login", open);
     return () => removeEventListener("h247:login", open);
   }, []);

@@ -16,7 +16,7 @@ const T = {
     hint: "Mínimo 8 caracteres", show: "Mostrar", hide: "Ocultar", stay: "Te quedas dentro en este navegador hasta que salgas.",
     sent: "Te mandamos un correo para confirmar tu cuenta. Ábrelo y luego entra aquí.",
     err: {
-      credentials: "Correo o contraseña incorrectos.", unconfirmed: "Falta confirmar tu correo: revisa tu bandeja.",
+      credentials: "Correo o contraseña incorrectos.", unconfirmed: "Tu correo aún no está confirmado: abre el enlace que te mandamos (te deja dentro directo) e intenta de nuevo.",
       exists: "Ese correo ya tiene cuenta. Entra con él.", weak: "La contraseña es muy corta o muy simple.",
       rate: "Se enviaron demasiados correos de confirmación en la última hora. Intenta en un rato.", email: "Ese correo no parece válido.",
       other: "No se pudo. Intenta de nuevo.", login: "Entra de nuevo.",
