@@ -12,7 +12,12 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+import threading
 from pathlib import Path
+
+_LOCKS: dict[str, threading.RLock] = {}          # one writer lock per database file and process: threads queue in order
+_CON_LOCK: dict[int, threading.RLock] = {}       # instead of SQLite's busy-retry sleeps (which made write latency spiky)
+_GUARD = threading.Lock()
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS monitors (id TEXT PRIMARY KEY, org TEXT NOT NULL DEFAULT 'publica', doc TEXT NOT NULL);
@@ -45,8 +50,12 @@ def connect(root: str | Path) -> sqlite3.Connection:
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA journal_mode=WAL")
     con.execute("PRAGMA busy_timeout=30000")
+    con.execute("PRAGMA synchronous=NORMAL")      # WAL + NORMAL: no corruption, survives an app crash; a power cut may lose the last commit
     con.execute("PRAGMA foreign_keys=ON")
     con.executescript(SCHEMA)
+    key = str((root / "zon.db").resolve())
+    with _GUARD:
+        _CON_LOCK[id(con)] = _LOCKS.setdefault(key, threading.RLock())
     return con
 
 
@@ -62,13 +71,25 @@ class tx:
 
     def __enter__(self):
         if not self.con.in_transaction:
-            self.con.execute("BEGIN IMMEDIATE")
+            self.lock = _CON_LOCK.get(id(self.con))
+            if self.lock:
+                self.lock.acquire()
+            try:
+                self.con.execute("BEGIN IMMEDIATE")
+            except BaseException:
+                if self.lock:
+                    self.lock.release()
+                raise
             self.own = True
         return self.con
 
     def __exit__(self, et, e, tb):
         if self.own:
-            self.con.execute("COMMIT" if et is None else "ROLLBACK")
+            try:
+                self.con.execute("COMMIT" if et is None else "ROLLBACK")
+            finally:
+                if self.lock:
+                    self.lock.release()
         return False
 
 
@@ -92,9 +113,10 @@ def audit_records(con, since: int = 0) -> list[dict]:
     return out
 
 
-def verify_chain(con) -> tuple[bool, int]:
-    prev, n = "0" * 64, 0
-    for rec in audit_records(con):
+def verify_chain(con, start: tuple[int, str] | None = None) -> tuple[bool, int]:
+    """Check the chain from the beginning, or from a point already verified (seq, hash) — then only new records are read."""
+    n, prev = start if start else (0, "0" * 64)
+    for rec in audit_records(con, n):
         h = rec.pop("hash")
         if rec["prev_hash"] != prev or sha(rec) != h or rec["seq"] != n + 1:
             return False, n

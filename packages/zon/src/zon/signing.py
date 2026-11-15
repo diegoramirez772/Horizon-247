@@ -1,8 +1,9 @@
 """Verifiable identity (function 2): Ed25519 signatures, standard library only.
 
-The arithmetic is the reference implementation of RFC 8032 §6 (IETF code components: Simplified BSD licence). It is NOT
-constant-time: right for VERIFYING signatures and for demo keys; a production signer should use a vetted library
-(libsodium). Used for:
+Backend: if PyNaCl (libsodium bindings, Apache-2.0) is installed, signing and verification go through libsodium (audited,
+constant-time) — that is the production path. Otherwise the reference implementation of RFC 8032 §6 below is used (IETF
+code components, Simplified BSD): correct (passes the RFC test vectors) but NOT constant-time, so fine for verifying and for
+demo keys only. `BACKEND` says which one is active. Used for:
   * attestations: an institution vouches «reporter u-04 is a hydrologist, until 2027-01-01» -> the swarm counts the role;
   * device signatures: a sensor signs each batch of observations -> the monitor records «signed by device X: valid».
 Trust is explicit: only public keys listed in a trust registry count (trust.json: {key_id: {public_hex, name, kind}}).
@@ -98,7 +99,18 @@ def _expand(secret: bytes):
     return a, h[32:]
 
 
+try:                                                                     # production path: libsodium
+    from nacl.exceptions import BadSignatureError as _BadSig
+    from nacl.signing import SigningKey as _SK, VerifyKey as _VK
+    BACKEND = "libsodium (PyNaCl)"
+except ImportError:                                                      # pragma: no cover - depends on the environment
+    _SK = _VK = None
+    BACKEND = "referencia RFC 8032 (no constante en tiempo)"
+
+
 def public_key(secret: bytes) -> bytes:
+    if _SK is not None:
+        return bytes(_SK(secret).verify_key)
     return _compress(_mul(_expand(secret)[0], G))
 
 
@@ -107,6 +119,24 @@ def new_secret() -> bytes:
 
 
 def sign(secret: bytes, msg: bytes) -> bytes:
+    if _SK is not None:
+        return _SK(secret).sign(msg).signature
+    return _sign_ref(secret, msg)
+
+
+def verify(public: bytes, msg: bytes, signature: bytes) -> bool:
+    if _VK is not None:
+        try:
+            _VK(public).verify(msg, signature)
+            return True
+        except (_BadSig, ValueError, TypeError):
+            return False
+        except Exception:
+            return False
+    return _verify_ref(public, msg, signature)
+
+
+def _sign_ref(secret: bytes, msg: bytes) -> bytes:
     a, prefix = _expand(secret)
     A = _compress(_mul(a, G))
     r = _hq(prefix + msg)
@@ -115,7 +145,7 @@ def sign(secret: bytes, msg: bytes) -> bytes:
     return Rs + int.to_bytes(s, 32, "little")
 
 
-def verify(public: bytes, msg: bytes, signature: bytes) -> bool:
+def _verify_ref(public: bytes, msg: bytes, signature: bytes) -> bool:
     if len(public) != 32 or len(signature) != 64:
         return False
     A, R = _decompress(public), _decompress(signature[:32])

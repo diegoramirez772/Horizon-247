@@ -47,6 +47,7 @@ def main() -> None:
     sv.add_argument("--port", type=int, default=8247)
     sv.add_argument("--host", default="127.0.0.1")
     sv.add_argument("--bundles", default="data/bundles")
+    sv.add_argument("--workers", type=int, default=1, help="processes serving the same port (pre-fork); use the number of cores")
     ky = sub.add_parser("key", help="create an API key (shown once)")
     ky.add_argument("--root", default="data/zon")
     ky.add_argument("--name", required=True)
@@ -62,7 +63,7 @@ def main() -> None:
         return
     if args.cmd == "serve":
         from .server import serve
-        serve(args.root, args.port, args.host, args.bundles)
+        serve(args.root, args.port, args.host, args.bundles, workers=args.workers)
         return
     if args.cmd == "key":
         from . import auth, db

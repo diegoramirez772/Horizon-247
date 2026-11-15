@@ -25,6 +25,7 @@ from zon.fetch.power_zarr import PowerZarr
 csv.field_size_limit(10 ** 8)
 SCALE = {"Severely Dry": -3, "Moderately Dry": -2, "Mildly Dry": -1, "Near Normal": 0, "Mildly Wet": 1, "Moderately Wet": 2, "Severely Wet": 3}
 THR = 1.0                                                                # «the instrument sees it»: |z| >= 1 in the same sense
+SOURCE = "imerg" if "imerg" in sys.argv[1:] else "power"                 # second, independent rain source (satellite)
 
 z = PowerZarr(offline=True)
 months, lat, lon = z.axes
@@ -47,10 +48,19 @@ X = np.full((len(months), len(cells)), np.nan)
 by_chunk = defaultdict(list)
 for c in cells:
     by_chunk[(c[0] // cy, c[1] // cx)].append(c)
-for (rw, cl), cs in by_chunk.items():
-    blk = z.read_block("PRECTOTCORR", rw, cl)
-    for c in cs:
-        X[: blk.values.shape[0], col[c]] = blk.values[:, c[0] - rw * cy, c[1] - cl * cx]
+if SOURCE == "power":
+    for (rw, cl), cs in by_chunk.items():
+        blk = z.read_block("PRECTOTCORR", rw, cl)
+        for c in cs:
+            X[: blk.values.shape[0], col[c]] = blk.values[:, c[0] - rw * cy, c[1] - cl * cx]
+else:                                                                    # IMERG 1-degree cube, the cell that contains the report
+    dd = np.load("data/imerg/imerg_monthly_1deg_2001-2025.npz", allow_pickle=False)
+    im, rain = [str(m) for m in dd["months"]], dd["rain"]                 # load the cube ONCE (an npz re-reads on every access)
+    rows = [k for k, m in enumerate(im) if m in mpos]
+    tgt = [mpos[im[k]] for k in rows]
+    iy = np.array([int(np.clip((90 - lat[c[0]]) // 1, 0, 179)) for c in cells])
+    ix = np.array([int(np.clip((lon[c[1]] + 180) // 1, 0, 359)) for c in cells])
+    X[tgt] = rain[rows][:, iy, ix]
 Z = accumulated_z(X, 12, 3)
 print(f"celdas POWER: {len(cells):,}; meses {months[0]}..{months[-1]}")
 
@@ -68,7 +78,7 @@ def rank_corr(a, b):
     ra, rb = np.argsort(np.argsort(a)), np.argsort(np.argsort(b))
     return float(np.corrcoef(ra, rb)[0, 1])
 
-out = {"n_reports": int(ok.sum()), "stations": len({r["station"] for r in reps}), "threshold_z": THR}
+out = {"source": SOURCE, "n_reports": int(ok.sum()), "stations": len({r["station"] for r in reps}), "threshold_z": THR}
 out["spearman_scale_vs_z"] = round(rank_corr(sc[ok], zi[ok]), 3)
 out["spearman_chance"] = round(rank_corr(sc[okn], zn[okn]), 3)
 single = {}
@@ -117,5 +127,5 @@ for r in reps:
         right += int((d == "bajo") == (r["scale"] < 0))
 out["keyword_classifier"] = {"reports_with_dry_or_wet_scale": hit, "coverage": round(cover / hit, 3), "accuracy_when_it_reads": round(right / max(cover, 1), 3)}
 Path("data/calibration").mkdir(parents=True, exist_ok=True)
-Path("data/calibration/swarm_cocorahs.json").write_text(json.dumps(out, indent=1))
+Path(f"data/calibration/swarm_cocorahs{'_imerg' if SOURCE == 'imerg' else ''}.json").write_text(json.dumps(out, indent=1))
 print(json.dumps(out, indent=1, ensure_ascii=False))

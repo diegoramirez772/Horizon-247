@@ -61,14 +61,31 @@ def _rolling_median_excluding_current(a: np.ndarray, w: int) -> np.ndarray:
     return out
 
 
+def _nanquantiles(a: np.ndarray, qs, axis: int = -1) -> np.ndarray:
+    """Same numbers as np.nanpercentile(a, 100*qs, axis) (linear interpolation) but vectorised: numpy's nan-version loops over
+    rows in Python (apply_along_axis), which made one write to a monitor cost ~0.3 s."""
+    a = np.moveaxis(np.asarray(a, dtype=float), axis, -1)
+    srt = np.sort(a, axis=-1)                                            # NaN go last
+    n = np.isfinite(a).sum(axis=-1)
+    out = []
+    for q in np.atleast_1d(qs):
+        pos = q * np.maximum(n - 1, 0)
+        lo = np.floor(pos).astype(int)
+        hi = np.minimum(lo + 1, np.maximum(n - 1, 0))
+        vlo = np.take_along_axis(srt, lo[..., None], -1)[..., 0]
+        vhi = np.take_along_axis(srt, hi[..., None], -1)[..., 0]
+        v = vlo + (pos - lo) * (vhi - vlo)
+        out.append(np.where(n > 0, v, np.nan))
+    return np.stack(out)
+
+
 def _rolling_iqr_excluding_current(a: np.ndarray, w: int) -> np.ndarray:
     out = np.full(a.shape, np.nan)
     if len(a) <= w:
         return out
     win = sliding_window_view(a, w)[:-1]
-    with np.errstate(all="ignore"), warnings.catch_warnings():
-        warnings.simplefilter("ignore", RuntimeWarning)
-        q = np.nanpercentile(win, [25, 75], axis=1)
+    with np.errstate(all="ignore"):
+        q = _nanquantiles(win, [0.25, 0.75], axis=1)
     out[w:] = q[1] - q[0]
     return out
 
@@ -363,7 +380,7 @@ def z_last(X, period: int, *, cycles: int | None = None, scale_window: int | Non
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
         mad = np.nanmedian(dev, axis=0)
-        q = np.nanpercentile(w, [25, 75], axis=0)
+        q = _nanquantiles(w, [0.25, 0.75], axis=0)
     s_pool = np.maximum(MAD_TO_SD * mad, (q[1] - q[0]) / 1.349)
     R = np.full((K2, C), np.nan)
     for k in range(1, K2 + 1):

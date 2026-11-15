@@ -24,6 +24,14 @@ class TestSigning(unittest.TestCase):
         self.assertTrue(verify(public_key(sk), b"", sig))
         self.assertFalse(verify(public_key(sk), b"tampered", sig))
 
+    def test_reference_and_libsodium_agree(self):
+        from zon import signing
+        sk, msg = bytes(range(32)), b"horizon 247"
+        ref = signing._sign_ref(sk, msg)
+        self.assertTrue(signing._verify_ref(public_key(sk), msg, ref))
+        self.assertEqual(sign(sk, msg), ref)                                   # Ed25519 is deterministic: same bytes either way
+        self.assertTrue(verify(public_key(sk), msg, ref))
+
 
 class TestVerifiedReporters(unittest.TestCase):
     def setUp(self):

@@ -128,9 +128,14 @@ class MonitorStore:
     def audit_records(self, since: int = 0) -> list[dict]:
         return db.audit_records(self.con, since)
 
-    def verify_audit(self) -> tuple[bool, int]:
-        """(chain intact?, records). Any edited, removed or reordered record breaks it."""
-        return db.verify_chain(self.con)
+    def verify_audit(self, incremental: bool = False) -> tuple[bool, int]:
+        """(chain intact?, records). Any edited, removed or reordered record breaks it. incremental=True only re-reads records
+        after the last point this object verified (cheap for /health); a full check re-reads everything."""
+        start = getattr(self, "_verified", None) if incremental else None
+        ok, n = db.verify_chain(self.con, start)
+        if ok and n:
+            self._verified = (n, self.con.execute("SELECT hash FROM audit WHERE seq = ?", (n,)).fetchone()["hash"])
+        return ok, n
 
     # ------------------------------------------------------------ monitors and observations
     def add_monitor(self, m: Monitor, actor: str = "sistema", org: str = "publica") -> Monitor:

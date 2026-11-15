@@ -196,6 +196,21 @@ En 18 estados reales (México y EE. UU., 1981–2026, 7,722 meses juzgados): sin
 | **Sincronización sin red ↔ servidor** (`zon/sync.py`) | Observaciones por (monitor, tiempo), transiciones como operaciones con id, reportes con firma re-verificada del otro lado; idempotente; conflictos se reportan, no se fuerzan | Pruebas: aplicar dos veces no cambia nada; una alerta cerrada en el servidor no se reabre desde la laptop |
 | **Mapa de anomalías del planeta** (`zon anomaly-map`) | z del último mes en las 207,936 celdas, en paralelo, idéntico al detector (diferencia < 1e-9) | **Medido:** T2M 2026-09 en **570 s con 2 núcleos**; 4,858 celdas marcadas (2.9 % del área; 2.1 % más cálido de lo normal, 0.8 % más frío) frente a ~312 esperadas por azar si fueran independientes |
 
+### 3.20 Segunda fuente de lluvia: GPM IMERG (satélite) frente a POWER (reanálisis) [medido]
+IMERG mensual V07 (DOI 10.5067/GPM/IMERG/3B-MONTH/07), 2001–2025, 297 gránulos HDF5 leídos con h5py y reducidos a 1° (`zon/fetch/imerg.py`, 21 min con la red de la laptop, 77 MB). En 10 estados (México y EE. UU.): **correlación de las anomalías mensuales 0.86–0.99** entre las dos fuentes; ninguna tendencia de lluvia 2001–2025 es PROBADO en ninguna de las dos (→ «sin confirmar», que es lo honesto: 25 años no alcanzan para la lluvia). **Sequía de mayo de 2011** (lluvia acumulada 3 meses): Durango −1.4σ / −1.3σ, Chihuahua −2.2σ / −2.1σ, Texas −2.8σ / −2.5σ (POWER / IMERG).
+**El enjambre recalibrado con IMERG** (163,342 reportes de CoCoRaHS): correlación de rangos 0.42 (azar 0.003); señal de 1 / 2 / 3–4 / 5–9 / 10+ personas coincide 24 / 28 / 32 / 39 / 49 % con el satélite (azar 15 / 12 / 9 / 7 / 2 %). **La calibración del enjambre se reproduce con una fuente independiente.**
+
+### 3.21 Prueba de carga real de la API [medido, `sim/load_test.py`]
+Servidor en su propio proceso con 2 procesos de trabajo (pre-fork) en la laptop de 2 núcleos, **con el generador de carga en la misma máquina**, 20 s, 20 monitores de 400 meses; cada escritura corre los detectores sobre toda la historia.
+| Clientes | Peticiones/s | Lectura p50 / p95 | Escritura p50 / p95 / p99 | Evento en vivo (SSE) p50 / p95 | Errores | Cadena | Escrituras guardadas |
+|---|---|---|---|---|---|---|---|
+| 8 | 85 | 33 / 95 ms | 234 / 500 / 698 ms | 197 / 354 ms | 0 | íntegra | 8,426 de 8,426 |
+| 32 | 122 | 86 / 1,094 ms | 515 / 1,480 / 1,898 ms | 312 / 1,357 ms | 0 | íntegra | 8,327 de 8,327 |
+Mejoras que salieron de medir: un pool de conexiones (antes se abría la base en cada petición), percentiles vectorizados (una escritura bajó de 360 a ~60 ms de cálculo), candado de escritura por proceso, `synchronous=NORMAL` en WAL (sin corrupción; un corte de luz puede perder el último commit) y procesos en vez de hilos. **Límite:** es un solo nodo; con 32 clientes la cola p95 pasa de 1 s.
+
+### 3.22 Firma de producción
+Con PyNaCl (libsodium, Apache-2.0) instalado, ZON firma y verifica con libsodium (auditada, tiempo constante); sin él, usa la referencia RFC 8032. Ambas dan **los mismos bytes** (prueba).
+
 ## 4 · Limitaciones conocidas
 1. **Memoria larga:** no se corrige el veredicto; se publica un marcador (`robust_mem`) y el límite medido (§3.10). La caminata aleatoria sigue engañando al consenso (12 %).
 2. Un **salto artificial** grande se lee como tendencia en la mitad de los casos; la bandera avisa en ~40 %. En T2M no se vio apilamiento en los cambios de corriente de MERRA-2 (§3.11).
@@ -205,7 +220,7 @@ En 18 estados reales (México y EE. UU., 1981–2026, 7,722 meses juzgados): sin
 6. δ de cada clase física es **valor de trabajo del equipo**, no de la literatura.
 7. Solo tendencias monótonas; aceleraciones o ciclos no se modelan.
 8. Fronteras de Natural Earth admin-1: algunas en disputa (advertencia del propio proveedor). Las regiones físicas («Sahara», «Andes», «Golfo de México») tienen límites aproximados; un lugar que cruza el antimeridiano funciona pero lee todas las columnas de longitud.
-12. **Runtime:** el servidor HTTP/SSE no se ha probado con conexiones reales ni bajo carga; un solo nodo (SQLite) — no es un sistema distribuido; NetCDF4/HDF5 sin lector (IMERG, GRACE, MODIS necesitan permiso para instalar una librería); la firma Ed25519 no es de tiempo constante.
+12. **Runtime:** un solo nodo (SQLite), no distribuido; con 32 clientes la latencia p95 pasa de 1 s (§3.21); HDF5 se lee con h5py (instalado en `.venv`), NetCDF4 de otros productos aún sin conector propio (GRACE, MODIS); sin PyNaCl la firma cae a la referencia no constante en tiempo.
 10. **Anomalías:** falsas alarmas 3–15 por 1000 muestras según el ruido (§3.13); potencia baja para desviaciones < 4σ; Marte tiene solo 13 años (no calibrado); la persona es simulada y no valida nada médico.
 11. **Enjambre:** el valor de «k personas independientes» está medido con 180 mil reportes reales (§3.16); los pesos por rol y evidencia siguen siendo valores de trabajo; la clasificación por palabras se equivoca con frases que no están en la lista; nunca se presenta como prueba.
 9. La actualización incremental (Z3) re-lee los 260 trozos del planeta: un trozo de Zarr abarca todos los meses, así que «solo el mes nuevo» no existe a nivel de descarga (§Z3 en `zon/update.py`).

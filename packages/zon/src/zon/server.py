@@ -99,7 +99,7 @@ class Api:
         qs = {k: v[-1] for k, v in parse_qs(u.query).items()}
         try:
             if method == "GET" and parts == ["health"]:
-                ok, n = self.store.verify_audit()
+                ok, n = self.store.verify_audit(incremental=True)
                 return self._j(200, {"status": "ok", "audit_intact": ok, "audit_records": n, "sources": health_report(self.con, self.clock())})
             if method == "GET" and parts == ["metrics"]:
                 return 200, {"Content-Type": "text/plain; version=0.0.4"}, self.metrics().encode()
@@ -166,8 +166,46 @@ class Api:
         return self.store.audit_records(seq)
 
 
-def serve(root, port: int = 8247, host: str = "127.0.0.1", bundles: str | None = None, cors: str = "*") -> None:
-    api = Api(root, bundles)
+def serve(root, port: int = 8247, host: str = "127.0.0.1", bundles: str | None = None, cors: str = "*", workers: int = 1) -> None:
+    """workers > 1: pre-fork — the listening socket is opened once and N processes serve it (Python threads share one core
+    because of the GIL; processes use all of them). SQLite in WAL mode is safe across processes."""
+    import os
+    httpd = make_server(root, port, host, bundles, cors)
+    print(f"ZON escuchando en http://{host}:{httpd.server_address[1]}  (raíz {root}, {workers} proceso(s))", flush=True)
+    kids = []
+    for _ in range(max(1, workers) - 1):
+        pid = os.fork()
+        if pid == 0:
+            httpd2 = make_server(root, port, host, bundles, cors, listen_socket=httpd.socket)
+            httpd2.serve_forever()
+            os._exit(0)
+        kids.append(pid)
+    try:
+        httpd.serve_forever()
+    finally:
+        for k in kids:
+            try:
+                os.kill(k, 15)
+            except OSError:
+                pass
+
+
+def make_server(root, port: int = 8247, host: str = "127.0.0.1", bundles: str | None = None, cors: str = "*", api: Api | None = None,
+                pool_size: int = 8, listen_socket=None):
+    import queue
+    import contextlib
+    api = api or Api(root, bundles)
+    pool: queue.Queue = queue.Queue()
+    for _ in range(pool_size):                     # a fixed pool: one SQLite connection per in-flight request, reused
+        pool.put(Api(root, bundles, clock=api.clock))
+
+    @contextlib.contextmanager
+    def con_api():
+        a = pool.get()
+        try:
+            yield a
+        finally:
+            pool.put(a)
 
     class H(BaseHTTPRequestHandler):
         server_version = "ZON/1"
@@ -184,6 +222,11 @@ def serve(root, port: int = 8247, host: str = "127.0.0.1", bundles: str | None =
             self._send(204, {"Access-Control-Allow-Methods": "GET, POST, OPTIONS"}, b"")
 
         def do_GET(self):
+            if urlsplit(self.path).path != "/events":
+                with con_api() as a:
+                    res = a.handle("GET", self.path, dict(self.headers))
+                return self._send(*res)
+            api = Api(root, bundles, clock=pool.queue[0].clock if pool.queue else None)   # a long-lived stream gets its own connection
             if urlsplit(self.path).path == "/events":
                 who = api._who(self.headers)
                 if who is None:
@@ -200,20 +243,28 @@ def serve(root, port: int = 8247, host: str = "127.0.0.1", bundles: str | None =
                             self.wfile.write(f"id: {seq}\nevent: {rec['action']}\ndata: {json.dumps(rec, ensure_ascii=False, default=str)}\n\n".encode())
                         self.wfile.write(b": latido\n\n")
                         self.wfile.flush()
-                        time.sleep(1.0)
+                        time.sleep(0.25)
                 except (BrokenPipeError, ConnectionResetError):
                     return
-            self._send(*api.handle("GET", self.path, dict(self.headers)))
+                finally:
+                    api.con.close()
 
         def do_POST(self):
             n = int(self.headers.get("Content-Length") or 0)
             if n > MAX_BODY:
                 return self._send(413, {"Content-Type": "application/json"}, b'{"error":"demasiado grande"}')
-            self._send(*api.handle("POST", self.path, dict(self.headers), self.rfile.read(n)))
+            body = self.rfile.read(n)
+            with con_api() as a:
+                res = a.handle("POST", self.path, dict(self.headers), body)
+            self._send(*res)
 
         def log_message(self, fmt, *args):
             pass
 
-    httpd = ThreadingHTTPServer((host, port), H)
-    print(f"ZON escuchando en http://{host}:{port}  (raíz {root})")
-    httpd.serve_forever()
+    ThreadingHTTPServer.daemon_threads = True
+    if listen_socket is None:
+        return ThreadingHTTPServer((host, port), H)
+    srv = ThreadingHTTPServer((host, port), H, bind_and_activate=False)
+    srv.socket.close()
+    srv.socket = listen_socket                                       # share the parent's listening socket (pre-fork)
+    return srv

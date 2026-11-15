@@ -45,3 +45,8 @@ Módulos: `db` (almacén y cadena) · `monitors` (monitores, alertas, ciclo de v
 `auth` (llaves/roles/organizaciones) · `connectors` (fuentes + salud) · `jobs` (cola aislada con reintentos) · `notify` (avisos,
 escalamiento, vigilancia) · `server` (API + SSE) · `sync` (sin red ↔ servidor) · `anomaly_map` · `update` · `serve` (export).
 Contrato: `contract/SPEC.md` §11–14. Números medidos: `docs/MODEL_CARD.md` §3.13–3.19.
+
+### Dependencias opcionales (licencias BSD/Apache, en `.venv`)
+`python3 -m venv --system-site-packages .venv && .venv/bin/pip install h5py pynacl` — h5py (BSD-3) lee HDF5/NetCDF4 (IMERG);
+PyNaCl (Apache-2.0) firma con libsodium. Sin ellas todo lo demás funciona (las pruebas que las necesitan se saltan).
+Servidor con varios procesos: `python -m zon serve --workers 2`. Prueba de carga: `python sim/load_test.py 8 20`.
