@@ -82,8 +82,10 @@ const T = {
   },
 };
 
-export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, homeDoc = null, actions }: {
+export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, homeDoc = null, actions, onRegister }: {
   conv: Conversation;
+  /** The reading level is chosen inside the question box. */
+  onRegister: (r: Register) => void;
   ctx: Ctx;
   /** «Mis monitores» (home.json, SPEC §15): shown on the start screen when ZON exported it. */
   homeDoc?: HomeDoc | null;
@@ -120,7 +122,7 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, h
           <div className="mb-4 flex justify-center"><Emblem size={92} /></div>
           <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.28em] text-text-3">{t.kicker}</p>
           <h1 className="mb-6 text-center text-[clamp(1.75rem,3.2vw,2.5rem)] font-semibold leading-tight tracking-tight text-balance">{t.hello}</h1>
-          <Composer conv={conv} lang={lang} register={register} simulated={simulated} onSend={(x, v) => { onHome(false); ask(x, v); }} autoFocus bare />
+          <Composer conv={conv} lang={lang} register={register} onRegister={onRegister} simulated={simulated} onSend={(x, v) => { onHome(false); ask(x, v); }} autoFocus bare />
           {msgs.length > 0 ? (
             <button type="button" onClick={() => onHome(false)} className="mx-auto mt-4 text-sm font-medium text-text-2 underline-offset-4 hover:text-text hover:underline">
               {t.resume} →
@@ -157,7 +159,7 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, h
       <div className="relative px-4 pb-4 pt-2">
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-bg to-transparent" />
         <div className="mx-auto w-full max-w-[760px]">
-          <Composer conv={conv} lang={lang} register={register} simulated={simulated} onSend={ask} />
+          <Composer conv={conv} lang={lang} register={register} onRegister={onRegister} simulated={simulated} onSend={ask} />
         </div>
       </div>
     </div>
@@ -287,8 +289,8 @@ function FigureBlock({ f, lang, register, onClick }: { f: Figure; lang: Lang; re
 
 // ---------------------------------------------------------------- composer
 
-function Composer({ conv, lang, register, onSend, simulated, autoFocus = false, bare = false }: {
-  conv: Conversation; lang: Lang; register: Register; onSend: (text: string, via: Via) => void; autoFocus?: boolean;
+function Composer({ conv, lang, register, onRegister, onSend, simulated, autoFocus = false, bare = false }: {
+  conv: Conversation; lang: Lang; register: Register; onRegister: (r: Register) => void; onSend: (text: string, via: Via) => void; autoFocus?: boolean;
   /** The layer on screen is simulated (manifest honesty.simulated): only then the "simulated" notice shows. */
   simulated: boolean;
   /** Start screen: no note and no voice option under the box. */
@@ -333,13 +335,16 @@ function Composer({ conv, lang, register, onSend, simulated, autoFocus = false, 
   return (
     <div>
       <form onSubmit={(e) => { e.preventDefault(); send(draft, "text"); }}
-        className={`flex items-end gap-2 rounded-3xl border border-border bg-surface p-2 pl-4 shadow-[0_6px_30px_rgba(16,24,40,0.08)] transition-shadow focus-within:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent),0_6px_30px_rgba(16,24,40,0.08)] ${listening ? "shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent)]" : ""}`}>
+        className={`flex flex-col gap-1 rounded-3xl border border-border bg-surface p-2 shadow-[0_6px_30px_rgba(16,24,40,0.08)] transition-shadow focus-within:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent),0_6px_30px_rgba(16,24,40,0.08)] ${listening ? "shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent)]" : ""}`}>
         <label htmlFor="ask" className="sr-only">{t.placeholder}</label>
         <textarea id="ask" ref={box} rows={1} value={listening && hs.voice.interim ? hs.voice.interim : draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(draft, "text"); } }}
           placeholder={listening ? t.listening : t.placeholder}
-          className="max-h-[180px] min-h-11 flex-1 resize-none bg-transparent py-2.5 text-base leading-6 text-text outline-none placeholder:text-text-3 focus:outline-none focus-visible:outline-none" />
+          className="max-h-[180px] min-h-11 w-full resize-none bg-transparent px-3 py-2.5 text-base leading-6 text-text outline-none placeholder:text-text-3 focus:outline-none focus-visible:outline-none" />
+        <div className="flex items-center gap-1.5">
+        <LevelPicker value={register} onChange={onRegister} lang={lang} />
+        <span className="flex-1" />
         {hydrated && hs.voice.supported ? (
           <button type="button" onClick={() => hub.talk()}
             aria-label={hs.voice.listening ? t.stop : t.mic} title={`${hs.voice.listening ? t.stop : t.mic} (Alt+V)`} aria-pressed={hs.voice.listening}
@@ -351,6 +356,7 @@ function Composer({ conv, lang, register, onSend, simulated, autoFocus = false, 
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent transition-opacity disabled:opacity-30">
           <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 15V3M4 8l5-5 5 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
+        </div>
       </form>
       {bare ? null : <div className="mt-2 flex flex-wrap items-center justify-between gap-2 px-2 text-xs text-text-3">
         <span>{simulated ? `${t.simNote} · ` : ""}{t.note}</span>
@@ -360,6 +366,74 @@ function Composer({ conv, lang, register, onSend, simulated, autoFocus = false, 
         </label>
       </div>}
     </div>
+  );
+}
+
+const LEVELS: Record<Lang, { value: Register; label: string; desc: string }[]> = {
+  es: [
+    { value: "sencillo", label: "Simple", desc: "Lo esencial, sin jerga" },
+    { value: "normal", label: "Normal", desc: "Con gráfica, comparación e intervalo" },
+    { value: "tecnico", label: "Experto", desc: "Todos los números: p, q, MDE, métodos" },
+  ],
+  en: [
+    { value: "sencillo", label: "Simple", desc: "The essentials, no jargon" },
+    { value: "normal", label: "Normal", desc: "With chart, comparison and range" },
+    { value: "tecnico", label: "Expert", desc: "Every number: p, q, MDE, methods" },
+  ],
+};
+
+/** The reading level, inside the question box: it changes how much is said, never what is said. */
+function LevelPicker({ value, onChange, lang }: { value: Register; onChange: (r: Register) => void; lang: Lang }) {
+  const [open, setOpen] = useState(false);
+  const wrap = useRef<HTMLDivElement>(null);
+  const levels = LEVELS[lang];
+  const cur = levels.find((l) => l.value === value) ?? levels[0];
+  useEffect(() => {
+    if (!open) return;
+    const off = (e: PointerEvent) => { if (!wrap.current?.contains(e.target as Node)) setOpen(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    addEventListener("pointerdown", off);
+    addEventListener("keydown", esc);
+    return () => { removeEventListener("pointerdown", off); removeEventListener("keydown", esc); };
+  }, [open]);
+  const title = lang === "es" ? "Nivel de detalle" : "Level of detail";
+  return (
+    <div ref={wrap} className="relative">
+      <button type="button" onClick={() => setOpen((x) => !x)} aria-haspopup="listbox" aria-expanded={open} aria-label={`${title}: ${cur.label}`}
+        className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-3 text-sm font-medium text-text-2 transition-colors hover:border-text-3 hover:text-text">
+        <LevelGlyph level={cur.value} />{cur.label}
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" className={`transition-transform ${open ? "rotate-180" : ""}`}><path d="M2 6.5L5 3.5l3 3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </button>
+      {open ? (
+        <ul role="listbox" aria-label={title}
+          className="widget-in absolute bottom-full left-0 z-30 mb-2 w-72 rounded-2xl border border-border bg-surface p-1.5 shadow-[0_12px_40px_rgba(16,24,40,0.16)]">
+          <li className="px-3 pb-1 pt-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-text-3" role="presentation">{title}</li>
+          {levels.map((l) => (
+            <li key={l.value} role="option" aria-selected={l.value === value}>
+              <button type="button" onClick={() => { onChange(l.value); setOpen(false); }}
+                className={`flex w-full items-start gap-3 rounded-xl px-3 py-2 text-left transition-colors ${l.value === value ? "bg-surface-2" : "hover:bg-surface-2"}`}>
+                <span className="mt-0.5"><LevelGlyph level={l.value} /></span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold">{l.label}</span>
+                  <span className="block text-xs text-text-2">{l.desc}</span>
+                </span>
+                {l.value === value ? <span aria-hidden="true" className="text-sm">✓</span> : null}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+/** One, two or three bars: how much detail. */
+function LevelGlyph({ level }: { level: Register }) {
+  const n = level === "sencillo" ? 1 : level === "normal" ? 2 : 3;
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+      {[0, 1, 2].map((i) => <rect key={i} x={1.5 + i * 4} y={9 - i * 3} width="3" height={3.5 + i * 3} rx="1" fill="currentColor" opacity={i < n ? 1 : 0.25} />)}
+    </svg>
   );
 }
 

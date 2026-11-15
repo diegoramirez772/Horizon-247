@@ -5,12 +5,10 @@ import type { HomeDoc, HomeEntity, HomeMonitor } from "@/contract/types";
 import { certaintyText } from "@/core/honesty/calibration";
 import { loadSeen, markSeen, saveSeen, unseen } from "@/core/home/cursor";
 import {
-  attentionText, eventText, monitorName, presentMonitor, sourcesFor, staleSources, STATUS, unknowns,
+  attentionText, eventText, monitorName, presentMonitor, sourcesFor, staleSources, unknowns,
 } from "@/core/home/present";
 import type { Lang, Register } from "@/core/i18n/texts";
-import { prettyUnit } from "@/core/format/format";
 import { Spark, VerdictGlyph } from "./ui";
-import { SeriesChart } from "./SeriesChart";
 
 const T = {
   es: {
@@ -49,142 +47,97 @@ export function MonitorsHome({ doc, lang, register, onAsk }: {
   const attention = doc.entities.flatMap((ent) => ent.state.attention.map((it, i) => ({ id: `${ent.entity.id}-${i}`, text: attentionText(it, ent, lang) })));
   const notYet = unknowns(doc, lang);
 
+  const monitors = doc.entities.flatMap((ent) => ent.monitors.map((mon) => ({ ent, mon })));
+  const freshBy = new Set(changes.map((e) => e.monitor));
+  const [tray, setTray] = useState<null | "changed" | "attention" | "quality" | "unknown">(null);
+  const chips = [
+    { key: "changed" as const, label: t.changed, n: changes.length, empty: t.nothingNew, hot: changes.length > 0 },
+    { key: "attention" as const, label: t.attention, n: attention.length, empty: t.nothingAttention, hot: attention.length > 0 },
+    { key: "quality" as const, label: t.quality, n: quality.length, empty: t.qualityOk, hot: false },
+    { key: "unknown" as const, label: t.unknown, n: notYet.length, empty: "", hot: false },
+  ];
+  const open = chips.find((c) => c.key === tray) ?? null;
+  const list = tray === "changed" ? changes.map((e) => ({ id: e.id, text: eventText(e, doc, lang), seen: true }))
+    : tray === "attention" ? attention.map((a) => ({ ...a, seen: false }))
+    : tray === "quality" ? quality.map((q) => ({ ...q, seen: false }))
+    : tray === "unknown" ? notYet.map((x) => ({ id: x, text: x, seen: false })) : [];
+
   return (
-    <section aria-labelledby="home-title" className="relative mx-auto w-full max-w-[760px] px-4 pb-6">
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h2 id="home-title" className="text-lg font-semibold">{t.title}</h2>
-          <p className="text-sm text-text-2">{t.sub}</p>
-        </div>
+    <section aria-labelledby="home-title" className="relative mx-auto w-full max-w-[1120px] px-4 pb-6">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 px-1">
+        <h2 id="home-title" className="text-sm font-semibold">{t.title}</h2>
         <button type="button" onClick={() => setSure((x) => !x)} aria-expanded={sure}
-          className="rounded-full border border-border px-3 py-1.5 text-sm text-text-2 hover:border-accent hover:text-accent">
+          className="text-sm font-medium text-text-2 underline-offset-4 hover:text-text hover:underline">
           {sure ? t.hideSure : t.sure}
         </button>
       </div>
       {sure ? <p role="note" className="mb-3 rounded-2xl bg-surface-2 p-3 text-sm leading-6">{certaintyText(register, lang, doc.calibration)}</p> : null}
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Tray title={t.changed} count={changes.length} empty={t.nothingNew}
-          action={changes.length > 1 ? { label: t.seenAll, run: () => see(changes.map((e) => e.id)) } : null}>
-          {changes.map((e) => (
-            <li key={e.id} className="flex items-start gap-2">
-              <span className="mt-0.5 shrink-0 rounded-full bg-accent px-1.5 text-[10px] font-semibold uppercase text-on-accent">{t.fresh}</span>
-              <span className="min-w-0 flex-1">{eventText(e, doc, lang)}</span>
-              <button type="button" onClick={() => see([e.id])} className="shrink-0 text-xs font-medium text-text-2 underline underline-offset-2 hover:text-text">{t.seen}</button>
-            </li>
-          ))}
-        </Tray>
-        <Tray title={t.attention} count={attention.length} empty={t.nothingAttention}>
-          {attention.map((a) => <li key={a.id}>{a.text}</li>)}
-        </Tray>
-        <Tray title={t.quality} count={quality.length} empty={t.qualityOk}>
-          {quality.map((q) => <li key={q.id}>{q.text}</li>)}
-        </Tray>
-      </div>
-
-      <ul className="mt-4 flex flex-col gap-3">
-        {doc.entities.flatMap((ent) => ent.monitors.map((mon) => (
-          <li key={mon.id}><MonitorCard ent={ent} mon={mon} lang={lang} register={register} onAsk={onAsk} /></li>
-        )))}
+      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {monitors.map(({ ent, mon }) => (
+          <li key={mon.id}>
+            <MonitorTile ent={ent} mon={mon} lang={lang} register={register} fresh={freshBy.has(mon.id)}
+              onOpen={(name) => { see(changes.filter((e) => e.monitor === mon.id).map((e) => e.id)); onAsk(lang === "es" ? `¿Cómo cambia ${name.toLocaleLowerCase("es")}?` : `How is ${name} changing?`); }} />
+          </li>
+        ))}
       </ul>
 
-      {notYet.length ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-border p-3">
-          <h3 className="text-sm font-semibold">{t.unknown}</h3>
-          <ul className="mt-1 list-disc pl-5 text-sm text-text-2">
-            {(register === "sencillo" ? notYet.slice(0, 3) : notYet).map((x) => <li key={x}>{x}</li>)}
-          </ul>
+      <div className="mt-3 flex flex-wrap gap-2 px-1" role="group" aria-label={t.sub}>
+        {chips.filter((c) => c.key !== "unknown" || c.n > 0).map((c) => (
+          <button key={c.key} type="button" onClick={() => setTray(tray === c.key ? null : c.key)} aria-expanded={tray === c.key}
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors ${tray === c.key ? "border-accent bg-accent text-on-accent" : "border-border bg-surface/90 text-text-2 hover:border-text-3 hover:text-text"}`}>
+            {c.hot && tray !== c.key ? <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent" /> : null}
+            {c.label}<span className="tabular text-xs opacity-70">{c.n}</span>
+          </button>
+        ))}
+      </div>
+      {open ? (
+        <div className="widget-in mt-2 rounded-2xl border border-border bg-surface p-3">
+          {list.length ? (
+            <ul className="flex flex-col gap-2 text-sm">
+              {list.map((x) => (
+                <li key={x.id} className="flex items-start gap-2">
+                  <span className="min-w-0 flex-1">{x.text}</span>
+                  {x.seen ? <button type="button" onClick={() => see([x.id])} className="shrink-0 text-xs font-medium text-text-2 underline underline-offset-2 hover:text-text">{t.seen}</button> : null}
+                </li>
+              ))}
+            </ul>
+          ) : <p className="text-sm text-text-3">{open.empty}</p>}
+          {tray === "changed" && changes.length > 1 ? (
+            <button type="button" onClick={() => see(changes.map((e) => e.id))} className="mt-2 text-xs font-medium text-text-2 underline underline-offset-2 hover:text-text">{t.seenAll}</button>
+          ) : null}
         </div>
       ) : null}
-      <p className="mt-3 text-xs text-text-3">{t.note}</p>
+      <p className="mt-3 px-1 text-xs text-text-3">{t.note}</p>
     </section>
   );
 }
 
-function Tray({ title, count, empty, action = null, children }: {
-  title: string; count: number; empty: string; action?: { label: string; run: () => void } | null; children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-border bg-surface p-3">
-      <h3 className="flex items-center gap-2 text-sm font-semibold">
-        {title}<span className="tabular rounded-full bg-surface-2 px-2 text-xs font-medium text-text-2">{count}</span>
-      </h3>
-      {count ? <ul className="mt-2 flex flex-col gap-2 text-sm">{children}</ul> : <p className="mt-2 text-sm text-text-3">{empty}</p>}
-      {action ? <button type="button" onClick={action.run} className="mt-2 text-xs font-medium text-text-2 underline underline-offset-2 hover:text-text">{action.label}</button> : null}
-    </div>
-  );
-}
-
-function MonitorCard({ ent, mon, lang, register, onAsk }: {
-  ent: HomeEntity; mon: HomeMonitor; lang: Lang; register: Register; onAsk: (text: string) => void;
+/** One monitor as a card (same family as «Descubre»): the series on top, the verdict and the number below. */
+function MonitorTile({ ent, mon, lang, register, fresh, onOpen }: {
+  ent: HomeEntity; mon: HomeMonitor; lang: Lang; register: Register; fresh: boolean; onOpen: (name: string) => void;
 }) {
   const v = presentMonitor(mon, register, lang, sourcesFor(mon));
   const t = T[lang];
-  const item = ent.state.priority.find((p) => p.kind === "tendencia" && p.variable === mon.variable.label.es);
   const values = mon.series.values.map((x) => (x === null ? NaN : x));
   const name = monitorName(ent, mon, lang);
-  const tl = mon.timeline;
   return (
-    <article className="rounded-2xl border border-border bg-surface p-4" aria-label={name}>
-      <header className="flex flex-wrap items-center gap-2">
-        <h3 className="text-base font-semibold">{name}</h3>
-        <span className="rounded-full border border-border px-2 py-0.5 text-xs text-text-2">{STATUS[ent.state.status][lang]}</span>
-        {register !== "sencillo" && item ? <span className="tabular rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-2">{t.priority} {item.priority}</span> : null}
-        {!mon.data.data_real ? <span className="rounded-full bg-sim/70 px-2 py-0.5 text-xs font-medium text-on-sim">{lang === "es" ? "SIMULADO" : "SIMULATED"}</span> : null}
-      </header>
-      <div className="mt-2 flex items-start gap-4">
-        <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-1.5 text-xs font-semibold"><VerdictGlyph v={v.verdict} />{v.phrase}</p>
-          {v.figure ? <p className="tabular mt-0.5 text-lg font-semibold leading-tight">{v.figure}</p> : null}
-          <p className="mt-1 text-[15px] leading-6 text-pretty">{v.sentence}</p>
-          {v.since ? <p className="mt-1 text-sm text-text-2">{v.since}</p> : null}
-        </div>
-        {register === "sencillo" ? <Spark values={values} highlight={v.verdict === 1} /> : null}
-      </div>
-      {register !== "sencillo" && mon.series.years.length ? (
-        <div className="mt-3">
-          <SeriesChart values={values} years={mon.series.years} effect={mon.finding.effect ?? NaN}
-            unit={prettyUnit(mon.variable.unit, lang)} lang={lang} showTrend={v.verdict === 1} />
-          {tl ? <EvidenceStrip ends={tl.ends} verdicts={tl.verdict} lang={lang} /> : null}
-        </div>
-      ) : null}
-      <ul aria-label={lang === "es" ? "Límites" : "Limits"} className="mt-3 flex flex-col gap-1 text-sm text-text-2">
-        {v.limits.map((l) => (
-          <li key={l.key} className="flex gap-1.5">
-            <span aria-hidden="true">⚠︎</span><span>{l.text[lang]}{register === "tecnico" && l.bit !== null ? <span className="tabular text-text-3"> · bit {l.bit}</span> : null}</span>
-          </li>
-        ))}
-      </ul>
-      {v.capability ? <p className="mt-1 text-sm text-text-2">{v.capability}</p> : null}
-      {v.expert ? (
-        <table className="tabular mt-3 w-full text-sm">
-          <tbody>
-            {v.expert.map(([k, x]) => (
-              <tr key={k} className="border-b border-border last:border-0">
-                <th scope="row" className="py-1 pr-3 text-left font-normal text-text-2">{k}</th><td className="break-all py-1 text-right">{x}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : null}
-      <footer className="mt-3 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-text-3">{v.dataLine}</p>
-        <button type="button" onClick={() => onAsk(lang === "es" ? `¿Qué tan seguro es ${name.toLocaleLowerCase("es")}?` : `How sure is ${name}?`)}
-          className="rounded-full border border-border px-3 py-1 text-sm hover:border-accent hover:text-accent">{t.sure}</button>
-      </footer>
-    </article>
-  );
-}
-
-/** «Desde cuándo se sabe»: the verdict of each growing window, one square per year (nested windows, not independent). */
-function EvidenceStrip({ ends, verdicts, lang }: { ends: number[]; verdicts: number[]; lang: Lang }) {
-  const label = lang === "es" ? "Evolución de la evidencia: veredicto con los datos hasta cada año" : "Evolution of the evidence: verdict with data up to each year";
-  return (
-    <figure className="m-0 mt-2">
-      <div role="img" aria-label={`${label}. ${ends.map((y, i) => `${y}: ${verdicts[i]}`).join(", ")}`} className="flex gap-[2px]">
-        {ends.map((y, i) => <span key={y} title={`${y}`} className="flex-1"><VerdictGlyph v={verdicts[i]} /></span>)}
-      </div>
-      <figcaption className="mt-1 flex justify-between text-xs text-text-3"><span>{ends[0]}</span><span className="px-2 text-center">{label}</span><span>{ends.at(-1)}</span></figcaption>
-    </figure>
+    <button type="button" onClick={() => onOpen(name)} aria-label={`${name}. ${v.phrase}`}
+      className="group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-surface/90 text-left backdrop-blur transition-all hover:-translate-y-0.5 hover:border-text-3 hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)]">
+      <span className="relative flex h-[84px] items-center border-b border-border bg-surface-2/70 px-4">
+        <Spark values={values} highlight={v.verdict === 1} />
+        <span className="absolute left-3 top-2.5 flex gap-1.5">
+          {fresh ? <span className="rounded-full bg-accent px-1.5 text-[10px] font-semibold uppercase leading-4 text-on-accent">{t.fresh}</span> : null}
+          {!mon.data.data_real ? <span className="rounded-full bg-sim/70 px-1.5 text-[10px] font-semibold uppercase leading-4 text-on-sim">{lang === "es" ? "Simulado" : "Simulated"}</span> : null}
+        </span>
+      </span>
+      <span className="flex flex-1 flex-col p-4">
+        <span className="text-[15px] font-semibold">{name}</span>
+        <span className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-text-2"><VerdictGlyph v={v.verdict} />{v.phrase}</span>
+        {v.figure ? <span className="tabular mt-1 text-lg font-semibold leading-tight">{v.figure}</span> : null}
+        <span className="mt-1 line-clamp-3 flex-1 text-sm leading-snug text-text-2">{v.since ?? v.sentence}</span>
+        <span className="mt-3 text-sm font-semibold text-text group-hover:underline group-hover:underline-offset-4">{t.ask} →</span>
+      </span>
+    </button>
   );
 }

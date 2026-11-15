@@ -70,7 +70,7 @@ function Dock({ lang }: { lang: Lang }) {
   const status = v.listening ? (s.mode === "dictation" ? t.modes.dictation : hf ? t.handsFree : t.listening) : t.off;
   return (
     <nav aria-label={t.dock}
-      className="pointer-events-none fixed bottom-3 left-3 z-[60] flex max-w-[calc(100vw-1.5rem)] items-end gap-2 max-sm:bottom-auto max-sm:top-[4.25rem]">
+      className="pointer-events-none fixed bottom-3 left-[calc(var(--rail,240px)+0.75rem)] z-[60] flex max-w-[calc(100vw-1.5rem)] items-end gap-2 max-md:bottom-auto max-md:left-16 max-md:top-3">
       <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-border bg-surface/95 p-1 shadow-[0_6px_24px_rgba(16,24,40,0.12)] backdrop-blur">
         <DockButton label={v.listening ? t.stopTalk : t.talk} keys="Alt+V" active={v.listening} onClick={() => hub.talk()} disabled={!speech}>
           <path d="M8 2.5a2 2 0 0 1 2 2v3a2 2 0 0 1-4 0v-3a2 2 0 0 1 2-2zM4.5 7.5a3.5 3.5 0 0 0 7 0M8 11v2.5" />
