@@ -1,0 +1,282 @@
+{
+ "what": "ZON extent from NSIDC-0051 v2 vs NSIDC Sea Ice Index G02135 v4 (same microwave record)",
+ "delta": "0.3 million km2 per decade (team working value)",
+ "months": {
+  "N01": {
+   "years": 46,
+   "bias_mkm2": 0.446,
+   "bias_pct": 3.15,
+   "corr": 0.996,
+   "corr_detrended": 0.9768
+  },
+  "N02": {
+   "years": 47,
+   "bias_mkm2": 0.435,
+   "bias_pct": 2.89,
+   "corr": 0.9941,
+   "corr_detrended": 0.9662
+  },
+  "N03": {
+   "years": 47,
+   "bias_mkm2": 0.45,
+   "bias_pct": 2.96,
+   "corr": 0.9925,
+   "corr_detrended": 0.9617,
+   "hori": {
+    "ours": {
+     "source": "zon_nsidc0051",
+     "verdict": "PROBADO",
+     "effect": -0.407,
+     "ci": [
+      -0.479,
+      -0.335
+     ],
+     "e": 2.1957278411775002e+24,
+     "mde": 0.124
+    },
+    "sea_ice_index": {
+     "source": "nsidc_g02135",
+     "verdict": "PROBADO",
+     "effect": -0.38,
+     "ci": [
+      -0.448,
+      -0.312
+     ],
+     "e": 1.296074436790642e+24,
+     "mde": 0.117
+    },
+    "multisource": "CONFIRMADO",
+    "pct_per_decade_vs_1981_2010_ours": -2.6,
+    "pct_per_decade_vs_1981_2010_index": -2.5
+   }
+  },
+  "N04": {
+   "years": 47,
+   "bias_mkm2": 0.378,
+   "bias_pct": 2.61,
+   "corr": 0.9952,
+   "corr_detrended": 0.9807
+  },
+  "N05": {
+   "years": 47,
+   "bias_mkm2": 0.4,
+   "bias_pct": 3.06,
+   "corr": 0.9905,
+   "corr_detrended": 0.9746
+  },
+  "N06": {
+   "years": 47,
+   "bias_mkm2": 0.387,
+   "bias_pct": 3.4,
+   "corr": 0.9932,
+   "corr_detrended": 0.9513
+  },
+  "N07": {
+   "years": 47,
+   "bias_mkm2": 0.464,
+   "bias_pct": 5.18,
+   "corr": 0.9942,
+   "corr_detrended": 0.964
+  },
+  "N08": {
+   "years": 47,
+   "bias_mkm2": 0.237,
+   "bias_pct": 3.59,
+   "corr": 0.9972,
+   "corr_detrended": 0.9836
+  },
+  "N09": {
+   "years": 47,
+   "bias_mkm2": 0.294,
+   "bias_pct": 5.09,
+   "corr": 0.9981,
+   "corr_detrended": 0.9906,
+   "hori": {
+    "ours": {
+     "source": "zon_nsidc0051",
+     "verdict": "PROBADO",
+     "effect": -0.772,
+     "ci": [
+      -0.901,
+      -0.644
+     ],
+     "e": 1.727162532599991e+29,
+     "mde": 0.223
+    },
+    "sea_ice_index": {
+     "source": "nsidc_g02135",
+     "verdict": "PROBADO",
+     "effect": -0.741,
+     "ci": [
+      -0.875,
+      -0.608
+     ],
+     "e": 4.343111833554596e+24,
+     "mde": 0.231
+    },
+    "multisource": "CONFIRMADO",
+    "pct_per_decade_vs_1981_2010_ours": -12.0,
+    "pct_per_decade_vs_1981_2010_index": -11.6
+   }
+  },
+  "N10": {
+   "years": 47,
+   "bias_mkm2": 0.791,
+   "bias_pct": 10.7,
+   "corr": 0.9757,
+   "corr_detrended": 0.8944
+  },
+  "N11": {
+   "years": 47,
+   "bias_mkm2": 0.538,
+   "bias_pct": 5.25,
+   "corr": 0.9897,
+   "corr_detrended": 0.9495
+  },
+  "N12": {
+   "years": 46,
+   "bias_mkm2": 0.52,
+   "bias_pct": 4.18,
+   "corr": 0.987,
+   "corr_detrended": 0.9159
+  },
+  "S01": {
+   "years": 46,
+   "bias_mkm2": 0.247,
+   "bias_pct": 4.9,
+   "corr": 0.9919,
+   "corr_detrended": 0.9929
+  },
+  "S02": {
+   "years": 47,
+   "bias_mkm2": 0.04,
+   "bias_pct": 1.32,
+   "corr": 0.9972,
+   "corr_detrended": 0.9971,
+   "hori": {
+    "ours": {
+     "source": "zon_nsidc0051",
+     "verdict": "NO_CONCLUYENTE",
+     "effect": -0.071,
+     "ci": [
+      -0.248,
+      0.105
+     ],
+     "e": 0.5012450284961588,
+     "mde": 0.308
+    },
+    "sea_ice_index": {
+     "source": "nsidc_g02135",
+     "verdict": "NO_CONCLUYENTE",
+     "effect": -0.078,
+     "ci": [
+      -0.253,
+      0.097
+     ],
+     "e": 0.4523617782950911,
+     "mde": 0.305
+    },
+    "multisource": "SIN_CONFIRMAR",
+    "pct_per_decade_vs_1981_2010_ours": -2.3,
+    "pct_per_decade_vs_1981_2010_index": -2.5
+   }
+  },
+  "S03": {
+   "years": 47,
+   "bias_mkm2": 0.399,
+   "bias_pct": 10.17,
+   "corr": 0.9879,
+   "corr_detrended": 0.9878
+  },
+  "S04": {
+   "years": 47,
+   "bias_mkm2": 0.57,
+   "bias_pct": 8.49,
+   "corr": 0.9929,
+   "corr_detrended": 0.993
+  },
+  "S05": {
+   "years": 47,
+   "bias_mkm2": 0.619,
+   "bias_pct": 6.18,
+   "corr": 0.9869,
+   "corr_detrended": 0.9873
+  },
+  "S06": {
+   "years": 47,
+   "bias_mkm2": 0.599,
+   "bias_pct": 4.53,
+   "corr": 0.9933,
+   "corr_detrended": 0.9938
+  },
+  "S07": {
+   "years": 47,
+   "bias_mkm2": 0.497,
+   "bias_pct": 3.15,
+   "corr": 0.9887,
+   "corr_detrended": 0.9883
+  },
+  "S08": {
+   "years": 47,
+   "bias_mkm2": 0.407,
+   "bias_pct": 2.31,
+   "corr": 0.986,
+   "corr_detrended": 0.9871
+  },
+  "S09": {
+   "years": 47,
+   "bias_mkm2": 0.324,
+   "bias_pct": 1.76,
+   "corr": 0.9868,
+   "corr_detrended": 0.9867,
+   "hori": {
+    "ours": {
+     "source": "zon_nsidc0051",
+     "verdict": "NO_CONCLUYENTE",
+     "effect": -0.0,
+     "ci": [
+      -0.243,
+      0.242
+     ],
+     "e": 0.4119785403803318,
+     "mde": 0.425
+    },
+    "sea_ice_index": {
+     "source": "nsidc_g02135",
+     "verdict": "NO_CONCLUYENTE",
+     "effect": 0.0,
+     "ci": [
+      -0.234,
+      0.234
+     ],
+     "e": 0.3847546743727494,
+     "mde": 0.409
+    },
+    "multisource": "SIN_CONFIRMAR",
+    "pct_per_decade_vs_1981_2010_ours": -0.0,
+    "pct_per_decade_vs_1981_2010_index": 0.0
+   }
+  },
+  "S10": {
+   "years": 47,
+   "bias_mkm2": 0.284,
+   "bias_pct": 1.58,
+   "corr": 0.9878,
+   "corr_detrended": 0.9876
+  },
+  "S11": {
+   "years": 47,
+   "bias_mkm2": 0.454,
+   "bias_pct": 2.9,
+   "corr": 0.9822,
+   "corr_detrended": 0.98
+  },
+  "S12": {
+   "years": 46,
+   "bias_mkm2": 0.936,
+   "bias_pct": 9.22,
+   "corr": 0.9686,
+   "corr_detrended": 0.968
+  }
+ }
+}

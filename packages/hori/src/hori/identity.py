@@ -144,6 +144,18 @@ PHYSICAL_CLASSES = (
                   "0.1 m/s/década: orden del «stilling» reportado en superficie [de memoria, por confirmar]."),
     PhysicalClass("humedad_relativa", {"es": "Humedad relativa", "en": "Relative humidity"}, ("%", "percent"),
                   ("humidity", "rh2m"), 1.0, {}, "1 punto %/década [propuesta del equipo].", need_keyword=True),
+    PhysicalClass("indice_de_vegetacion", {"es": "Índice de vegetación", "en": "Vegetation index"}, ("1", "ndvi", "evi"),
+                  ("vegetation index", "ndvi", "evi"), 0.02, {},
+                  "0.02 de NDVI/década: ~4 % de un NDVI típico de pastizal (0.5). Valor de trabajo del equipo, por revisar "
+                  "con quien estudia vegetación.", need_keyword=True),
+    PhysicalClass("profundidad_optica_aerosol", {"es": "Profundidad óptica de aerosoles", "en": "Aerosol optical depth"},
+                  ("1",), ("optical depth", "optical thickness", "aod", "exttau"), 0.02, {},
+                  "0.02/década: del orden del 14 % de la profundidad óptica media global (0.142 en MERRA-2 a 550 nm, 1981–2025, "
+                  "media por área medida en nuestro cubo). Valor de trabajo, por revisar.", need_keyword=True),
+    PhysicalClass("humedad_del_suelo", {"es": "Humedad del suelo", "en": "Soil moisture"}, ("m3/m3", "cm3/cm3", "m3m-3"),
+                  ("soil", "moisture"), 0.01, {},
+                  "0.01 m³/m³/década: una cuarta parte de la exactitud que SMAP debe cumplir por medición (0.04 m³/m³, "
+                  "requisito de la misión). Valor de trabajo, por revisar."),
     PhysicalClass("fraccion", {"es": "Fracción", "en": "Fraction"}, ("1", "fraction", "0-1"),
                   ("fraction", "albedo", "cover"), 0.02, {}, "0.02/década (2 puntos de fracción) [propuesta del equipo].",
                   need_keyword=True),
