@@ -6,7 +6,7 @@
 import type { CellFinding, Verdict } from "@/contract/types";
 import type { FaunaGroup } from "@/core/live/fauna";
 import { entryWindow, siblings, type IndexEntry, type RegionGeo } from "@/core/contract/extra";
-import { cellFinding, type Layer } from "@/core/contract/loader";
+import { cellFinding, cellIndexAt, type Layer } from "@/core/contract/loader";
 import { capitalise, count, deltaValue, digitsFor, num, shortLabel, templateValues } from "@/core/format/format";
 import { narrateTrend, planetAverage, type TrendFacts } from "@/core/nlg/realize";
 import { topicAnswer, type Widget } from "@/core/genui/topic";
@@ -165,6 +165,15 @@ export function readSelection(ctx: Ctx, sel: Selection = ctx.state.selection): R
   }
   const region = ctx.regions.find((r) => r.id === sel.id);
   const rl = region?.layers[m.id];
+  // A state without HORI's own aggregate (the 32 states of regions.json): read the cell at its centre, named as the state.
+  const bb = (region as { bbox?: [number, number, number, number] } | undefined)?.bbox;
+  if (region && !rl && bb) {
+    const idx = cellIndexAt(m, (bb[1] + bb[3]) / 2, (bb[0] + bb[2]) / 2);
+    if (idx < 0 || idx >= layer.cells) return null;
+    const f = cellFinding(layer, idx);
+    const nv = layer.arrays.nvalid;
+    return { finding: f, nvalid: nv ? nv[idx] : null, N: m.summary.cells_valid ?? NaN, selection: sel, nCells: 1, name: { es: short(region.name.es), en: short(region.name.en) } };
+  }
   if (!region || !rl) return null;
   return {
     selection: sel, nvalid: null, N: ctx.regions.length, nCells: rl.n_cells,

@@ -123,9 +123,13 @@ function filterOf(text: string): number[] | null {
 }
 
 /** A place for a live question: a named city, else the coordinates typed, else none (the caller picks a default). */
+/** The state named in the command being parsed (regions.json), so «alertas en Guanajuato» lands at its centre. */
+let regionWhere: Where | null = null;
+
 export function whereOf(raw: string, place: Place): Where | null {
   const named = findPlace(raw);
   if (named) return named;
+  if (place?.kind === "region" && regionWhere) return regionWhere;
   return place?.kind === "coord" ? { name: `${place.lat.toFixed(2)}°, ${place.lon.toFixed(2)}°`, lat: place.lat, lon: place.lon } : null;
 }
 
@@ -136,6 +140,8 @@ export function parse(raw: string, regions: Region[]): Command {
   const named = regionId ? null : findPlace(raw);
   const coord = regionId ? null : findCoord(text) ?? (named ? { lat: named.lat, lon: named.lon } : null);
   const place: Place = regionId ? { kind: "region", id: regionId } : coord ? { kind: "coord", ...coord } : null;
+  const rg = regionId ? (regions.find((r) => r.id === regionId) as (Region & { bbox?: [number, number, number, number] }) | undefined) : undefined;
+  regionWhere = rg?.bbox ? { name: rg.name.es, lat: (rg.bbox[1] + rg.bbox[3]) / 2, lon: (rg.bbox[0] + rg.bbox[2]) / 2 } : null;
   const year = text.match(P.year);
   const win = text.match(P.window);
   const world = worldRequest(text);
