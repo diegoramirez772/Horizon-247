@@ -532,7 +532,7 @@ function Discover({ lang, onTry, title, lead }: {
   const update = () => {
     const el = row.current;
     if (!el) return;
-    setEdge({ start: el.scrollLeft < 8, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 8 });
+    setEdge({ start: el.scrollLeft < 32, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 32 }); // the row has 24 px of padding: snap stops there
   };
   const go = (dir: number) => row.current?.scrollBy({ left: dir * 296, behavior: "smooth" });
 
@@ -563,16 +563,15 @@ function Discover({ lang, onTry, title, lead }: {
     return () => window.clearInterval(id);
   }, [auto]);
   return (
-    <section aria-labelledby="discover" className="relative mx-auto w-full max-w-[1120px] px-4" aria-roledescription="carrusel"
+    <section aria-label={title} className="relative mx-auto w-full max-w-[1120px] px-4" aria-roledescription="carrusel"
       onMouseEnter={() => setHolding(true)} onMouseLeave={() => setHolding(false)}
       onFocus={() => setHolding(true)} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setHolding(false); }}>
-      <div className="mb-3 flex items-center justify-between gap-3 px-1">
-        <h2 id="discover" className="text-sm font-semibold">{title}</h2>
-        <div className="flex gap-1.5">
-          <ArrowButton label={t.prev} disabled={edge.start} onClick={() => go(-1)}><path d="M10 3L5 8l5 5" /></ArrowButton>
-          <ArrowButton label={t.next} disabled={edge.end} onClick={() => go(1)}><path d="M6 3l5 5-5 5" /></ArrowButton>
-        </div>
-      </div>
+      <span className={`absolute left-1 top-1/2 z-10 -translate-y-1/2 transition-opacity ${edge.start ? "pointer-events-none opacity-0" : ""}`}>
+        <ArrowButton label={t.prev} disabled={edge.start} onClick={() => go(-1)}><path d="M10 3L5 8l5 5" /></ArrowButton>
+      </span>
+      <span className={`absolute right-1 top-1/2 z-10 -translate-y-1/2 transition-opacity ${edge.end ? "pointer-events-none opacity-0" : ""}`}>
+        <ArrowButton label={t.next} disabled={edge.end} onClick={() => go(1)}><path d="M6 3l5 5-5 5" /></ArrowButton>
+      </span>
       <ul ref={row} onScroll={update} aria-label={title}
         className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-6 pb-3 pt-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ maskImage: "linear-gradient(90deg, transparent, black 24px, black calc(100% - 24px), transparent)", WebkitMaskImage: "linear-gradient(90deg, transparent, black 24px, black calc(100% - 24px), transparent)" }}>
@@ -592,7 +591,7 @@ function Discover({ lang, onTry, title, lead }: {
 function ArrowButton({ label, disabled, onClick, children }: { label: string; disabled: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled} aria-label={label} title={label}
-      className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface text-text transition-opacity hover:bg-surface-2 disabled:opacity-30">
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface text-text shadow-[0_6px_18px_rgba(16,24,40,0.14)] transition-all hover:scale-105 hover:bg-surface-2 disabled:opacity-30">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
     </button>
   );
