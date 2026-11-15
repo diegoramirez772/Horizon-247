@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { compose, readingLimits, readSelection, type Ctx } from "@/core/assistant/compose";
 import { entryWindow, type IndexEntry } from "@/core/contract/extra";
 import { cellLatLon } from "@/core/contract/loader";
@@ -9,7 +9,7 @@ import { UI, verdictName, type Lang } from "@/core/i18n/texts";
 import type { BBox, MapData } from "@/core/map/MapView";
 import type { MapTheme } from "@/core/map/palette";
 import { shownLimits } from "@/core/honesty/limits";
-import { allowedMetrics, type Metric, type SceneTarget, type TimeMode } from "@/core/state/store";
+import { allowedMetrics, type Metric, type SceneTarget, type TimeMode, type ZoneTarget } from "@/core/state/store";
 import { EvidenceDetails } from "./Evidence";
 import { LivePanel } from "./LivePanel";
 import { ZoneView } from "./ZoneView";
@@ -18,16 +18,25 @@ import { LegendBar } from "./Legend";
 import { MapCanvas, type HoverInfo, type MapFocus, type Projection } from "./MapCanvas";
 import { SeriesChart } from "./SeriesChart";
 import { Segmented } from "./ui";
+import { FocusTour, type TourState } from "./FocusTour";
+import { FaunaPanel, type FaunaPlace } from "./FaunaPanel";
+import { PersonPanel } from "./PersonPanel";
+import { type Focus, type FocusSet, findFoci, focusSeries } from "@/core/detect/focos";
+import { buildPrisms } from "@/core/detect/prisms";
+import { buildDrape } from "@/core/detect/drape";
+import { focusWords, sceneCaption } from "@/core/detect/words";
+import { detectTier } from "@/core/map/tier";
+import { loadSeries, type Layer } from "@/core/contract/loader";
 
-export type PanelTab = "map" | "live" | "evidence" | "scene" | "zone";
+export type PanelTab = "map" | "live" | "evidence" | "scene" | "zone" | "fauna" | "person";
 
 const C = {
   es: {
-    map: "Monitoreo", live: "En vivo", evidence: "Evidencia", scene: "Escena 3D", zone: "Zona en 3D real", see3d: "Ver esta zona en 3D real", genScene: "Escena generada", close: "Cerrar panel", expand: "Ampliar panel", shrink: "Reducir panel",
+    map: "Monitoreo", live: "En vivo", evidence: "Evidencia", scene: "Escena 3D", zone: "Zona en 3D real", fauna: "Señales de fauna", person: "Persona", see3d: "Ver esta zona en 3D real", genScene: "Escena generada", close: "Cerrar panel", expand: "Ampliar panel", shrink: "Reducir panel",
     full: "Pantalla completa", exitFull: "Salir de pantalla completa (Esc)", view: "Vista", globe: "Globo 3D", flat: "Plano",
     years: "Datos", mode: { completa: "Tendencia", anual: "Año a año", acumulada: "Cómo crece la evidencia" },
     hint: "Pasa el cursor o toca una zona", simulated: "Simulado", viewMenu: "Vista del mapa",
-    picture: "Imagen de la NASA bajo los datos", base: "Blue Marble (base)", liveGroup: "En vivo · cada 10 min", dayGroup: "Del día", scene3d: "Abrir una escena 3D (toca una zona para la suya)",
+    picture: "Imagen de la NASA bajo los datos", base: "Tierra realista · sol, nubes y lluvia en vivo", liveGroup: "En vivo · cada 10 min", dayGroup: "Del día", scene3d: "Abrir una escena 3D (toca una zona para la suya)",
     noSel: "Toca una zona del mapa o pregunta por una región para ver su evidencia.",
     play: "Reproducir los años", pause: "Pausar",
     metric: "Métrica", metrics: { verdict: "Veredicto", effect: "Efecto", mde: "MDE", years: "Años que faltan" },
@@ -40,11 +49,11 @@ const C = {
     notYet: "Aún no se sabe",
   },
   en: {
-    map: "Monitoring", live: "Live", evidence: "Evidence", scene: "3D scene", zone: "Real 3D zone", see3d: "See this area in real 3D", genScene: "Generated scene", close: "Close panel", expand: "Widen panel", shrink: "Narrow panel",
+    map: "Monitoring", live: "Live", evidence: "Evidence", scene: "3D scene", zone: "Real 3D zone", fauna: "Animal signals", person: "Person", see3d: "See this area in real 3D", genScene: "Generated scene", close: "Close panel", expand: "Widen panel", shrink: "Narrow panel",
     full: "Full screen", exitFull: "Exit full screen (Esc)", view: "View", globe: "3D globe", flat: "Flat",
     years: "Data", mode: { completa: "Trend", anual: "Year by year", acumulada: "How evidence grows" },
     hint: "Hover or tap an area", simulated: "Simulated", viewMenu: "Map view",
-    picture: "NASA picture under the data", base: "Blue Marble (base)", liveGroup: "Live · every 10 min", dayGroup: "Of the day", scene3d: "Open a 3D scene (tap an area for its own)",
+    picture: "NASA picture under the data", base: "Realistic Earth · live sun, clouds and rain", liveGroup: "Live · every 10 min", dayGroup: "Of the day", scene3d: "Open a 3D scene (tap an area for its own)",
     noSel: "Tap an area on the map or ask about a region to see its evidence.",
     play: "Play the years", pause: "Pause",
     metric: "Metric", metrics: { verdict: "Verdict", effect: "Effect", mde: "MDE", years: "Years needed" },
@@ -68,14 +77,16 @@ export interface PanelControls {
   windowEnd: (y: number) => void;
   /** NASA imagery under the data (null = Blue Marble). */
   imagery: (id: string | null) => void;
+  /** Timeline speed (×0.5, ×1, ×2). */
+  speed: (v: number) => void;
   /** The «evolución» playback reached the last year. */
   evolutionDone: () => void;
   /** Fly the globe to a point (from «En vivo»). */
   look: (lat: number, lon: number) => void;
   /** Open the generated 3D scene of a place (from a zone on the map or the assistant). */
   scene: (t: SceneTarget) => void;
-  /** Open the real place in 3D (relief + satellite). */
-  zone: (z: { name: string; lat: number; lon: number }) => void;
+  /** Open the real place in 3D (relief + satellite); `box` = a focus's extent, shown with HORI's verdict draped on it. */
+  zone: (z: { name: string; lat: number; lon: number; box?: BBox; focus?: string }) => void;
 }
 
 /**
@@ -100,6 +111,40 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
   const expert = s.register === "tecnico";
   const plain = s.register === "sencillo";
   const [hover, setHover] = useState(-1);
+  // «Lo significativo» (traspaso 3D): foci read from HORI's verdict, only for the full window (the verdict on screen).
+  const foci = useFoci(ctx.layer);
+  const [tour, setTour] = useState<TourState | null>(null);
+  const showFoci = tab === "map" && s.timeMode === "completa" && !!foci && !!m;
+  // The camera goes to the focus with the most evidence once per layer, unless the person already picked a place.
+  // The assistant asked for the tour («recorre lo significativo»): adjust during render, once per request.
+  const [tourSeen, setTourSeen] = useState(0);
+  if (s.tourReq && s.tourReq.n !== tourSeen) { setTourSeen(s.tourReq.n); setTour({ mode: s.tourReq.mode, rank: 1 }); }
+  const [autoFor, setAutoFor] = useState<string | null>(null);
+  if (foci && m && autoFor !== m.id) {
+    setAutoFor(m.id);
+    if (!ctx.state.selection && foci.supported.length) setTour({ mode: "apoyado", rank: 1 });
+  }
+  const list = tour && foci ? (tour.mode === "apoyado" ? foci.supported : foci.unknown) : [];
+  const current = tour ? list.find((f) => f.rank === tour.rank) ?? list[0] ?? null : null;
+  const prisms = useMemo(() => {
+    if (!showFoci || !tour || !foci || !ctx.layer || !data) return null;
+    return buildPrisms({
+      layer: ctx.layer, foci, mode: tour.mode, active: current?.rank ?? 1, theme, blueIsMore, scale: data.scale,
+      budget: detectTier().tier >= 2 ? 1800 : 800, tags: (f) => focusWords(f, ctx.layer!.manifest, s.lang).tag,
+    });
+  }, [showFoci, tour, foci, ctx.layer, data, current, theme, blueIsMore, s.lang]);
+  const tourFocus: MapFocus | null = showFoci && current && m
+    ? { key: `foco|${m.id}|${tour!.mode}|${current.rank}`, kind: "focus", lat: current.lat, lon: current.lon, span: Math.max(current.bbox[2] - current.bbox[0], (current.bbox[3] - current.bbox[1]) * 1.5) }
+    : null;
+  const focusName = (f: Focus) => focusWords(f, m!, s.lang).title;
+  const mapFocus = useLatestFocus(focus, tourFocus);
+  // Animal signals of the zone open in 3D (a focus keeps its box), else of the selected place, else Durango.
+  const faunaZone = s.zone ?? zoneOf(ctx);
+  const faunaPlace: FaunaPlace = useMemo(() => ({ name: faunaZone.name, lat: faunaZone.lat, lon: faunaZone.lon, box: faunaZone.box }),
+    [faunaZone.name, faunaZone.lat, faunaZone.lon, faunaZone.box]);
+  const findFocus = (id: string | undefined) => (id && foci ? [...foci.supported, ...foci.unknown].find((f) => f.id === id) ?? null : null);
+  const zf = findFocus(s.zone?.focus);
+  const zoneFocus = zf && m ? focusWords(zf, m, s.lang) : null;
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-surface">
@@ -137,7 +182,7 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
               </div>
             ) : (
               <MapCanvas data={data} theme={theme} selected={sel?.kind === "cell" ? sel.index : -1}
-                filter={s.timeMode === "anual" ? null : s.filter} region={region} focus={focus} lang={s.lang}
+                filter={s.timeMode === "anual" ? null : s.filter} region={region} focus={mapFocus} lang={s.lang} prisms={prisms}
                 label={T.mapLabel(m ? m.title[s.lang] : "")} onPick={onPick} describe={describe} onHoverCell={expert ? setHover : undefined} projection={projection}
                 imageryId={s.imagery} onImagery={controls.imagery} />
             )}
@@ -145,6 +190,11 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                 <span role="status" className="rounded-full border border-border bg-surface px-4 py-2 text-sm text-text-2 shadow-md">{T.loading}</span>
               </div>
+            ) : null}
+            {showFoci && foci && m ? (
+              <FocusTour foci={foci} manifest={m} lang={s.lang} register={s.register} tour={tour} setTour={setTour}
+                onZone={(f) => controls.zone({ name: focusName(f), lat: f.lat, lon: f.lon, box: f.bbox, focus: f.id })}
+                onScene={(f) => controls.scene({ name: focusName(f), lat: f.lat, lon: f.lon, timeline: true, focus: f.id })} />
             ) : null}
             {sel && m && m.profile === "earth" ? (
               <div className="absolute bottom-3 right-3 z-10 flex flex-col items-end gap-2">
@@ -199,18 +249,24 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
           {expert ? <Readout ctx={ctx} index={hover} hint={c.readout} /> : null}
           <LegendBar ctx={ctx} theme={theme} blueIsMore={blueIsMore} data={data} onFilter={onFilter} />
           {m && s.timeMode === "anual" && m.series ? (
-            <Timeline years={m.series.years} value={s.year ?? m.series.years.at(-1)!} note={T.descriptiveNote} lang={s.lang} onChange={controls.year}
+            <Timeline years={m.series.years} value={s.year ?? m.series.years.at(-1)!} note={T.descriptiveNote} lang={s.lang} onChange={controls.year} speed={s.speed} onSpeed={controls.speed}
               autoplay={s.evolution} onDone={controls.evolutionDone} />
           ) : null}
           {m && s.timeMode === "acumulada" && m.windows ? (
-            <Timeline years={m.windows.ends} value={s.windowEnd ?? m.windows.ends.at(-1)!} prefix={`${m.windows.start}–`} note={T.accumulatedNote} lang={s.lang} onChange={controls.windowEnd} />
+            <Timeline years={m.windows.ends} value={s.windowEnd ?? m.windows.ends.at(-1)!} prefix={`${m.windows.start}–`} note={T.accumulatedNote} lang={s.lang} onChange={controls.windowEnd} speed={s.speed} onSpeed={controls.speed} />
           ) : null}
         </>
       ) : tab === "scene" ? (
-        <SceneFrame ctx={ctx} />
+        <SceneFrame ctx={ctx} foci={foci} />
       ) : tab === "zone" ? (
-        <ZoneView zone={zoneOf(ctx)} lang={s.lang} reading={zoneReading(ctx)}
-          onScene={() => { const z = zoneOf(ctx); controls.scene({ ...z, timeline: true }); }} />
+        <ZoneView zone={s.zone ?? zoneOf(ctx)} lang={s.lang} reading={zoneFocus ? { title: `HORI · ${zoneFocus.title}`, line: zoneFocus.line } : zoneReading(ctx)}
+          drapeFor={ctx.layer && data && m?.profile === "earth" ? (b) => buildDrape(ctx.layer!, b, theme, blueIsMore, data.scale) : undefined}
+          layerName={m ? `${m.title[s.lang]} · ${m.window.start}–${m.window.end}` : undefined}
+          onScene={() => { const z = s.zone ?? zoneOf(ctx); controls.scene({ name: z.name, lat: z.lat, lon: z.lon, timeline: true, focus: z.focus }); }} />
+      ) : tab === "fauna" ? (
+        <FaunaPanel lang={s.lang} place={faunaPlace} />
+      ) : tab === "person" ? (
+        <PersonPanel lang={s.lang} />
       ) : tab === "live" ? (
         <LivePanel lang={s.lang} imagery={s.imagery} onImagery={(id) => { controls.imagery(id); setTab("map"); }}
           onLook={(lat, lon) => { controls.look(lat, lon); setTab("map"); }} />
@@ -231,6 +287,29 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
       )}
     </div>
   );
+}
+
+/** Foci of the layer on screen, computed after the first paint (a 0.5° layer has 207 936 cells). */
+function useFoci(layer: Layer | null): FocusSet | null {
+  const [out, setOut] = useState<{ layer: Layer; foci: FocusSet } | null>(null);
+  useEffect(() => {
+    if (!layer || out?.layer === layer) return;
+    const id = window.setTimeout(() => setOut({ layer, foci: findFoci(layer) }), 60);
+    return () => window.clearTimeout(id);
+  }, [layer, out]);
+  return out && out.layer === layer ? out.foci : null;
+}
+
+/** The newest camera request wins: a command (focus key bumps) or a step of the tour. */
+function useLatestFocus(cmd: MapFocus | null, tour: MapFocus | null): MapFocus | null {
+  const [st, setSt] = useState<{ cmd?: string; tour?: string; pick: MapFocus | null }>({ pick: null });
+  // Adjusting state while rendering (React docs, «storing information from previous renders»): no effect needed.
+  if (cmd?.key !== st.cmd || tour?.key !== st.tour) {
+    const pick = tour && tour.key !== st.tour ? tour : cmd && cmd.key !== st.cmd ? cmd : st.pick;
+    setSt({ cmd: cmd?.key, tour: tour?.key, pick });
+    return pick;
+  }
+  return st.pick;
 }
 
 /** All the map's view options behind one small button over the map (instead of rows of toggles above it). */
@@ -272,17 +351,32 @@ function ViewMenu({ label, summary, children }: { label: string; summary: string
  * The generated scene of a place, inside the panel. It is the /escena page in a frame (its own 3D view, readings and
  * timeline); the frame gets the place, and the yearly series of the zone when the layer on screen has one.
  */
-function SceneFrame({ ctx }: { ctx: Ctx }) {
+function SceneFrame({ ctx, foci }: { ctx: Ctx; foci: FocusSet | null }) {
   const m = ctx.layer?.manifest;
+  // Opened from a focus: its caption, and its mean yearly series once the layer's series is loaded.
+  const focus = ctx.state.scene?.focus && foci ? [...foci.supported, ...foci.unknown].find((f) => f.id === ctx.state.scene!.focus) ?? null : null;
+  const [, setSeriesFor] = useState<Layer | null>(null); // re-render once the series arrives
+  useEffect(() => {
+    const L = ctx.layer;
+    if (!focus || !L || L.series || !L.manifest.series) return;
+    let live = true;
+    loadSeries(L).then(() => { if (live) setSeriesFor(L); }).catch(() => {});
+    return () => { live = false; };
+  }, [focus, ctx.layer]);
   // Opened from the sidebar: the zone selected on the map; otherwise Durango.
   const selPt = ctx.state.selection?.kind === "cell" && m && m.profile === "earth" ? cellLatLon(m, ctx.state.selection.index) : null;
   const sc = ctx.state.scene ?? (selPt ? { name: `${selPt.lat.toFixed(1)}°, ${selPt.lon.toFixed(1)}°`, lat: selPt.lat, lon: selPt.lon, timeline: true } : { name: "Durango", lat: 24.02, lon: -104.67, timeline: true });
-  if (sc.preset) return <iframe key={sc.preset} title={sc.preset} src={`escena?embed=1&escena=${sc.preset}&lang=${ctx.state.lang}`} className="min-h-0 w-full flex-1 border-0 bg-bg" allow="camera; microphone" />;
+  if (sc.preset) return <iframe key={sc.preset} title={sc.preset} src={`escena?embed=1&escena=${sc.preset}&lang=${ctx.state.lang}&vel=${ctx.state.speed}`} className="min-h-0 w-full flex-1 border-0 bg-bg" allow="camera; microphone" />;
   const q = new URLSearchParams({ embed: "1", lat: sc.lat.toFixed(3), lon: sc.lon.toFixed(3), name: sc.name, lang: ctx.state.lang });
+  if (ctx.state.speed !== 1) q.set("vel", String(ctx.state.speed));
   if (sc.timeline) q.set("t", "anos");
   // The zone's yearly temperature from HORI (anomalies), when the layer on screen is temperature with a series.
   const sel = ctx.state.selection;
-  if (m && ctx.layer?.series && m.series && m.variable.name === "T2M" && sel?.kind === "cell") {
+  if (focus && m) q.set("foco", sceneCaption(focus, m, ctx.state.lang));
+  const fs = focus && ctx.layer && m?.series && m.variable.name === "T2M" ? focusSeries(ctx.layer, focus) : null;
+  if (fs && m?.series && fs.some(Number.isFinite)) {
+    q.set("serie", fs.map((v) => (Number.isFinite(v) ? v.toFixed(2) : "")).join(",")); q.set("y0", String(m.series.years[0]));
+  } else if (m && ctx.layer?.series && m.series && m.variable.name === "T2M" && sel?.kind === "cell") {
     const n = m.window.n, i = sel.index;
     const vals = Array.from(ctx.layer.series.subarray(i * n, i * n + n));
     if (vals.some(Number.isFinite)) { q.set("serie", vals.map((v) => (Number.isFinite(v) ? v.toFixed(2) : "")).join(",")); q.set("y0", String(m.series.years[0])); }
@@ -291,7 +385,7 @@ function SceneFrame({ ctx }: { ctx: Ctx }) {
 }
 
 /** The place to show in 3D: the zone selected on the map (cell centre or region centre), else the last one opened. */
-function zoneOf(ctx: Ctx): { name: string; lat: number; lon: number } {
+function zoneOf(ctx: Ctx): ZoneTarget {
   const m = ctx.layer?.manifest, sel = ctx.state.selection;
   if (m && sel?.kind === "cell") { const p = cellLatLon(m, sel.index); return { name: `${p.lat.toFixed(2)}°, ${p.lon.toFixed(2)}°`, ...p }; }
   if (sel?.kind === "region") {
@@ -321,8 +415,10 @@ function IconButton({ label, onClick, children, pressed }: { label: string; onCl
 }
 
 /** Time bar under the map, with a play button that steps through the years once (it stops at the end). */
-function Timeline({ years, value, note, prefix = "", lang, onChange, autoplay = false, onDone }: {
+function Timeline({ years, value, note, prefix = "", lang, onChange, autoplay = false, onDone, speed = 1, onSpeed }: {
   years: number[]; value: number; note: string; prefix?: string; lang: Lang; onChange: (y: number) => void;
+  /** ×0.5 / ×1 / ×2: one year every 1.1 s at ×1 (it used to be 0.45 s: too fast to read). */
+  speed?: number; onSpeed?: (v: number) => void;
   /** «Evolución de la Tierra»: start from the first year and play to the end by itself. */
   autoplay?: boolean; onDone?: () => void;
 }) {
@@ -345,9 +441,9 @@ function Timeline({ years, value, note, prefix = "", lang, onChange, autoplay = 
       const { i: k, years: ys, onChange: go } = latest.current;
       if (k >= ys.length - 1) { setPlaying(false); done.current?.(); return; }
       go(ys[k + 1]);
-    }, 450);
+    }, 1100 / speed);
     return () => window.clearInterval(id);
-  }, [playing]);
+  }, [playing, speed]);
   const toggle = () => {
     if (!playing && i >= years.length - 1) onChange(years[0]);
     setPlaying(!playing);
@@ -360,6 +456,15 @@ function Timeline({ years, value, note, prefix = "", lang, onChange, autoplay = 
           ? <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2.5" y="2" width="3" height="10" rx="1" fill="currentColor" /><rect x="8.5" y="2" width="3" height="10" rx="1" fill="currentColor" /></svg>
           : <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3.5 2l8 5-8 5z" fill="currentColor" /></svg>}
       </button>
+      {onSpeed ? (
+        <div role="group" aria-label={lang === "es" ? "Velocidad" : "Speed"} className="flex shrink-0 rounded-full bg-surface-2 p-0.5 text-xs">
+          {[0.5, 1, 2].map((v) => (
+            <button key={v} type="button" aria-pressed={speed === v} onClick={() => onSpeed(v)}
+              aria-label={`${lang === "es" ? "Velocidad" : "Speed"} ×${v === 0.5 ? (lang === "es" ? "0,5" : "0.5") : v}`}
+              className={`rounded-full px-2 py-1 font-medium ${speed === v ? "bg-surface shadow-sm" : "text-text-2"}`}>×{v === 0.5 ? (lang === "es" ? "0,5" : "0.5") : v}</button>
+          ))}
+        </div>
+      ) : null}
       <strong className="tabular shrink-0 text-xl font-semibold">{prefix ? <span className="text-sm font-normal text-text-3">{prefix}</span> : null}{value}</strong>
       <div className="flex min-w-0 flex-1 flex-col">
         <input type="range" min={0} max={years.length - 1} step={1} value={i} aria-valuetext={`${prefix}${value}`} aria-label={note}

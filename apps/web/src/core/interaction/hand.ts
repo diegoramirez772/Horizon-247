@@ -2,6 +2,8 @@
 // camera at 320×240, MediaPipe Hand Landmarker (Apache-2.0) loaded from a pinned CDN build on first use and cached
 // by the browser, adaptive rate (5–15 per second) so the globe keeps its frame budget. Pauses when the tab is hidden;
 // stop() releases the camera (track.readyState === "ended") and frees the model.
+// Field: with no hand in view for a while it drops to ~2 checks per second (rest) to save battery, and wakes up as
+// soon as a hand appears. The rear camera can be used (tablet on a tripod or a stand facing the operator).
 // It runs on the main thread: MediaPipe Tasks loads its Wasm with importScripts, which module workers do not have
 // (moving it to a classic worker is pending and NOT verified).
 
@@ -18,7 +20,12 @@ interface Landmarker {
 // eslint-disable-next-line @typescript-eslint/no-implied-eval
 const importUrl = new Function("u", "return import(u)") as (u: string) => Promise<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export interface HandStats { status: "off" | "loading" | "on" | "error"; perSecond: number; inferMs: number; error?: string }
+export interface HandStats { status: "off" | "loading" | "on" | "error"; perSecond: number; inferMs: number; error?: string; resting?: boolean }
+export type Facing = "user" | "environment";
+
+/** No hand for this long → rest rate. */
+const REST_AFTER_MS = 12000;
+const REST_INTERVAL_MS = 450;
 
 export class HandTracker {
   video: HTMLVideoElement | null = null;
@@ -30,11 +37,13 @@ export class HandTracker {
   private frames = 0;
   private since = 0;
   private alive = false;
+  private lastHand = 0;
   stats: HandStats = { status: "off", perSecond: 0, inferMs: 0 };
   onStats: (s: HandStats) => void = () => {};
 
   private gpu: boolean;
-  constructor(gpu: boolean) { this.gpu = gpu; }
+  readonly facing: Facing;
+  constructor(gpu: boolean, facing: Facing = "user") { this.gpu = gpu; this.facing = facing; }
 
   async start(onFrame: (hands: { x: number; y: number; z: number }[][], t: number) => void): Promise<void> {
     if (this.alive) return;
@@ -43,7 +52,7 @@ export class HandTracker {
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: { width: { ideal: 320 }, height: { ideal: 240 }, facingMode: "user", frameRate: { ideal: 15, max: 30 } },
+        video: { width: { ideal: 320 }, height: { ideal: 240 }, facingMode: this.facing, frameRate: { ideal: 15, max: 30 } },
       });
       if (!this.alive) { this.release(); return; }
       const v = document.createElement("video");
@@ -64,16 +73,21 @@ export class HandTracker {
       // The GPU path fails on some Linux drivers: fall back to the CPU instead of giving up.
       try { this.lm = await make(this.gpu ? "GPU" : "CPU"); } catch (e) { if (!this.gpu) throw e; this.lm = await make("CPU"); }
       if (!this.alive) { this.release(); return; }
-      this.since = performance.now();
-      this.report({ status: "on" });
+      this.since = this.lastHand = performance.now();
+      this.report({ status: "on", resting: false });
       const tick = () => {
         if (!this.alive) return;
         if (!document.hidden && this.video && this.lm && this.video.readyState >= 2) {
           const t0 = performance.now();
           const r = this.lm.detectForVideo(this.video, t0);
           const ms = performance.now() - t0;
+          const hands = r.landmarks ?? [];
+          if (hands.length) this.lastHand = t0;
           this.adapt(ms);
-          onFrame(r.landmarks ?? [], t0);
+          const resting = t0 - this.lastHand > REST_AFTER_MS;
+          if (resting) this.interval = REST_INTERVAL_MS;
+          if (resting !== !!this.stats.resting) this.report({ resting });
+          onFrame(hands, t0);
         }
         this.timer = window.setTimeout(tick, this.interval);
       };

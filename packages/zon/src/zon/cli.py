@@ -104,15 +104,23 @@ def main() -> None:
         import json
         from pathlib import Path
         from .monitors import MonitorStore
-        from .notify import EscalationPolicy, FileSink, WebhookSink, power_place_source, watch
+        from .notify import EscalationPolicy, FileSink, WebhookSink, fauna_source, power_place_source, watch
         from .places import PlaceIndex
         c = json.loads(Path(args.config).read_text(encoding="utf-8"))
         idx = PlaceIndex.from_natural_earth(c.get("admin0"), c.get("admin1"))
         sinks = [FileSink(c.get("inbox", Path(c["store"]) / "bandeja.jsonl"))] + \
                 [WebhookSink(w["url"], w["secret"].encode()) for w in c.get("webhooks", [])]
         pol = EscalationPolicy(c["levels"], c.get("ack_minutes", {"alta": 30, "media": 240, "leve": None}))
-        srcs = [power_place_source(s["monitor"], s["place"], s["var"], s.get("start", 1981), index=idx) for s in c.get("sources", [])]
-        for t in watch(MonitorStore(c["store"]), srcs, sinks, pol, every_s=args.every, once=args.once):
+        # a source is a POWER place series or, with "fauna": {"box": [...], "group": "aves"}, an animal reporting rate
+        srcs = [fauna_source(s["monitor"], s["fauna"]["box"], s["fauna"]["group"], start=s["fauna"].get("start", "2012-01-01"))
+                if "fauna" in s else power_place_source(s["monitor"], s["place"], s["var"], s.get("start", 1981), index=idx)
+                for s in c.get("sources", [])]
+        mstore = MonitorStore(c["store"])
+        for s in c.get("sources", []):
+            if "fauna" in s and s["monitor"] not in mstore.monitors():
+                from .notify import fauna_monitor
+                mstore.add_monitor(fauna_monitor(s["monitor"], s["fauna"]["box"], s["fauna"]["group"]))
+        for t in watch(mstore, srcs, sinks, pol, every_s=args.every, once=args.once):
             print(json.dumps(t, ensure_ascii=False))
         return
     if args.cmd == "export-web":

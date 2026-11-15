@@ -55,6 +55,29 @@ class PowerPlace:
 
 
 @register
+class FaunaRate:
+    """Animal signals: monthly reporting rate of a group of animals in a box (iNaturalist), effort-normalised (fetch/fauna.py)."""
+    name, kind = "fauna_rate", "serie"
+
+    def __init__(self, box, group: str, start: str = "2012-01-01", *, get=None, min_effort: int = 30):
+        self.box, self.group, self.start, self.get, self.min_effort = tuple(box), group, start, get, min_effort
+
+    def describe(self) -> dict:
+        return {"connector": self.name, "kind": self.kind, "source": "iNaturalist (observaciones verificables)", "box": list(self.box),
+                "group": self.group, "cadence": "mensual", "unit": "reportes por 1000 observaciones", "licence": "CC0/CC BY por observación"}
+
+    def fetch(self, since=None) -> dict:
+        from .fetch.fauna import _get, fetch_rate
+        d2 = time.strftime("%Y-%m-%d")
+        r = fetch_rate(self.box, self.group, self.start, d2, get=self.get or _get, min_effort=self.min_effort)
+        # the current month is still being uploaded and identified: it is never judged
+        cur = time.strftime("%Y-%m")
+        keep = [(t, v) for t, v in zip(r["times"], r["values"]) if t < cur]
+        t, v = _after([t for t, _ in keep], [v for _, v in keep], since)
+        return {"times": t, "values": v, "provenance": r["provenance"]}
+
+
+@register
 class MarsDust:
     """Mars column dust optical depth, daily global mean (LMD/Montabone, reconstruction, CC BY-SA 3.0)."""
     name, kind = "mars_dust", "serie"

@@ -14,7 +14,7 @@ precision highp float;
 varying vec2 vP;
 uniform vec3 uRight, uUp, uFwd; uniform float uTanH, uAspect;
 uniform vec3 uZenith, uHorizon, uGround, uSunDir, uSunCol; uniform float uSunSize, uStars, uTime;
-uniform vec3 uEarthDir; uniform float uHasEarth;
+uniform vec3 uEarthDir; uniform float uHasEarth; uniform float uEarthCos; uniform float uEarthKind;
 float hash(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 void main(){
   vec3 d = normalize(uFwd + vP.x * uTanH * uAspect * uRight + vP.y * uTanH * uUp);
@@ -29,12 +29,26 @@ void main(){
   }
   if (uHasEarth > 0.5) {
     float e = dot(d, normalize(uEarthDir));
-    if (e > 0.9985) {
+    if (e > uEarthCos) {
       vec3 ed = normalize(d - uEarthDir * e);
-      float sw = sin(ed.x * 900.0 + ed.y * 600.0) * 0.5 + 0.5;
-      vec3 ec = mix(vec3(0.12, 0.32, 0.72), vec3(0.95), smoothstep(0.55, 0.9, sw));
+      float rr = sqrt(max(0.0, 1.0 - e * e)) / sqrt(max(1e-6, 1.0 - uEarthCos * uEarthCos)); // 0 centre … 1 edge
+      vec3 ec;
+      if (uEarthKind > 0.5) {
+        // Jupiter: cream zones and brown belts across its disc, and the Great Red Spot
+        vec3 up = normalize(uUp - uEarthDir * dot(uUp, uEarthDir));
+        float lat = dot(ed, up) * rr;
+        float band = sin(lat * 26.0) * 0.5 + 0.5;
+        ec = mix(vec3(0.62, 0.45, 0.30), vec3(0.93, 0.86, 0.74), smoothstep(0.35, 0.75, band));
+        vec3 rt = normalize(cross(up, uEarthDir));
+        vec2 q = vec2(dot(ed, rt) * rr - 0.25, lat + 0.35);
+        ec = mix(ec, vec3(0.75, 0.38, 0.25), smoothstep(0.012, 0.004, q.x * q.x * 0.6 + q.y * q.y * 2.4));
+      } else {
+        float sw = sin(ed.x * 900.0 + ed.y * 600.0) * 0.5 + 0.5;
+        ec = mix(vec3(0.12, 0.32, 0.72), vec3(0.95), smoothstep(0.55, 0.9, sw));
+      }
       float lit = smoothstep(-0.2, 0.6, dot(ed, normalize(uSunDir)));
-      c = mix(c, ec * (0.15 + 0.85 * lit), smoothstep(0.9985, 0.9987, e));
+      float edgeSoft = (1.0 - uEarthCos) * 0.08;
+      c = mix(c, ec * (0.15 + 0.85 * lit) * (1.0 - 0.35 * rr * rr), smoothstep(uEarthCos, uEarthCos + edgeSoft, e));
     }
   }
   gl_FragColor = vec4(c, 1.0);
@@ -129,7 +143,7 @@ export class SceneView {
     this.gl = gl;
     this.sky = this.program(SKY_V, SKY_F, ["a"]);
     this.obj = this.program(OBJ_V, OBJ_F, ["aPos", "aNrm", "aCol", "aAnim"]);
-    for (const n of ["uRight", "uUp", "uFwd", "uTanH", "uAspect", "uZenith", "uHorizon", "uGround", "uSunDir", "uSunCol", "uSunSize", "uStars", "uTime", "uEarthDir", "uHasEarth"]) this.us[n] = gl.getUniformLocation(this.sky, n);
+    for (const n of ["uRight", "uUp", "uFwd", "uTanH", "uAspect", "uZenith", "uHorizon", "uGround", "uSunDir", "uSunCol", "uSunSize", "uStars", "uTime", "uEarthDir", "uHasEarth", "uEarthCos", "uEarthKind"]) this.us[n] = gl.getUniformLocation(this.sky, n);
     for (const n of ["uVP", "uTime", "uWind", "uFallH", "uCam", "uSunDir", "uSunCol", "uAmbTop", "uAmbBot", "uFogCol", "uFogDen"]) this.uo[n] = gl.getUniformLocation(this.obj, n);
     this.quad = gl.createBuffer()!;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.quad);
@@ -299,6 +313,7 @@ export class SceneView {
     gl.uniform3fv(u.uSunDir, k.sunDir); gl.uniform3fv(u.uSunCol, k.sunColor); gl.uniform1f(u.uSunSize, k.sunSize);
     gl.uniform1f(u.uStars, k.stars); gl.uniform1f(u.uTime, t);
     gl.uniform3fv(u.uEarthDir, k.earthDir ?? [0, 1, 0]); gl.uniform1f(u.uHasEarth, k.earthDir ? 1 : 0);
+    gl.uniform1f(u.uEarthCos, k.giant?.cos ?? 0.9985); gl.uniform1f(u.uEarthKind, k.giant?.kind ?? 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.quad);
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);

@@ -154,6 +154,24 @@ export function run(cmd: Command, via: Via, label: string | null, d: Deps): void
     case "contrast": store.set(patch); answerWhenReady(d, "contrast", source, correctable, null); return;
     case "provenance": store.set(patch); answerWhenReady(d, "provenance", source, correctable, null); return;
     case "help": store.set(patch); answerWhenReady(d, "help", source, false, null); return;
+    case "howto": answerWhenReady(d, `howto:${i.key}`, source, false, null); return;
+    case "speed": {
+      const steps = [0.5, 1, 2];
+      const cur = before.speed ?? 1, k = steps.indexOf(cur) < 0 ? 1 : steps.indexOf(cur);
+      const v = i.v === "-" ? steps[Math.max(0, k - 1)] : i.v === "+" ? steps[Math.min(steps.length - 1, k + 1)] : i.v;
+      store.set({ speed: v });
+      answerWhenReady(d, "speed", source, false, null);
+      return;
+    }
+    case "open":
+      store.set(i.tour ? { tourReq: { mode: i.tour, n: (before.tourReq?.n ?? 0) + 1 }, timeMode: "completa" } : {});
+      answerWhenReady(d, `open:${i.panel}`, source, false, null);
+      return;
+    case "gestures":
+      // The hub owns the camera; HorizonApp listens for this and turns it on or off.
+      if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("h247:gestures", { detail: i.on }));
+      answerWhenReady(d, i.on ? "gestures:on" : "gestures:off", source, false, null);
+      return;
     case "topic": {
       // Live questions look at the place on the map too, so the answer can add HORI's long-term reading.
       const w = i.where ?? (i.topic === "clima" || i.topic === "ganado" ? { name: "Durango", lat: 24.02, lon: -104.67 } : null);
@@ -213,7 +231,7 @@ export function run(cmd: Command, via: Via, label: string | null, d: Deps): void
       const fromSel = sel?.kind === "cell" && m ? { ...cellLatLon(m, sel.index), name: "" } : null;
       const w = i.where ?? (fromSel ? { name: fromSel.name || `${fromSel.lat.toFixed(1)}°, ${fromSel.lon.toFixed(1)}°`, lat: fromSel.lat, lon: fromSel.lon } : { name: "Durango", lat: 24.02, lon: -104.67 });
       if (i.real) { store.set({ ...patch, zone: { name: w.name, lat: w.lat, lon: w.lon } }); answerWhenReady(d, "zone", source, correctable, null); return; }
-      store.set({ ...patch, scene: { name: w.name, lat: w.lat, lon: w.lon, timeline: i.timeline, preset: i.preset ?? undefined } });
+      store.set({ ...patch, scene: { name: w.name, lat: w.lat, lon: w.lon, timeline: i.timeline, preset: i.preset ?? undefined, from: i.from } });
       answerWhenReady(d, "scene", source, correctable, null);
       return;
     }

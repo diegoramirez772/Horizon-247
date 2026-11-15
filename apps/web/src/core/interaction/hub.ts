@@ -3,6 +3,8 @@
 //   voice / typed palette → interpret() → interface command | number | control by name | view move | ZON | assistant
 //   keys / gamepad / TV remote / switch → the five verbs on the focus (spatial navigation)
 //   hand → pointer + pinch (activate / move) + palm (back) + thumbs up (confirm)
+//          + field gestures: swipe (time step / page), ✌️ (what is here, aloud), three fingers (report here),
+//            one-hand zoom (thumb + middle finger), dwell for gloves, calibration, rest and rear camera
 // Writes to ZON always go through a spoken + visible confirmation that reads the parameters back (doc §4.3).
 
 import type { Card } from "@/core/assistant/compose";
@@ -11,12 +13,14 @@ import { normalize } from "@/core/assistant/patterns";
 import { applyDictation } from "./dictation";
 import { activate, isTextField, magnet, moveFocus, pressEscape, scrollBy, stepFocus, tapAt, targets, type Target } from "./dom";
 import { play } from "./earcons";
-import { GestureMachine, type HandEvent, type Pose } from "./gestures";
-import { HandTracker, type HandStats } from "./hand";
+import { fieldParams, GESTURE_PARAMS, GestureMachine, type GestureParams, type HandEvent, type Pose, type Reach, type SwipeDir } from "./gestures";
+import { HandTracker, type Facing, type HandStats } from "./hand";
 import { interpret, type Interpretation, type ManipKey, type MetaKey, type Mode, type SystemKey } from "./interpret";
 import { activeManipulable, isSpinning, manipulableAt, startSpin, stopSpin, touch, type Manipulable } from "./manipulate";
 import { batteryLow, detectLevel, Pads, type LevelInfo, type PadEvent } from "./devices";
 import { spokenToDigits } from "./numbers";
+import { containsOneOf, saysOneOf } from "./fuzzy";
+import { DEIXIS, HERE_INFO, WAKE } from "./vocab";
 import { Voice, type VoiceSnapshot } from "./voice";
 import { ALERT_NEXT, monitorId, reporterId, zon, zonConfig, ZonError, type ZonAlert } from "./zon";
 import { dbConfigured, listSwarmReports, sendSwarmReport } from "@/core/live/db";
@@ -33,6 +37,59 @@ export interface HubDeps {
   here(): Here | null;
   /** Opens the map panel (so «acércate» has something to move). */
   openMap(): void;
+  /** One spoken line about what is selected now (✌️ gesture «what is here?»), or null. */
+  describeHere?(): string | null;
+}
+
+/** Gesture preferences of this device (field profile, camera, calibrated area). Only in this browser. */
+export interface GestureSettings { field: boolean; facing: Facing; reach: Reach | null }
+const SETTINGS_KEY = "h247.gestos";
+
+function loadSettings(): GestureSettings {
+  const base: GestureSettings = { field: false, facing: "user", reach: null };
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return base;
+    const v = JSON.parse(raw) as Partial<GestureSettings>;
+    return { field: !!v.field, facing: v.facing === "environment" ? "environment" : "user", reach: v.reach && typeof v.reach.x0 === "number" ? v.reach : null };
+  } catch { return base; }
+}
+
+function saveSettings(g: GestureSettings): void {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(g)); } catch { /* private mode: it only lasts this session */ }
+}
+
+/** Voice preferences of this device: wake word and speaking rate. Only in this browser. */
+export interface VoiceSettings { wake: boolean; rate: number }
+const VOICE_KEY = "h247.voz";
+
+function loadVoice(): VoiceSettings {
+  const base: VoiceSettings = { wake: false, rate: 1.02 };
+  try {
+    const v = JSON.parse(localStorage.getItem(VOICE_KEY) ?? "null") as Partial<VoiceSettings> | null;
+    if (!v) return base;
+    const rate = typeof v.rate === "number" && v.rate >= 0.7 && v.rate <= 1.4 ? v.rate : base.rate;
+    return { wake: !!v.wake, rate };
+  } catch { return base; }
+}
+
+/** The command after the wake word («horizon, acércate» → «acercate»), "" for the bare word, or null if not said. */
+export function afterWake(t: string): string | null {
+  for (const w of WAKE) {
+    if (t === w) return "";
+    if (t.startsWith(`${w} `)) return t.slice(w.length + 1).trim();
+  }
+  return null;
+}
+
+/** Of the recogniser's alternatives, the first that is a known command; else the first one (n-best, field noise). */
+export function bestAlternative(alts: string[], isCommand: (t: string) => boolean): string {
+  return alts.find(isCommand) ?? alts[0] ?? "";
+}
+
+/** Short vibration on phones and tablets that have it: in the sun you feel the action without looking. */
+function buzz(ms: number | number[]): void {
+  try { navigator.vibrate?.(ms); } catch { /* not available */ }
 }
 
 type T2 = Record<Lang, string>;
@@ -52,7 +109,15 @@ export interface Domain {
 const RANGE_UP = ["sube", "subele", "mas", "aumenta", "incrementa", "up", "more", "increase", "raise"];
 const RANGE_DOWN = ["baja", "bajale", "menos", "reduce", "disminuye", "down", "less", "decrease", "lower"];
 export interface Pending { title: T2; lines: Record<Lang, string[]>; risk: "escritura" | "publicar"; run: () => Promise<void>; expires: number; sending: boolean }
-export interface HandView { status: HandStats["status"]; x: number; y: number; visible: boolean; pinching: boolean; pose?: Pose; hold?: number; perSecond: number; inferMs: number; error?: string; snap: { x: number; y: number; w: number; h: number } | null }
+export interface HandView {
+  status: HandStats["status"]; x: number; y: number; visible: boolean; pinching: boolean; pose?: Pose; hold?: number; perSecond: number; inferMs: number; error?: string;
+  snap: { x: number; y: number; w: number; h: number } | null;
+  /** No hand for a while: fewer checks per second to save battery. */
+  resting?: boolean;
+  /** Seconds left of the calibration, or null. */
+  calibrating: number | null;
+  settings: GestureSettings;
+}
 export interface Notice { id: number; text: string; tone: "ok" | "error" | "info" }
 
 export interface HubSnapshot {
@@ -70,6 +135,9 @@ export interface HubSnapshot {
   /** Report being dictated (doc §4.2 report.create). */
   reportDraft: { text: string; here: Here } | null;
   voice: VoiceSnapshot;
+  voiceSettings: VoiceSettings;
+  /** Wake word heard alone: the next utterance within a few seconds is a command. */
+  awake: boolean;
 }
 
 const M = {
@@ -102,6 +170,19 @@ const M = {
     micDenied: "El micrófono está bloqueado para esta página.",
     silence: "Silencio.",
     unheard: "No te entendí. Di «números» o «comandos».",
+    fieldOn: "Modo campo: deja el puntero quieto un momento para tocar, sirve con guantes. Tolera más temblor y pide menos recorrido del brazo.",
+    fieldOff: "Modo campo apagado.",
+    calibStart: "Calibrando: mueve el índice por el área que te resulte cómoda, de esquina a esquina, durante 4 segundos.",
+    calibDone: "Listo: esa área ahora cubre toda la pantalla.",
+    calibFail: "No vi suficiente movimiento. Vuelve a intentarlo moviendo más la mano.",
+    calibNeedsCam: "Primero enciende los gestos.",
+    cameraRear: "Usando la cámara trasera.",
+    cameraFront: "Usando la cámara frontal.",
+    nothingHere: "Aquí no hay nada seleccionable. Señala una zona del mapa o un botón.",
+    noStep: "No hay una línea de tiempo en pantalla.",
+    wakeOn: "Solo actúo cuando digas «Horizon» antes de la orden. Por ejemplo: «Horizon, acércate».",
+    wakeOff: "Ya no hace falta decir «Horizon».",
+    rateNow: "Así hablo ahora.",
   },
   en: {
     noControl: (n: number) => `There is no control number ${n}.`,
@@ -132,6 +213,19 @@ const M = {
     micDenied: "The microphone is blocked for this page.",
     silence: "Quiet.",
     unheard: "I did not get that. Say «numbers» or «commands».",
+    fieldOn: "Field mode: rest the pointer for a moment to tap, works with gloves. More tolerant to shaking and needs less arm travel.",
+    fieldOff: "Field mode off.",
+    calibStart: "Calibrating: move your index finger across the area that is comfortable for you, corner to corner, for 4 seconds.",
+    calibDone: "Done: that area now covers the whole screen.",
+    calibFail: "I did not see enough movement. Try again moving your hand more.",
+    calibNeedsCam: "Turn gestures on first.",
+    cameraRear: "Using the rear camera.",
+    cameraFront: "Using the front camera.",
+    nothingHere: "There is nothing selectable here. Point at an area of the map or a button.",
+    noStep: "There is no timeline on screen.",
+    wakeOn: "I only act when you say «Horizon» before the command. For example: «Horizon, zoom in».",
+    wakeOff: "No need to say «Horizon» any more.",
+    rateNow: "This is how I speak now.",
   },
 };
 
@@ -168,18 +262,24 @@ export class Hub {
   private frameWatch = 0;
   private domains: Domain[] = [];
   private dragRange: HTMLInputElement | null = null;
+  private lastRange: HTMLInputElement | null = null;
+  private speechCursor: { x: number; y: number } | null = null;
+  private awakeTimer = 0;
+  private calibTimer = 0;
 
   constructor(deps: HubDeps) {
     this.deps = deps;
     this.snap = {
       level: { level: 0, reason: "ssr", gpuHands: false }, mode: "commands", numbers: false, palette: false, paletteView: "commands",
       heard: "", said: "", pending: null, choose: null,
-      hand: { status: "off", x: 0, y: 0, visible: false, pinching: false, perSecond: 0, inferMs: 0, snap: null },
-      notice: null, reportDraft: null, voice: this.voice.get(),
+      hand: { status: "off", x: 0, y: 0, visible: false, pinching: false, perSecond: 0, inferMs: 0, snap: null, calibrating: null, settings: { field: false, facing: "user", reach: null } },
+      notice: null, reportDraft: null, voice: this.voice.get(), voiceSettings: { wake: false, rate: 1.02 }, awake: false,
     };
     this.voice.onSpeakStart = (text) => this.set({ said: text });
     this.voice.onSpeakEnd = () => this.set({ said: "" });
     this.voice.onBargeIn = () => play("tick");
+    // «esto / aquí» = where the hand pointed when the person STARTED talking, not when the words arrive.
+    this.voice.onUserSpeech = () => { this.speechCursor = this.snap.hand.visible ? { ...this.lastCursor } : null; };
   }
 
   // ---- store ----
@@ -203,7 +303,9 @@ export class Hub {
 
   /** Installs keys, gamepad and the level. Call once on the client; returns the uninstaller. */
   install(): () => void {
-    this.set({ level: detectLevel() });
+    const vs = loadVoice();
+    this.voice.rate = vs.rate;
+    this.set({ level: detectLevel(), hand: { ...this.snap.hand, settings: loadSettings() }, voiceSettings: vs });
     void batteryLow().then((low) => { if (low && this.snap.level.level >= 2) this.set({ level: { ...this.snap.level, level: 1, reason: "battery" } }); });
     this.cleanup.push(this.voice.subscribe(() => {
       const v = this.voice.get();
@@ -242,7 +344,7 @@ export class Hub {
     this.hush();
     play("listen");
     this.voice.lang = this.lang;
-    void this.voice.listen((t) => this.hear(t, "voice"), this.handsFree);
+    void this.voice.listen((t, alts) => this.hear(t, "voice", alts), this.handsFree);
   }
 
   setHandsFree(on: boolean): void {
@@ -250,7 +352,7 @@ export class Hub {
     if (on) {
       this.notify(this.m.handsFreeOn, "info");
       if (!this.voice.get().listening) this.talk();
-      else void this.voice.listen((t) => this.hear(t, "voice"), true);
+      else void this.voice.listen((t, alts) => this.hear(t, "voice", alts), true);
     } else {
       this.voice.release();
       this.notify(this.m.handsFreeOff, "info");
@@ -258,17 +360,72 @@ export class Hub {
   }
   isHandsFree(): boolean { return this.handsFree; }
 
-  /** Everything said or typed in the palette comes here. */
-  hear(text: string, via: "voice" | "text"): void {
+  /** Where the hand points for «esto / aquí»: at the start of the sentence if known, else now; null without a hand. */
+  private pointedAt(): { x: number; y: number } | null {
+    if (this.speechCursor) return this.speechCursor;
+    return this.snap.hand.visible ? this.lastCursor : null;
+  }
+
+  private saveVoice(p: Partial<VoiceSettings>): void {
+    const vs = { ...this.snap.voiceSettings, ...p };
+    try { localStorage.setItem(VOICE_KEY, JSON.stringify(vs)); } catch { /* private mode: this session only */ }
+    this.set({ voiceSettings: vs });
+  }
+
+  setWake(on: boolean): void {
+    this.saveVoice({ wake: on });
+    play("done");
+    this.notify(on ? this.m.wakeOn : this.m.wakeOff, "info", true);
+  }
+
+  setRate(r: number): void {
+    const rate = Math.round(Math.max(0.7, Math.min(1.4, r)) * 100) / 100;
+    this.voice.rate = rate;
+    this.saveVoice({ rate });
+    this.speak(this.m.rateNow);
+  }
+
+  private wakeWindow(): void {
+    play("listen");
+    this.set({ awake: true });
+    clearTimeout(this.awakeTimer);
+    this.awakeTimer = window.setTimeout(() => this.set({ awake: false }), 6000);
+  }
+
+  /** Everything said or typed in the palette comes here. `alts` = the recogniser's alternatives (voice only). */
+  hear(text: string, via: "voice" | "text", alts: string[] = []): void {
     const list = targets();
     const choose = this.snap.choose;
-    const it = interpret(text, {
+    if (via === "text") this.speechCursor = null;
+    const ictx = {
       mode: this.snap.mode,
       pendingConfirm: !!this.snap.pending,
       labels: list.map((t, i) => ({ n: i + 1, name: t.name })),
       hasManip: !!activeManipulable(),
-    });
+    };
+    // Wake word (field: people talk around you): only «Horizon, …» acts. Never needed to answer a confirmation or
+    // while dictating, and «Horizon» alone opens a short window for the next sentence.
+    if (via === "voice" && this.snap.voiceSettings.wake && this.snap.mode !== "dictation" && !this.snap.pending) {
+      const rest = afterWake(normalize(text));
+      if (rest === null && !this.snap.awake) { this.set({ heard: text }); return; }
+      if (rest === "") { this.wakeWindow(); return; }
+      if (rest !== null) { text = rest; alts = alts.map((a) => afterWake(normalize(a)) ?? a); }
+      this.set({ awake: false });
+    }
+    // n-best: in noise the first guess is often wrong while the second is the command («acércate» / «a cercate»).
+    if (via === "voice" && alts.length > 1 && this.snap.mode !== "dictation") {
+      const known = (a: string) => { const k = interpret(a, ictx).k; return k !== "assistant" && k !== "none"; };
+      if (!known(text)) text = bestAlternative(alts, known) || text;
+    }
+    const it = interpret(text, ictx);
     if (via === "voice") { this.set({ heard: text }); play("heard"); }
+    // Voice + hand: «¿qué es esto?» while pointing = the ✌️ gesture; without a hand, what is selected.
+    if (this.snap.mode !== "dictation" && saysOneOf(normalize(text), HERE_INFO)) {
+      const at = this.pointedAt();
+      if (at) { void this.infoAt(at.x, at.y); return; }
+      const line = this.deps.describeHere?.();
+      if (line) { this.notify(line, "ok"); this.speakCard(line, true); return; }
+    }
     // While choosing, a number picks among the options (not among all the controls).
     if (choose && it.k === "number") {
       const c = choose[it.n - 1];
@@ -330,6 +487,13 @@ export class Hub {
       case "dictation": this.dictate(it.raw); return;
       case "assistant": {
         this.set({ choose: null });
+        // «¿cuánto cambió aquí?», «muéstrame esto en 3D» while pointing at the map: select that point first.
+        const at = containsOneOf(it.text, DEIXIS) ? this.pointedAt() : null;
+        if (at && manipulableAt(at.x, at.y)) {
+          tapAt(at.x, at.y);
+          window.setTimeout(() => this.deps.ask(it.text, via, raw.trim()), 160);
+          return;
+        }
         this.deps.ask(it.text, via, raw.trim());
         return;
       }
@@ -359,6 +523,16 @@ export class Hub {
       case "commandsMode": this.endDictation(); return;
       case "gesturesOn": void this.startGestures(); return;
       case "gesturesOff": this.stopGestures(); return;
+      case "fieldOn": this.setField(true); return;
+      case "wakeOn": this.setWake(true); return;
+      case "wakeOff": this.setWake(false); return;
+      case "slower": this.setRate(this.voice.rate - 0.15); return;
+      case "faster": this.setRate(this.voice.rate + 0.15); return;
+      case "normalSpeed": this.setRate(1.02); return;
+      case "nextYear": this.stepTime(1); return;
+      case "prevYear": this.stepTime(-1); return;
+      case "fieldOff": this.setField(false); return;
+      case "calibrate": this.calibrate(); return;
       case "close": this.back(); return;
       case "scrollDown": scrollBy(Math.round(innerHeight * 0.6)); return;
       case "scrollUp": scrollBy(-Math.round(innerHeight * 0.6)); return;
@@ -400,7 +574,7 @@ export class Hub {
     this.notify(keepReport ? this.m.reportStart : this.m.dictating, "info");
     if (this.voice.get().supported && !this.voice.get().listening) {
       this.voice.lang = this.lang;
-      void this.voice.listen((t) => this.hear(t, "voice"), true);
+      void this.voice.listen((t, alts) => this.hear(t, "voice", alts), true);
     }
   }
 
@@ -467,8 +641,9 @@ export class Hub {
     const viaDb = !zonConfig() && dbConfigured() && (what === "report" || what === "swarm");
     if (!zonConfig() && !viaDb) { play("error"); this.deps.answer(zonCard(M.es.noZon, M.en.noZon)); return; }
     // «esto / aquí» with the hand or pointer over the map = tap there first, so «here» is what you point at.
-    if (deixis && this.snap.hand.visible) {
-      const { x, y } = this.lastCursor;
+    const at = deixis ? this.pointedAt() : null;
+    if (at) {
+      const { x, y } = at;
       if (manipulableAt(x, y)) { tapAt(x, y); await new Promise((r) => setTimeout(r, 120)); }
     }
     try {
@@ -707,13 +882,14 @@ export class Hub {
     const lv = this.snap.level;
     // Any device with a camera may try: without a recognised GPU the model runs on the CPU at a lower rate.
     if (lv.level < 1) { play("error"); this.notify(this.m.gesturesWeak, "error", true); return; }
-    this.tracker = new HandTracker(lv.gpuHands);
+    const g = this.snap.hand.settings;
+    this.tracker = new HandTracker(lv.gpuHands, g.facing);
     this.tracker.onStats = (s) => {
-      this.set({ hand: { ...this.snap.hand, status: s.status, perSecond: s.perSecond, inferMs: s.inferMs, error: s.error } });
+      this.set({ hand: { ...this.snap.hand, status: s.status, perSecond: s.perSecond, inferMs: s.inferMs, error: s.error, resting: s.resting } });
       if (s.status === "error") { this.notify(this.m.camError, "error", true); this.tracker = null; }
       if (s.status === "on" && s.perSecond > 0 && !this.frameWatch) this.watchFrames();
     };
-    this.gestures = new GestureMachine();
+    this.gestures = new GestureMachine(this.params(), g.facing === "user");
     await this.tracker.start((hands, t) => { for (const ev of this.gestures.step(hands, t)) this.onHand(ev); });
     if (this.snap.hand.status === "on") { play("done"); this.notify(this.m.gesturesOn, "info", true); }
   }
@@ -721,12 +897,70 @@ export class Hub {
   stopGestures(): void {
     cancelAnimationFrame(this.frameWatch);
     this.frameWatch = 0;
+    clearInterval(this.calibTimer);
     if (!this.tracker) return;
     this.tracker.stop();
     this.tracker = null;
     this.dragView = null;
-    this.set({ hand: { ...this.snap.hand, status: "off", visible: false, snap: null } });
+    this.set({ hand: { ...this.snap.hand, status: "off", visible: false, snap: null, calibrating: null, resting: false } });
     this.notify(this.m.gesturesOff);
+  }
+
+  /** Thresholds for this device: the field profile on top of the defaults, then the calibrated area if any. */
+  private params(): GestureParams {
+    const g = this.snap.hand.settings;
+    const p = g.field ? fieldParams() : GESTURE_PARAMS;
+    return g.reach ? { ...p, reach: g.reach } : p;
+  }
+
+  private setSettings(p: Partial<GestureSettings>): void {
+    const settings = { ...this.snap.hand.settings, ...p };
+    saveSettings(settings);
+    this.set({ hand: { ...this.snap.hand, settings } });
+  }
+
+  /** Field profile: dwell to tap (gloves), more tolerance, less arm travel. */
+  setField(on: boolean): void {
+    this.setSettings({ field: on });
+    this.gestures.configure(this.params());
+    play("done");
+    this.notify(on ? this.m.fieldOn : this.m.fieldOff, "info", true);
+    if (on && !this.tracker) void this.startGestures();
+  }
+
+  /** Front ↔ rear camera (the rear one for a tablet on a stand facing the operator). Restarts the camera. */
+  async setFacing(f: Facing): Promise<void> {
+    this.setSettings({ facing: f });
+    const was = !!this.tracker;
+    if (was) { this.tracker!.stop(); this.tracker = null; cancelAnimationFrame(this.frameWatch); this.frameWatch = 0; }
+    this.notify(f === "environment" ? this.m.cameraRear : this.m.cameraFront);
+    if (was) await this.startGestures();
+  }
+
+  /** 4 s: wherever the index travels comfortably becomes the whole screen. «Restablecer» forgets it. */
+  calibrate(): void {
+    if (!this.tracker) { play("error"); this.notify(this.m.calibNeedsCam, "error", true); return; }
+    this.gestures.calibrate(performance.now(), 4000);
+    play("listen");
+    this.notify(this.m.calibStart, "info", true);
+    let left = 4;
+    this.set({ hand: { ...this.snap.hand, calibrating: left } });
+    clearInterval(this.calibTimer);
+    this.calibTimer = window.setInterval(() => {
+      left--;
+      if (left > 0) { this.set({ hand: { ...this.snap.hand, calibrating: left } }); return; }
+      clearInterval(this.calibTimer);
+      // The machine closes the calibration on its next frame; if no «calibrated» came, the hand barely moved.
+      window.setTimeout(() => {
+        if (this.snap.hand.calibrating !== null) { this.set({ hand: { ...this.snap.hand, calibrating: null } }); play("error"); this.notify(this.m.calibFail, "error", true); }
+      }, 700);
+    }, 1000);
+  }
+
+  resetCalibration(): void {
+    this.setSettings({ reach: null });
+    this.gestures.configure(this.params());
+    play("done");
   }
 
   /** While the camera is on, watch the page's own frame time: if it stays above 50 ms, the camera turns off (doc §2.7). */
@@ -752,8 +986,9 @@ export class Hub {
         const x = ev.x * W, y = ev.y * H;
         this.lastCursor = { x, y };
         const onView = manipulableAt(x, y);
-        const t = onView || this.dragView ? null : magnet(x, y, 40);
-        this.set({ hand: { ...this.snap.hand, x, y, visible: true, pinching: ev.pinching, pose: ev.pose, hold: ev.hold, snap: t && ev.pose !== "fist" ? t.box : null } });
+        const radius = this.snap.hand.settings.field ? 64 : 40;
+        const t = onView || this.dragView ? null : magnet(x, y, radius);
+        this.set({ hand: { ...this.snap.hand, x, y, visible: true, pinching: ev.pinching, pose: ev.pose, hold: ev.hold, snap: t && ev.pose !== "fist" && ev.pose !== "zoom" ? t.box : null } });
         return;
       }
       case "lost": this.set({ hand: { ...this.snap.hand, visible: false, snap: null } }); this.dragView = null; return;
@@ -762,15 +997,15 @@ export class Hub {
         const x = ev.x * W, y = ev.y * H;
         const sn = this.snap.hand.snap;
         const range = rangeAt(x, y);
-        if (range) { range.focus(); setRangeAtX(range, x); }
+        if (range) { range.focus(); setRangeAtX(range, x); this.lastRange = range; }
         else if (sn) tapAt(sn.x + sn.w / 2, sn.y + sn.h / 2); else tapAt(x, y);
-        play("tick");
+        play("tick"); buzz(12);
         return;
       }
       case "dragStart": {
         const x = ev.x * W, y = ev.y * H;
         this.dragRange = rangeAt(x, y);
-        if (this.dragRange) { this.dragRange.focus(); return; }
+        if (this.dragRange) { this.dragRange.focus(); this.lastRange = this.dragRange; return; }
         this.dragView = manipulableAt(x, y);
         if (this.dragView) { touch(this.dragView); stopSpin(); }
         return;
@@ -781,13 +1016,95 @@ export class Hub {
         else scrollBy(-ev.dy * H * 1.5);
         return;
       case "dragEnd": this.dragView = null; this.dragRange = null; return;
-      case "zoom": activeManipulable()?.zoomBy(ev.factor); return;
-      case "back": play("tick"); this.back(); return;
-      case "confirm": if (this.snap.pending) void this.confirm(true); return;
+      case "zoom": {
+        const m = activeManipulable();
+        if (!m) { this.deps.openMap(); return; }
+        stopSpin(); m.zoomBy(ev.factor);
+        return;
+      }
+      case "back": play("tick"); buzz(30); this.back(); return;
+      case "confirm": if (this.snap.pending) { buzz([20, 60, 20]); void this.confirm(true); } return;
+      case "swipe": this.swipe(ev.dir); return;
+      case "talk": buzz(15); this.talk(); return;
+      case "info": void this.infoAt(ev.x * W, ev.y * H); return;
+      case "mark": void this.markAt(ev.x * W, ev.y * H); return;
+      case "calibrated": {
+        clearInterval(this.calibTimer);
+        this.setSettings({ reach: ev.reach });
+        this.set({ hand: { ...this.snap.hand, calibrating: null } });
+        play("done"); buzz([20, 60, 20]);
+        this.notify(this.m.calibDone, "ok", true);
+        return;
+      }
     }
   }
 
+  /** Swipe ← → steps the time bar (the one last used, else the widest on screen) one notch; ↑ ↓ moves the page. */
+  private swipe(dir: SwipeDir): void {
+    buzz(18);
+    if (dir === "up" || dir === "down") { scrollBy((dir === "up" ? 1 : -1) * Math.round(innerHeight * 0.6)); play("tick"); return; }
+    if (!this.stepTime(dir === "right" ? 1 : -1, true)) {
+      // no time bar: turn the view under the hand (or the active one) a quarter step
+      const m = manipulableAt(this.lastCursor.x, this.lastCursor.y) ?? activeManipulable();
+      if (m) { stopSpin(); m.orbit(dir === "right" ? 0.12 : -0.12, 0); play("tick"); return; }
+      play("error"); this.notify(this.m.noStep, "error");
+    }
+  }
+
+  /** One notch of the time bar (swipe or «siguiente año»); says the new value in the field or by voice. */
+  private stepTime(delta: 1 | -1, quiet = false): boolean {
+    const r = timeRange(this.lastRange);
+    if (!r) { if (!quiet) { play("error"); this.notify(this.m.noStep, "error", true); } return false; }
+    this.lastRange = r;
+    const step = Number(r.step) || 1;
+    setRange(r, Number(r.value) + delta * step);
+    play("tick");
+    // React updates aria-valuetext on its next render
+    window.setTimeout(() => {
+      const said = r.getAttribute("aria-valuetext") || r.value;
+      this.notify(said, "info", !quiet || this.snap.hand.settings.field || this.handsFree);
+    }, 60);
+    return true;
+  }
+
+  /** ✌️: selects what is under the hand and says what it is, out loud (in the field you may not be looking). */
+  private async infoAt(x: number, y: number): Promise<void> {
+    buzz(25);
+    if (manipulableAt(x, y)) {
+      tapAt(x, y);
+      await new Promise((r) => setTimeout(r, 160));
+      const line = this.deps.describeHere?.() ?? null;
+      if (line) { play("heard"); this.notify(line, "ok"); this.speakCard(line, true); return; }
+    }
+    const t = magnet(x, y, this.snap.hand.settings.field ? 64 : 40);
+    if (t) { play("heard"); this.notify(t.name, "ok"); this.speakCard(t.name, true); return; }
+    play("error"); this.notify(this.m.nothingHere, "error", true);
+  }
+
+  /** Three fingers: selects the point under the hand and opens a dictated field report there (confirmed before sending). */
+  private async markAt(x: number, y: number): Promise<void> {
+    buzz([20, 50, 20]);
+    if (manipulableAt(x, y)) { tapAt(x, y); await new Promise((r) => setTimeout(r, 160)); }
+    await this.system("report", false, null, "", "voice");
+  }
+
   isSpinning(): boolean { return isSpinning(); }
+}
+
+/** The time bar a swipe moves: the last one the hand used if it is still on screen, else the widest visible slider. */
+function timeRange(last: HTMLInputElement | null): HTMLInputElement | null {
+  const shown = (el: HTMLInputElement) => {
+    if (!el.isConnected || el.disabled) return 0;
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight ? r.width : 0;
+  };
+  if (last && shown(last)) return last;
+  let best: HTMLInputElement | null = null, w = 0;
+  for (const el of document.querySelectorAll<HTMLInputElement>('input[type="range"]')) {
+    const s = shown(el);
+    if (s > w) { w = s; best = el; }
+  }
+  return best;
 }
 
 function rangeAt(x: number, y: number): HTMLInputElement | null {

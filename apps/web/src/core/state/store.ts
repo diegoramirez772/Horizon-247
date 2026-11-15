@@ -54,11 +54,25 @@ export interface AppState {
   evolution: boolean;
   /** The generated 3D scene open in the panel (place + whether its timeline starts playing); null = none. */
   scene: SceneTarget | null;
+  /** Timeline playback speed (×0.5, ×1, ×2): the map's years and the generated scene's years and days. */
+  speed: number;
+  /** A request to start the tour of the foci (from the assistant); `n` changes on every request. */
+  tourReq: { mode: "apoyado" | "no_se_sabe"; n: number } | null;
   /** The real place open in 3D (relief + satellite); null = none. */
-  zone: { name: string; lat: number; lon: number } | null;
+  zone: ZoneTarget | null;
 }
 
-export interface SceneTarget { name: string; lat: number; lon: number; timeline: boolean; /** A ready-made scene instead of a place (Marte, Luna). */ preset?: string }
+/** A real place in 3D; `box` = a focus's extent (lon/lat), shown with HORI's verdict draped over the relief. */
+export interface ZoneTarget { name: string; lat: number; lon: number; box?: [number, number, number, number]; focus?: string }
+
+export interface SceneTarget {
+  name: string; lat: number; lon: number; timeline: boolean;
+  /** A ready-made scene instead of a place (Marte, Luna). */ preset?: string;
+  /** A giant without surface that was asked for (the scene shows its moon and the answer says why). */
+  from?: string;
+  /** Id of the detector's focus the scene illustrates (core/detect/focos.ts): its caption says what HORI holds there. */
+  focus?: string;
+}
 
 /** Server and first client render use this; the URL is read after hydration. */
 export const DEFAULT_STATE: AppState = {
@@ -80,6 +94,8 @@ export const DEFAULT_STATE: AppState = {
   evolution: false,
   scene: null,
   zone: null,
+  speed: 1,
+  tourReq: null,
 };
 
 type Listener = () => void;

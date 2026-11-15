@@ -18,6 +18,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import math
 import time
 import urllib.request
 from dataclasses import dataclass, field
@@ -147,3 +148,33 @@ def power_place_source(monitor_id: str, place: str, var: str, start: int, *, ind
         return monitor_id, [m for m, _ in new], [v for _, v in new]
     src.__name__ = f"power:{place}:{var}"
     return src
+
+
+def fauna_source(monitor_id: str, box, group: str, *, start: str = "2012-01-01", get=None):
+    """A watch source: the monthly reporting rate of an animal group in a box (iNaturalist), only months not yet ingested.
+    One pair of HTTP requests per tick; run it daily (observations keep arriving for days)."""
+    from .connectors import FaunaRate
+
+    con = FaunaRate(box, group, start, get=get)
+
+    def src(mstore):
+        last = (mstore.observations(monitor_id)[0] or [None])[-1]
+        r = con.fetch(since=last)
+        return monitor_id, r["times"], [math.nan if v is None else v for v in r["values"]]
+    src.__name__ = f"fauna:{group}:{','.join(f'{x:.2f}' for x in box)}"
+    return src
+
+
+def fauna_monitor(monitor_id: str, box, group: str):
+    """The monitor of an animal reporting rate (monthly, period 12, square-root transform: low rates are skewed)."""
+    from hori.api import Entity
+
+    from .fetch.fauna import GROUPS
+    from .monitors import Monitor
+    g = GROUPS[group]
+    ent = Entity(f"fauna-{group}-" + "_".join(f"{x:.2f}" for x in box), "region", "earth",
+                 {"es": f"{g['es']} · {box[1]:.1f}…{box[3]:.1f}°, {box[0]:.1f}…{box[2]:.1f}°", "en": f"{g['en']} · {box[1]:.1f}…{box[3]:.1f}°, {box[0]:.1f}…{box[2]:.1f}°"},
+                 "real", source={"name": "iNaturalist", "kind": "ciencia ciudadana"},
+                 geometry={"type": "bbox", "bbox": [box[1], box[0], box[3], box[2]]}).to_dict()
+    return Monitor(monitor_id, ent, {"name": f"tasa_reporte_{group}", "unit": "por 1000 obs", "long_name": f"Tasa de reporte de {g['es'].lower()}"},
+                   12, cadence="mensual", params={"transform": "sqrt"})

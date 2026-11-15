@@ -40,7 +40,7 @@ const TREK = "NASA Solar System Treks";
 
 export const LAYERS: LayerDef[] = [
   // ---- Earth ----
-  { id: "BlueMarble_ShadedRelief_Bathymetry", body: "earth", provider: "gibs", role: "base", title: "Blue Marble", kind: "compuesto", tms: "500m", ext: "jpeg", maxLevel: 7, resolution_m: 500, daily: false, attribution: GIBS, caveat: "Vista ilustrativa: compuesto sin nubes de 2004, no corresponde a la fecha" },
+  { id: "BlueMarble_NextGeneration", body: "earth", provider: "gibs", role: "base", title: "Blue Marble NG", kind: "compuesto", tms: "500m", ext: "jpeg", maxLevel: 7, resolution_m: 500, daily: false, attribution: GIBS, caveat: "Vista ilustrativa: compuesto sin nubes de 2004, no corresponde a la fecha" },
   { id: "VIIRS_CityLights_2012", body: "earth", provider: "gibs", role: "night", title: "Luces nocturnas 2012", kind: "compuesto", tms: "500m", ext: "jpeg", maxLevel: 7, resolution_m: 500, daily: false, attribution: GIBS, caveat: "Luces del año 2012" },
   { id: "MODIS_Terra_CorrectedReflectance_TrueColor", body: "earth", provider: "gibs", role: "evidence", title: "MODIS Terra · color real", kind: "observacion", tms: "250m", ext: "jpg", maxLevel: 8, resolution_m: 250, daily: true, start: "2000-02-24", attribution: GIBS, caveat: "Franjas negras = el satélite no pasó ese día" },
   { id: "VIIRS_SNPP_CorrectedReflectance_TrueColor", body: "earth", provider: "gibs", role: "evidence", title: "VIIRS · color real", kind: "observacion", tms: "250m", ext: "jpg", maxLevel: 8, resolution_m: 250, daily: true, start: "2015-11-24", attribution: GIBS },

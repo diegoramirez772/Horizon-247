@@ -192,3 +192,34 @@ describe("hand state machine", () => {
     expect(ev.map((e) => e.type)).toEqual(["dragEnd", "lost"]);
   });
 });
+
+describe("hand pointer fixes (15-nov)", () => {
+  function tip(ix: number, iy: number, thumb: { x: number; y: number }): Hand {
+    const h: Hand = Array.from({ length: 21 }, () => ({ x: 0.5, y: 0.8 }));
+    h[0] = { x: 0.5, y: 0.9 }; h[9] = { x: 0.5, y: 0.7 };
+    h[5] = { x: 0.45, y: 0.7 }; h[6] = { x: ix, y: iy + 0.1 }; h[8] = { x: ix, y: iy };
+    h[2] = { x: 0.4, y: 0.8 }; h[3] = { x: 0.38, y: 0.78 }; h[4] = thumb;
+    return h;
+  }
+  it("a pinch taps where the finger pointed while open, though the tip slides toward the thumb when closing", () => {
+    const g = new GestureMachine(undefined, false);
+    let ev: ReturnType<GestureMachine["step"]> = [];
+    for (let t = 0; t <= 300; t += 100) ev = ev.concat(g.step([tip(0.5, 0.4, { x: 0.3, y: 0.75 })], t));
+    const before = ev.filter((e) => e.type === "pointer").at(-1)!;
+    // closing: the index tip travels 0.05 of the camera toward the thumb, then opens again
+    ev = g.step([tip(0.47, 0.44, { x: 0.475, y: 0.445 })], 400);
+    ev = ev.concat(g.step([tip(0.46, 0.45, { x: 0.465, y: 0.455 })], 500));
+    ev = ev.concat(g.step([tip(0.47, 0.44, { x: 0.3, y: 0.75 })], 650));
+    const tap = ev.find((e) => e.type === "tap");
+    expect(tap).toBeDefined();
+    expect(ev.some((e) => e.type === "dragStart")).toBe(false);
+    if (tap?.type === "tap" && before.type === "pointer") expect(Math.hypot(tap.x - before.x, tap.y - before.y)).toBeLessThan(0.01);
+  });
+  it("a second hand coming into view does not steal the pointer", () => {
+    const g = new GestureMachine(undefined, false);
+    for (let t = 0; t <= 300; t += 100) g.step([tip(0.3, 0.4, { x: 0.15, y: 0.75 })], t);
+    const ev = g.step([tip(0.75, 0.3, { x: 0.6, y: 0.65 }), tip(0.3, 0.4, { x: 0.15, y: 0.75 })], 400);
+    const p = ev.find((e) => e.type === "pointer");
+    expect(p?.type === "pointer" && p.x < 0.4).toBe(true);
+  });
+});

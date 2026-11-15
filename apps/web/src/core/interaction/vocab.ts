@@ -16,6 +16,16 @@ export const META = {
   silence: ["silencio", "callate", "calla", "shh", "ya no hables", "no hables", "be quiet", "silence", "stop talking", "quiet"],
   handsFree: ["manos libres", "modo conversacion", "conversa conmigo", "escucha siempre", "hands free", "conversation mode"],
   commandsMode: ["modo ordenes", "solo ordenes", "commands mode", "command mode"],
+  wakeOff: ["quita palabra de activacion", "sin palabra de activacion", "quita la palabra clave", "sin palabra clave", "wake word off"],
+  wakeOn: ["usa palabra de activacion", "activa palabra de activacion", "palabra de activacion", "palabra clave", "solo cuando diga horizon", "wake word", "wake word on"],
+  slower: ["habla mas lento", "mas lento", "mas despacio", "habla mas despacio", "speak slower", "slower"],
+  faster: ["habla mas rapido", "mas rapido", "speak faster", "faster"],
+  normalSpeed: ["velocidad normal", "habla normal", "normal speed"],
+  nextYear: ["siguiente ano", "ano siguiente", "un ano adelante", "adelanta un ano", "next year", "one year forward"],
+  prevYear: ["ano anterior", "un ano atras", "regresa un ano", "atrasa un ano", "previous year", "one year back"],
+  fieldOff: ["quita modo campo", "apaga modo campo", "sin modo campo", "field mode off"],
+  fieldOn: ["modo campo", "activa modo campo", "modo guantes", "field mode", "gloves mode"],
+  calibrate: ["calibra", "calibrar", "calibra los gestos", "calibrar gestos", "calibrate", "calibrate gestures"],
   gesturesOn: ["activa gestos", "gestos", "usa la camara", "activa la camara", "modo gestos", "gestures", "gestures on", "camera on", "use the camera"],
   gesturesOff: ["apaga gestos", "quita gestos", "apaga la camara", "sin camara", "gestures off", "camera off"],
   close: ["cierra", "cerrar", "cierralo", "close", "close it", "escape"],
@@ -70,6 +80,13 @@ export const SYSTEM = {
 } as const satisfies Record<string, Phrases>;
 
 /** Deixis: «esto», «aquí» = what the hand or the pointer is on (doc §2.6 «apuntar + hablar»). */
+/** Said before a command when the wake word is on: «Horizon, acércate». */
+export const WAKE: Phrases = ["oye horizon", "ok horizon", "okay horizon", "hey horizon", "horizonte", "horizon"];
+
+/** «What is this?» with the hand pointing (or about what is selected). Whole-utterance phrases. */
+export const HERE_INFO: Phrases = ["que hay aqui", "que hay ahi", "que es esto", "que es eso", "que pasa aqui", "que pasa ahi", "que tal aqui", "y aqui",
+  "what is here", "what is this", "what is that", "what about here", "whats here", "whats this"];
+
 export const DEIXIS: Phrases = ["esto", "esta", "este", "aqui", "ahi", "alli", "eso", "esa", "this", "here", "there", "that"];
 
 /** Editing a dictated draft by voice (doc §2.4). Order matters: longer first. */

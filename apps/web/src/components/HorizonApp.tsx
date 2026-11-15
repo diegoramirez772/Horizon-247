@@ -12,7 +12,7 @@ import { cellIndexAt, cellLatLon, type Layer } from "@/core/contract/loader";
 import { UI, type Lang } from "@/core/i18n/texts";
 import { Hub, type Here } from "@/core/interaction/hub";
 import type { MapData } from "@/core/map/MapView";
-import { effectiveMetric, stepRegister, Store, type AppState, type Metric, type SceneTarget, type TimeMode } from "@/core/state/store";
+import { effectiveMetric, stepRegister, Store, type AppState, type Metric, type SceneTarget, type TimeMode, type ZoneTarget } from "@/core/state/store";
 import { Chat } from "./Chat";
 import { HubProvider } from "./interaccion/context";
 import { InteractionLayer } from "./interaccion/InteractionLayer";
@@ -30,7 +30,7 @@ const C = {
 };
 
 /** Questions that are about the map open the side panel; the rest stay in the conversation. */
-const STAYS_IN_CHAT: Intent["t"][] = ["topic", "report", "help", "advice", "cause", "unknown", "undo", "clear", "lang", "register", "theme", "greet", "profile", "provenance", "certainty"];
+const STAYS_IN_CHAT: Intent["t"][] = ["howto", "speed", "gestures", "topic", "report", "help", "advice", "cause", "unknown", "undo", "clear", "lang", "register", "theme", "greet", "profile", "provenance", "certainty"];
 
 /**
  * One main window (Diego's brief): the conversation stays centred and always visible; the map and the evidence
@@ -65,7 +65,7 @@ export function HorizonApp() {
   }, []);
   // The installed app's «En vivo» shortcut opens straight on that tab (manifest.webmanifest).
   useEffect(() => {
-    { const p = new URLSearchParams(boot).get("panel"); if (p === "live" || p === "map" || p === "evidence" || p === "scene" || p === "zone") setPanel(p); }
+    { const p = new URLSearchParams(boot).get("panel"); if (p === "live" || p === "map" || p === "evidence" || p === "scene" || p === "zone" || p === "fauna" || p === "person") setPanel(p); }
   }, []);
   const [wide, setWide] = useState(false);
   const [home, setHome] = useState(true);
@@ -129,6 +129,7 @@ export function HorizonApp() {
     if (cmd.intent.t !== "undo" && cmd.intent.t !== "unknown") lastCmd.current = cmd;
     run(cmd, via, label, deps);
     if (cmd.intent.t === "scene") setPanel(cmd.intent.real ? "zone" : "scene");
+    else if (cmd.intent.t === "open") setPanel(cmd.intent.panel);
     else if (!STAYS_IN_CHAT.includes(cmd.intent.t)) setPanel((p) => p ?? "map");
   }, [deps]);
 
@@ -141,8 +142,20 @@ export function HorizonApp() {
     answer: (card) => { setHome(false); conv.answer(card); },
     here: () => hereOf(ctxRef.current),
     openMap: () => setPanel((p) => p ?? "map"),
+    describeHere: () => {
+      const c = ctxRef.current, sel = c.state.selection;
+      if (sel?.kind !== "cell") return hereOf(c)?.name ?? null;
+      const h = hoverText(c, sel.index);
+      return h ? `${h.where}. ${h.title}. ${h.line}` : null;
+    },
   }));
   useEffect(() => hub.install(), [hub]);
+  // «enciende gestos» from the assistant (run.ts cannot reach the hub).
+  useEffect(() => {
+    const on = (e: Event) => { if ((e as CustomEvent<boolean>).detail) void hub.startGestures(); else hub.stopGestures(); };
+    addEventListener("h247:gestures", on);
+    return () => removeEventListener("h247:gestures", on);
+  }, [hub]);
 
   const focusOn = useCallback((card: Card) => {
     if (card.evidence) store.set({ selection: card.evidence.selection, camera: store.get().camera + 1 });
@@ -176,8 +189,9 @@ export function HorizonApp() {
     imagery: (id: string | null) => { store.set({ imagery: id }); },
     look: (lat: number, lon: number) => actions.look(lat, lon),
     evolutionDone: () => { store.set({ evolution: false }); },
+    speed: (v: number) => { store.set({ speed: v }); },
     scene: (t: SceneTarget) => { store.set({ scene: t }); setPanel("scene"); },
-    zone: (z: { name: string; lat: number; lon: number }) => { store.set({ zone: z }); setPanel("zone"); },
+    zone: (z: ZoneTarget) => { store.set({ zone: z }); setPanel("zone"); },
     window: (id: string) => {
       store.set({ layerId: id, timeMode: "completa", year: null, windowEnd: null });
       conv.wait({ kind: store.get().selection ? "area" : "summary", source: "controls", correctable: false, waitLayer: id });

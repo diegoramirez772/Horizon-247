@@ -31,7 +31,7 @@ const LEVEL_STYLE = {
   emergencia: "border-[#c62828]",
 } as const;
 
-interface Params { embed: boolean; place: Place | null; years: boolean; serie: number[] | null; y0: number }
+interface Params { embed: boolean; place: Place | null; years: boolean; serie: number[] | null; y0: number; /** What HORI holds for the focus this scene illustrates. */ foco?: string; /** Timeline speed ×0.5 / ×1 / ×2. */ vel?: number }
 
 /** «?lat=&lon=&name=» opens the scene of a real place; «t=anos» starts the yearly timeline; «serie» = HORI anomalies. */
 function readParams(): Params {
@@ -40,7 +40,7 @@ function readParams(): Params {
     const lat = Number(q.get("lat")), lon = Number(q.get("lon"));
     const place = q.has("lat") && Number.isFinite(lat) && Number.isFinite(lon) ? { name: q.get("name") || `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`, lat, lon } : null;
     const serie = q.get("serie")?.split(",").map((x) => (x === "" ? NaN : Number(x))) ?? null;
-    return { embed: q.get("embed") === "1", place, years: q.get("t") === "anos", serie: serie && serie.some(Number.isFinite) ? serie : null, y0: Number(q.get("y0")) || 1981 };
+    return { embed: q.get("embed") === "1", place, years: q.get("t") === "anos", serie: serie && serie.some(Number.isFinite) ? serie : null, y0: Number(q.get("y0")) || 1981, foco: q.get("foco")?.slice(0, 320) || undefined, vel: [0.5, 1, 2].includes(Number(q.get("vel"))) ? Number(q.get("vel")) : 1 };
   } catch { return { embed: false, place: null, years: false, serie: null, y0: 1981 }; }
 }
 
@@ -67,7 +67,9 @@ function SceneLabView() {
   const [stats, setStats] = useState<SceneStats | null>(null);
   const [noGL, setNoGL] = useState(false);
   const [panel, setPanel] = useState<"datos" | "escena">("datos");
-  const tier = useMemo(() => (typeof window === "undefined" ? null : detectTier()), []);
+  // Read after mounting: the server has no GPU to ask, so the first render must match it («?») and then update.
+  const [tier, setTier] = useState<ReturnType<typeof detectTier> | null>(null);
+  useEffect(() => { setTier(detectTier()); }, []);
 
   // A real place: NASA POWER of the last weeks + HORI's yearly series → the timeline.
   const [params, setParams] = useState<Params>({ embed: false, place: null, years: false, serie: null, y0: 1981 });
@@ -76,12 +78,14 @@ function SceneLabView() {
   const [mode, setMode] = useState<"dias" | "anos">("dias");
   const [step, setStep] = useState(-1);
   const [playing, setPlaying] = useState(false);
+  const [vel, setVel] = useState(1);
   const [showData, setShowData] = useState(true);
   const [status, setStatus] = useState("");
 
   useEffect(() => {
     const p = readParams();
     setParams(p);
+    setVel(p.vel ?? 1);
     if (p.embed) setShowData(false);
     if (!p.place) { const first = initialId(); setId(first); setSpec(preset(first)); return; }
     const place = p.place;
@@ -121,9 +125,10 @@ function SceneLabView() {
   useEffect(() => { setStep(steps - 1); setPlaying(params.years && mode === "anos" && steps > 1); }, [mode, steps]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!playing || steps < 2) return;
-    const t = window.setInterval(() => setStep((i) => { if (i >= steps - 1) { setPlaying(false); return i; } return i + 1; }), mode === "anos" ? 450 : 700);
+    // one year every 1.1 s (×1), one day every 0.9 s: slow enough to read what changed
+    const t = window.setInterval(() => setStep((i) => { if (i >= steps - 1) { setPlaying(false); return i; } return i + 1; }), (mode === "anos" ? 1100 : 900) / vel);
     return () => window.clearInterval(t);
-  }, [playing, steps, mode]);
+  }, [playing, steps, mode, vel]);
   const play = () => { if (step >= steps - 1) setStep(0); setPlaying((x) => !x); };
 
   useEffect(() => {
@@ -196,7 +201,7 @@ function SceneLabView() {
   }, [focusEl, panel]);
   const driving = useMemo(() => new Set(scene?.elements.find((e) => e.id === focusEl)?.drivenBy ?? []), [scene, focusEl]);
 
-  const keys = spec.body === "mars" ? MARS_VARS : spec.body === "moon" ? MOON_VARS : EARTH_VARS;
+  const keys = spec.body === "earth" ? EARTH_VARS : spec.body === "mars" ? MARS_VARS : MOON_VARS;
 
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-bg text-text">
@@ -216,6 +221,7 @@ function SceneLabView() {
           <span className="mr-2 rounded bg-sim px-1.5 py-0.5 font-semibold text-on-sim">Escena generada</span>
           Ilustra los datos; no es una foto. {spec.note ?? ""} {status}
         </p>
+        {params.foco ? <p className="w-full rounded-lg bg-surface-2 px-2 py-1 text-xs font-medium text-text">{params.foco}</p> : null}
       </header>
 
       {/* situations */}
@@ -247,6 +253,12 @@ function SceneLabView() {
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent">
               {playing ? "❚❚" : "▶"}
             </button>
+            <div role="group" aria-label="Velocidad" className="flex shrink-0 rounded-full bg-surface-2 p-0.5 text-xs">
+              {[0.5, 1, 2].map((v) => (
+                <button key={v} type="button" aria-pressed={vel === v} onClick={() => setVel(v)} aria-label={`Velocidad ×${v === 0.5 ? "0,5" : v}`}
+                  className={`rounded-full px-2 py-1 font-medium ${vel === v ? "bg-surface shadow-sm" : "text-text-2"}`}>×{v === 0.5 ? "0,5" : v}</button>
+              ))}
+            </div>
             <input type="range" min={0} max={Math.max(0, steps - 1)} step={1} value={Math.max(0, step)} aria-label="Momento"
               onChange={(e) => { setPlaying(false); setStep(Number(e.target.value)); }} className="w-full" />
           </div>

@@ -2,7 +2,10 @@
 //  · one turn (push to talk) or a hands-free session that restarts itself after silences;
 //  · barge-in: speaking while the assistant talks silences it at once;
 //  · says WHERE the audio goes (H20): on this device when the browser can recognise locally, else the browser's service;
-//  · long answers are spoken sentence by sentence (some browsers cut long utterances), and the best voice is chosen.
+//  · long answers are spoken sentence by sentence (some browsers cut long utterances), and the best voice is chosen;
+//  · several alternatives per utterance (n-best): the hub keeps the one that is a known command (noise, wind, accents);
+//  · the moment the person STARTS talking is reported, so «esto / aquí» means where the hand was pointing then;
+//  · speaking rate can be changed by voice («más lento») for wind and noise in the field.
 // Nothing listens until asked; the microphone is released when the turn or the session ends.
 
 import type { Lang } from "@/core/i18n/texts";
@@ -86,7 +89,12 @@ export class Voice {
   private snap: VoiceSnapshot = { supported: false, listening: false, session: false, interim: "", speaking: false, destination: "none", error: null };
   private listeners = new Set<() => void>();
   private rec: Recognition | null = null;
-  private onFinal: ((text: string) => void) | null = null;
+  private onFinal: ((text: string, alts: string[]) => void) | null = null;
+  private heardStart = false;
+  /** Speaking rate (0.7–1.4). */
+  rate = 1.02;
+  /** The person started talking (first sound or first partial words) in this utterance. */
+  onUserSpeech: () => void = () => {};
   private restarts = 0;
   private localOk: Record<string, boolean> = {};
   private queue: string[] = [];
@@ -123,7 +131,7 @@ export class Voice {
    * Starts listening. `session` = hands-free: keeps listening across silences until stop().
    * `onFinal` receives each final utterance.
    */
-  async listen(onFinal: (text: string) => void, session = false): Promise<void> {
+  async listen(onFinal: (text: string, alts: string[]) => void, session = false): Promise<void> {
     const C = ctor();
     if (!C) { this.set({ error: "no-support" }); return; }
     this.abortRec();
@@ -139,9 +147,10 @@ export class Voice {
     r.lang = LOCALE[this.lang];
     r.interimResults = true;
     r.continuous = this.snap.session;
-    r.maxAlternatives = 1;
+    r.maxAlternatives = 3;
     if (local) r.processLocally = true;
-    r.onspeechstart = () => { if (this.snap.speaking) { this.hush(); this.onBargeIn(); } };
+    const started = () => { if (!this.heardStart) { this.heardStart = true; this.onUserSpeech(); } };
+    r.onspeechstart = () => { started(); if (this.snap.speaking) { this.hush(); this.onBargeIn(); } };
     r.onresult = (e) => {
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -149,8 +158,11 @@ export class Voice {
         const text = res[0].transcript;
         if (res.isFinal) {
           const t = text.trim();
-          if (t) { this.set({ interim: "" }); this.onFinal?.(t); }
-        } else interim += text;
+          const alts: string[] = [];
+          for (let k = 0; k < res.length; k++) { const a = res[k]?.transcript?.trim(); if (a) alts.push(a); }
+          this.heardStart = false;
+          if (t) { this.set({ interim: "" }); this.onFinal?.(t, alts); }
+        } else { interim += text; if (text.trim()) started(); }
       }
       if (interim && this.snap.speaking) { this.hush(); this.onBargeIn(); }
       this.set({ interim });
@@ -207,7 +219,7 @@ export class Voice {
       const u = new SpeechSynthesisUtterance(s);
       u.lang = LOCALE[this.lang];
       if (voice) u.voice = voice;
-      u.rate = 1.02;
+      u.rate = this.rate;
       u.onend = next;
       u.onerror = () => { if (token === this.speakToken) { this.set({ speaking: false }); this.onSpeakEnd(); } };
       synth.speak(u);
