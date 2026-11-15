@@ -11,6 +11,8 @@ import { type FaunaGroup, type FaunaSignal, type TopSpecies, GROUPS, boxAround, 
 import { type LiveDetection, distanceKm, subscribeWeather } from "@/core/map/weather";
 import { FaunaGroupCard, faunaLine } from "../FaunaPanel";
 import { IssCam, JointMap, SkyCam } from "./LiveViews";
+import { FichaHori } from "./Ficha";
+import type { StepKey } from "@/core/hori/ficha";
 import type { Lang } from "@/core/i18n/texts";
 import { CAT_LABEL, CAT_PLURAL, fetchEvents, km, type NaturalEvent } from "@/core/live/eonet";
 import { fetchPowerPoint, thiDays, type PowerPoint, type ThiLevel } from "@/core/live/power";
@@ -48,6 +50,7 @@ export function Widgets({ widgets, lang, actions }: { widgets: Widget[]; lang: L
             : w.w === "alerts" ? <AlertsWidget where={w.where} lang={lang} actions={actions} />
             : w.w === "fauna" ? <FaunaWidget where={w.where} group={w.group} lang={lang} />
             : w.w === "storms" ? <StormsWidget near={w.near} lang={lang} actions={actions} />
+            : w.w === "ficha" ? <FichaWidget where={w.where} focus={w.focus as StepKey | null} lang={lang} actions={actions} />
             : w.w === "iss" ? <IssCam lang={lang} />
             : w.w === "sky" ? <SkyCam lang={lang} near={w.near} />
             : w.w === "joint" ? <Frame title={lang === "es" ? "Cambio conjunto · HORI" : "Joint change · HORI"} badge={{ text: "HORI", kind: "hori" }}><JointMap lang={lang} hint={w.hint} onLook={actions.look} /></Frame>
@@ -708,4 +711,10 @@ function AlertsWidget({ where, lang, actions }: { where: Where | null; lang: Lan
       ) : null}
     </Frame>
   );
+}
+
+/** The file of a place: the place said, else «Tus lugares», else the default (same rule as the alerts). */
+function FichaWidget({ where, focus, lang, actions }: { where: Where | null; focus: StepKey | null; lang: Lang; actions: WidgetActions }) {
+  const [p] = useMyPlace(where);
+  return <FichaHori place={p} lang={lang} focus={focus} onLook={actions.look} />;
 }

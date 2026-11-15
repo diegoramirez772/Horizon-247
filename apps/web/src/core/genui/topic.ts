@@ -22,7 +22,8 @@ export type Widget =
   | { w: "storms"; near: Where | null } // storms and heavy rain detected live in GOES/Himawari + IMERG
   | { w: "iss" } // NASA's live camera on the International Space Station
   | { w: "sky"; near: Where | null } // the sky over a region in true colour (GOES GeoColor, every 10 min)
-  | { w: "joint"; hint: string | null }; // HORI's joint change: two variables changing together
+  | { w: "joint"; hint: string | null } // HORI's joint change: two variables changing together
+  | { w: "ficha"; where: Where | null; focus: string | null }; // HORI's seven capacities on one place, step by step
 
 export interface TopicAnswer {
   widgets: Widget[];
@@ -125,6 +126,15 @@ export function topicAnswer(topic: Topic, where: Where | null, draft: string | n
         origin: "zon",
       };
     }
+    case "ficha":
+      return {
+        widgets: [{ w: "ficha", where, focus: draft }],
+        action: L(`Ficha de HORI${where ? ` · ${where.name}` : ""}`, `HORI file${where ? ` · ${where.name}` : ""}`),
+        text: L(
+          "Reviso el lugar paso por paso, como trabaja HORI: identifico qué es y verifico sus datos, observo su calidad, detecto lo que está ocurriendo, veo cómo cambió, ordeno lo que requiere atención, digo lo que todavía no se sabe y lo explico todo con números y fuentes.",
+          "I go through the place step by step, the way HORI works: identify it and verify its data, observe their quality, detect what is happening, see how it changed, order what needs attention, say what is not known yet and explain it all with numbers and sources."),
+        origin: "hori",
+      };
     case "conjunto":
       return {
         widgets: [{ w: "joint", hint: draft }],

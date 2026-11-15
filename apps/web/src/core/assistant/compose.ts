@@ -250,6 +250,10 @@ const TOPIC_CHIPS: Record<Topic, Chip[]> = {
     chip(L("¿Hay alertas aquí?", "Any alerts here?"), { t: "topic", topic: "alertas", where: null }),
     chip(L("Infrarrojo en vivo", "Live infrared"), { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }),
   ],
+  ficha: [
+    chip(L("¿Hay alertas aquí?", "Any alerts here?"), { t: "topic", topic: "alertas", where: null }),
+    chip(L("Ver lo significativo", "Show what is significant"), { t: "open", panel: "map", tour: "apoyado" }),
+  ],
   conjunto: [
     chip(L("Ver lo significativo", "Show what is significant"), { t: "open", panel: "map", tour: "apoyado" }),
     chip(L("¿Hay alertas aquí?", "Any alerts here?"), { t: "topic", topic: "alertas", where: null }),
