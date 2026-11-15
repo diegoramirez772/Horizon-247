@@ -16,7 +16,10 @@ export const viewport: Viewport = {
 };
 
 // The service worker is registered after the page loads, only on https or localhost (where browsers allow it).
-const SW = `if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}`;
+// In development it is never used (dev chunks keep their names, so a cache would serve stale code): any old one is removed.
+const SW = process.env.NODE_ENV === "production"
+  ? `if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}`
+  : `if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});if(self.caches)caches.keys().then(function(k){k.forEach(function(n){if(n.indexOf("h247-")===0)caches.delete(n)})})}`;
 
 // Runs before the first paint (Next 16 guide «Preventing flash before hydration»):
 // applies the saved theme and the language from the URL so nothing flickers.

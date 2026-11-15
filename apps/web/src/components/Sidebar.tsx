@@ -1,6 +1,6 @@
 "use client";
 
-// The app's only chrome (replaces the top header): a left rail with home, new conversation, Monitoreo, En vivo and
+// The app's only chrome (replaces the top header): a left rail with home, new question, Monitoreo, En vivo and
 // Evidencia, and language + theme at the bottom. Collapses to icons on desktop; on phones it is a drawer behind a
 // floating button. The reading level is NOT here: it lives inside the question box, next to what it changes.
 
@@ -100,21 +100,27 @@ export function Sidebar({ lang, setLang, panel, setPanel, home, onHome, onNew, d
           ))}
         </div>
 
-        <div className={`mt-auto flex flex-col gap-2 border-t border-border p-2 pb-3 pt-3 ${wide ? "" : "items-center"}`}>
+        <div className={`mt-auto flex flex-col gap-4 border-t border-border px-2 pb-4 pt-4 ${wide ? "" : "items-center"}`}>
           {wide ? <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-text-3">{t.prefs}</p> : null}
-          <div role="radiogroup" aria-label={t.lang} className={`flex rounded-xl border border-border bg-surface p-0.5 ${wide ? "" : "flex-col"}`}>
-            {(["es", "en"] as const).map((l) => (
-              <button key={l} type="button" role="radio" aria-checked={lang === l} onClick={() => setLang(l)} title={l === "es" ? "Español" : "English"}
-                className={`h-8 flex-1 rounded-lg px-2 text-xs font-semibold ${lang === l ? "bg-accent text-on-accent" : "text-text-2 hover:text-text"}`}>
-                {l.toUpperCase()}
-              </button>
-            ))}
+          <div className={wide ? "px-1" : ""}>
+            {wide ? <p className="mb-1.5 px-2 text-xs text-text-2">{t.lang}</p> : null}
+            <div role="radiogroup" aria-label={t.lang} className={`flex gap-0.5 rounded-xl border border-border bg-surface p-0.5 ${wide ? "" : "flex-col"}`}>
+              {(["es", "en"] as const).map((l) => (
+                <button key={l} type="button" role="radio" aria-checked={lang === l} onClick={() => setLang(l)} title={l === "es" ? "Español" : "English"}
+                  className={`h-8 flex-1 rounded-lg px-2 text-xs font-semibold ${lang === l ? "bg-accent text-on-accent" : "text-text-2 hover:text-text"}`}>
+                  {l === "es" ? (wide ? "Español" : "ES") : (wide ? "English" : "EN")}
+                </button>
+              ))}
+            </div>
           </div>
-          <button type="button" onClick={toggleTheme} title={t.theme}
-            className={`flex h-10 items-center gap-3 rounded-xl text-sm text-text-2 hover:bg-surface hover:text-text ${wide ? "px-3" : "w-10 justify-center"}`}>
-            <Icon>{dark ? <><circle cx="8" cy="8" r="3" /><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3" /></> : <path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5z" />}</Icon>
-            {wide ? <span>{dark ? t.light : t.dark}</span> : <span className="sr-only">{dark ? t.light : t.dark}</span>}
-          </button>
+          <div className={wide ? "px-1" : ""}>
+            {wide ? <p className="mb-1.5 px-2 text-xs text-text-2">{t.theme}</p> : null}
+            <button type="button" onClick={toggleTheme} title={t.theme} aria-label={`${t.theme}: ${dark ? t.dark : t.light}`}
+              className={`flex h-9 items-center gap-2.5 rounded-xl border border-border bg-surface text-sm text-text hover:border-text-3 ${wide ? "w-full px-3" : "w-10 justify-center"}`}>
+              <Icon>{dark ? <path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5z" /> : <><circle cx="8" cy="8" r="3" /><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3" /></>}</Icon>
+              {wide ? <><span>{dark ? t.dark : t.light}</span><span className="ml-auto text-xs text-text-3">{lang === "es" ? "Cambiar" : "Switch"}</span></> : null}
+            </button>
+          </div>
         </div>
       </nav>
     </>
