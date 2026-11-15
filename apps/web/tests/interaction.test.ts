@@ -2,12 +2,12 @@
 // interpretation order, spatial navigation and the hand state machine.
 
 import { describe, expect, it } from "vitest";
-import { applyDictation, punctuate } from "./dictation";
-import { phonetic, rank, saysOneOf, similarity } from "./fuzzy";
-import { GestureMachine, type Hand } from "./gestures";
-import { interpret, type InterpretCtx } from "./interpret";
-import { spokenToDigits } from "./numbers";
-import { nearestTo, nextInDirection } from "./spatial";
+import { applyDictation, punctuate } from "@/core/interaction/dictation";
+import { phonetic, rank, saysOneOf, similarity } from "@/core/interaction/fuzzy";
+import { GestureMachine, type Hand } from "@/core/interaction/gestures";
+import { interpret, type InterpretCtx } from "@/core/interaction/interpret";
+import { spokenToDigits } from "@/core/interaction/numbers";
+import { nearestTo, nextInDirection } from "@/core/interaction/spatial";
 
 const ctx = (over: Partial<InterpretCtx> = {}): InterpretCtx => ({ mode: "commands", pendingConfirm: false, labels: [], hasManip: true, ...over });
 

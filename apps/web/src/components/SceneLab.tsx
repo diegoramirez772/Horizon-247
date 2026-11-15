@@ -6,6 +6,10 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { registerView } from "@/core/interaction/manipulate";
+import { sceneCommand } from "@/core/scene/voice";
+import { InteractionRoot } from "./interaccion/InteractionRoot";
+import { useHub } from "./interaccion/context";
 import { compose, type Scene } from "@/core/scene/compose";
 import { PRESETS, preset } from "@/core/scene/presets";
 import { SceneView, type SceneStats } from "@/core/scene/SceneView";
@@ -28,7 +32,17 @@ function initialId(): string {
   try { return new URLSearchParams(location.search).get("escena") ?? "rancho"; } catch { return "rancho"; }
 }
 
+/** The scene generator, controllable by voice, hand, gamepad and keys (doc «Interacción v2» §2.6). */
 export function SceneLab() {
+  return (
+    <InteractionRoot lang="es">
+      <SceneLabView />
+    </InteractionRoot>
+  );
+}
+
+function SceneLabView() {
+  const hub = useHub();
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<SceneView | null>(null);
   const [id, setId] = useState("rancho");
@@ -43,14 +57,16 @@ export function SceneLab() {
 
   useEffect(() => {
     if (!host.current) return;
+    let unregister = () => {};
     try {
       const v = new SceneView(host.current, "Escena generada a partir de los datos");
       v.onStats = setStats;
       view.current = v;
+      unregister = registerView(v, { es: "escena", en: "scene" });
     } catch {
       setNoGL(true);
     }
-    return () => { view.current?.destroy(); view.current = null; };
+    return () => { unregister(); view.current?.destroy(); view.current = null; };
   }, []);
 
   // Rebuild after the readings stop moving for a moment (composing takes ~50–300 ms on a 2-core laptop).
@@ -72,6 +88,36 @@ export function SceneLab() {
   const setVar = (k: VarKey, value: number) => {
     setSpec((s) => ({ ...s, vars: { ...s.vars, [k]: { value, unit: VAR_INFO[k].unit, source: "ajustado a mano", kind: "simulada" } } }));
   };
+
+  // Every object of the diorama by voice: what drives it, its readings, the cattle / people / devices themselves.
+  const [focusEl, setFocusEl] = useState<string | null>(null);
+  const live = useRef({ spec, scene, choose });
+  useEffect(() => { live.current = { spec, scene, choose }; });
+  useEffect(() => hub.registerDomain({
+    id: "escena",
+    title: { es: "Escena generada", en: "Generated scene" },
+    examples: {
+      es: [["Más lluvia"], ["Temperatura a 38"], ["Apaga el fuego"], ["De noche"], ["Agrega 5 vacas"], ["Quita el dron"], ["¿Qué mueve el pasto?"], ["Muestra la sequía"], ["Viento al máximo"], ["Nubes al 80"]],
+      en: [["More rain"], ["Temperature to 38"], ["Turn off the fire"], ["At night"], ["Add 5 cows"], ["Remove the drone"], ["What drives the grass?"], ["Show the drought"]],
+    },
+    handle: (t) => {
+      const { spec: sp, scene: sc, choose: ch } = live.current;
+      const r = sceneCommand(t, sp, sc?.elements ?? [], PRESETS.map((p) => ({ id: p.id, label: p.label })));
+      if (!r) return null;
+      if (r.presetId) ch(r.presetId);
+      if (r.spec) setSpec(r.spec);
+      if (r.focus) { setFocusEl(r.focus); setPanel(r.spec ? "datos" : "escena"); }
+      return r.say;
+    },
+  }), [hub]);
+  // the focused object's row is scrolled into view and outlined
+  useEffect(() => {
+    if (!focusEl) return;
+    document.getElementById(`el-${focusEl}`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    const id = window.setTimeout(() => setFocusEl(null), 6000);
+    return () => clearTimeout(id);
+  }, [focusEl, panel]);
+  const driving = useMemo(() => new Set(scene?.elements.find((e) => e.id === focusEl)?.drivenBy ?? []), [scene, focusEl]);
 
   const keys = spec.body === "mars" ? MARS_VARS : spec.body === "moon" ? MOON_VARS : EARTH_VARS;
 
@@ -130,7 +176,7 @@ export function SceneLab() {
                 const r = spec.vars[k];
                 const value = r?.value ?? (info.min + info.max) / 2;
                 return (
-                  <li key={k}>
+                  <li key={k} className={driving.has(k) ? "-mx-1.5 rounded-lg px-1.5 outline outline-2 outline-focus" : undefined}>
                     <label className="flex items-baseline justify-between gap-2 text-sm">
                       <span>{info.label}</span>
                       <span className="tabular-nums text-text-2">
@@ -147,7 +193,7 @@ export function SceneLab() {
           ) : (
             <ul className="space-y-2 text-sm">
               {scene?.elements.map((e) => (
-                <li key={e.id}>
+                <li key={e.id} id={`el-${e.id}`} className={e.id === focusEl ? "-mx-1.5 rounded-lg px-1.5 outline outline-2 outline-focus" : undefined}>
                   <p className="font-semibold">{e.label} <span className="font-normal text-text-3">· {e.count}</span></p>
                   <p className="text-text-2">{e.rule}</p>
                 </li>

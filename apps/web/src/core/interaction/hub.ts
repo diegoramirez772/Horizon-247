@@ -7,6 +7,7 @@
 
 import type { Card } from "@/core/assistant/compose";
 import type { Lang } from "@/core/i18n/texts";
+import { normalize } from "@/core/assistant/patterns";
 import { applyDictation } from "./dictation";
 import { activate, isTextField, magnet, moveFocus, pressEscape, scrollBy, stepFocus, tapAt, targets, type Target } from "./dom";
 import { play } from "./earcons";
@@ -15,6 +16,7 @@ import { HandTracker, type HandStats } from "./hand";
 import { interpret, type Interpretation, type ManipKey, type MetaKey, type Mode, type SystemKey } from "./interpret";
 import { activeManipulable, isSpinning, manipulableAt, startSpin, stopSpin, touch, type Manipulable } from "./manipulate";
 import { batteryLow, detectLevel, Pads, type LevelInfo, type PadEvent } from "./devices";
+import { spokenToDigits } from "./numbers";
 import { Voice, type VoiceSnapshot } from "./voice";
 import { ALERT_NEXT, monitorId, reporterId, zon, zonConfig, ZonError, type ZonAlert } from "./zon";
 
@@ -33,6 +35,21 @@ export interface HubDeps {
 }
 
 type T2 = Record<Lang, string>;
+
+/**
+ * A screen's own vocabulary (the scene generator: «más lluvia», «agrega 5 vacas»). Tried before the assistant and
+ * before matching a control by name. `text` is normalized with digits. Return what to say, or null if not yours.
+ */
+export interface Domain {
+  id: string;
+  title: T2;
+  handle(text: string, raw: string): T2 | null;
+  /** Shown in the palette. */
+  examples: Record<Lang, [string, string?][]>;
+}
+
+const RANGE_UP = ["sube", "subele", "mas", "aumenta", "incrementa", "up", "more", "increase", "raise"];
+const RANGE_DOWN = ["baja", "bajale", "menos", "reduce", "disminuye", "down", "less", "decrease", "lower"];
 export interface Pending { title: T2; lines: Record<Lang, string[]>; risk: "escritura" | "publicar"; run: () => Promise<void>; expires: number; sending: boolean }
 export interface HandView { status: HandStats["status"]; x: number; y: number; visible: boolean; pinching: boolean; perSecond: number; inferMs: number; error?: string; snap: { x: number; y: number; w: number; h: number } | null }
 export interface Notice { id: number; text: string; tone: "ok" | "error" | "info" }
@@ -148,6 +165,8 @@ export class Hub {
   private digitBuf = "";
   private digitTimer = 0;
   private frameWatch = 0;
+  private domains: Domain[] = [];
+  private dragRange: HTMLInputElement | null = null;
 
   constructor(deps: HubDeps) {
     this.deps = deps;
@@ -173,6 +192,13 @@ export class Hub {
   private get lang(): Lang { return this.deps.lang(); }
 
   setDeps(d: HubDeps): void { this.deps = d; }
+
+  registerDomain(d: Domain): () => void {
+    this.domains = [...this.domains.filter((x) => x.id !== d.id), d];
+    this.set({});
+    return () => { this.domains = this.domains.filter((x) => x !== d); this.set({}); };
+  }
+  getDomains(): Domain[] { return this.domains; }
 
   /** Installs keys, gamepad and the level. Call once on the client; returns the uninstaller. */
   install(): () => void {
@@ -249,7 +275,39 @@ export class Hub {
       if (c) this.pick(c.n, list);
       return;
     }
+    // A bare number with a slider focused and no numbered overlay sets the slider («treinta»).
+    if (it.k === "number" && !this.snap.numbers && this.focusedRange(String(it.n))) return;
+    if (it.k === "label" || it.k === "choose" || it.k === "assistant") {
+      const t = spokenToDigits(normalize(text));
+      if (this.focusedRange(t)) return;
+      for (const d of this.domains) {
+        const said = d.handle(t, text);
+        if (said) { play("done"); this.answerShort(said, via); return; }
+      }
+    }
     this.dispatch(it, list, via, text);
+  }
+
+  /** A short spoken + shown answer that is not a conversation card (screen domains). */
+  private answerShort(said: T2, via: "voice" | "text"): void {
+    const txt = said[this.lang];
+    this.lastSaid = txt;
+    this.notify(txt, "ok", via === "voice" || this.handsFree);
+  }
+
+  /** «sube», «baja», «a 30» while a slider has the focus: steps it like the arrow keys (every slider, every screen). */
+  private focusedRange(t: string): boolean {
+    const el = document.activeElement;
+    if (!(el instanceof HTMLInputElement) || el.type !== "range") return false;
+    const n = t.match(/^(?:a |en |to )?(-?\d+(?:\.\d+)?)$/);
+    const words = t.split(" ");
+    const big = words.includes("mucho") || words.includes("much") ? 5 : 1;
+    if (n) setRange(el, Number(n[1]));
+    else if (words.some((w) => RANGE_UP.includes(w))) stepRange(el, big);
+    else if (words.some((w) => RANGE_DOWN.includes(w))) stepRange(el, -big);
+    else return false;
+    play("tick");
+    return true;
   }
 
   private dispatch(it: Interpretation, list: Target[], via: "voice" | "text", raw: string): void {
@@ -610,6 +668,7 @@ export class Hub {
         // on the map or a scene, the d-pad turns it; elsewhere it moves the focus
         const m = el instanceof HTMLCanvasElement ? manipulableAt(el.getBoundingClientRect().left + 2, el.getBoundingClientRect().top + 2) : null;
         if (m) { m.orbit(e.dir === "left" ? -0.06 : e.dir === "right" ? 0.06 : 0, e.dir === "up" ? -0.06 : e.dir === "down" ? 0.06 : 0); return; }
+        if (el instanceof HTMLInputElement && el.type === "range" && (e.dir === "left" || e.dir === "right")) { stepRange(el, e.dir === "right" ? 1 : -1); return; }
         moveFocus(e.dir);
         return;
       }
@@ -686,21 +745,26 @@ export class Hub {
         if (this.snap.pending) return; // confirming takes a thumbs up or a word, never a stray pinch
         const x = ev.x * W, y = ev.y * H;
         const sn = this.snap.hand.snap;
-        if (sn) tapAt(sn.x + sn.w / 2, sn.y + sn.h / 2); else tapAt(x, y);
+        const range = rangeAt(x, y);
+        if (range) { range.focus(); setRangeAtX(range, x); }
+        else if (sn) tapAt(sn.x + sn.w / 2, sn.y + sn.h / 2); else tapAt(x, y);
         play("tick");
         return;
       }
       case "dragStart": {
         const x = ev.x * W, y = ev.y * H;
+        this.dragRange = rangeAt(x, y);
+        if (this.dragRange) { this.dragRange.focus(); return; }
         this.dragView = manipulableAt(x, y);
         if (this.dragView) { touch(this.dragView); stopSpin(); }
         return;
       }
       case "drag":
-        if (this.dragView) this.dragView.orbit(ev.dx, ev.dy);
+        if (this.dragRange) setRangeAtX(this.dragRange, ev.x * W);
+        else if (this.dragView) this.dragView.orbit(ev.dx, ev.dy);
         else scrollBy(-ev.dy * H * 1.5);
         return;
-      case "dragEnd": this.dragView = null; return;
+      case "dragEnd": this.dragView = null; this.dragRange = null; return;
       case "zoom": activeManipulable()?.zoomBy(ev.factor); return;
       case "back": play("tick"); this.back(); return;
       case "confirm": if (this.snap.pending) void this.confirm(true); return;
@@ -708,6 +772,35 @@ export class Hub {
   }
 
   isSpinning(): boolean { return isSpinning(); }
+}
+
+function rangeAt(x: number, y: number): HTMLInputElement | null {
+  const el = document.elementFromPoint(x, y);
+  return el instanceof HTMLInputElement && el.type === "range" && !el.disabled ? el : null;
+}
+
+/** Sets a slider and fires the events React and plain listeners expect. */
+function setRange(el: HTMLInputElement, v: number): void {
+  const min = Number(el.min || 0), max = Number(el.max || 100), step = Number(el.step) || 1;
+  const val = Math.max(min, Math.min(max, Math.round((v - min) / step) * step + min));
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(el, String(Number(val.toFixed(6))));
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+  el.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function stepRange(el: HTMLInputElement, steps: number): void {
+  const min = Number(el.min || 0), max = Number(el.max || 100);
+  const step = Number(el.step) || 1;
+  // a «step» by voice or pad is 5 % of the range (at least one native step), so it is visible
+  const d = Math.max(step, Math.round(((max - min) * 0.05) / step) * step);
+  setRange(el, Number(el.value) + steps * d);
+}
+
+function setRangeAtX(el: HTMLInputElement, x: number): void {
+  const r = el.getBoundingClientRect();
+  const f = Math.max(0, Math.min(1, (x - r.left) / r.width));
+  const min = Number(el.min || 0), max = Number(el.max || 100);
+  setRange(el, min + f * (max - min));
 }
 
 /** Sets a React-controlled field: the native setter + an input event, so React's onChange sees it. */

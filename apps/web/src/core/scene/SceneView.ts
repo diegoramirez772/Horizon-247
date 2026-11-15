@@ -175,6 +175,16 @@ export class SceneView {
     this.draw();
   }
 
+  // Interaction layer (doc «Interacción v2» §2.6): the same moves as dragging / wheel, for voice, hand, gamepad.
+  /** Orbit as if dragged by (dx, dy) fractions of the view. */
+  orbit(dx: number, dy: number): void {
+    this.yaw -= dx * Math.PI;
+    this.pitch = Math.max(0.08, Math.min(1.35, this.pitch + dy * 1.2));
+    this.moved();
+  }
+  zoomBy(f: number): void { this.dist = Math.max(18, Math.min(130, this.dist / f)); this.moved(); }
+  reset(): void { this.yaw = 0.75; this.pitch = this.scene?.pitch ?? 0.42; this.dist = 62; this.moved(); }
+
   setPlaying(on: boolean): void { this.playing = on; if (on) this.kick(); else { this.stop(); this.draw(); } this.report(); }
   isPlaying(): boolean { return this.playing; }
 

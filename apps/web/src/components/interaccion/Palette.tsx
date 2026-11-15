@@ -60,7 +60,9 @@ export function Palette({ lang }: { lang: Lang }) {
   useEffect(() => { input.current?.focus(); }, [s.paletteView]);
 
   const items: Item[] = useMemo(() => {
-    const base = GROUPS[lang].flatMap((g) => g.items.map(([say, hint]) => ({ group: g.title, say, hint })));
+    // the screen's own vocabulary first (e.g. the scene generator), then the general one
+    const own = hub.getDomains().flatMap((d) => d.examples[lang].map(([say, hint]) => ({ group: d.title[lang], say, hint })));
+    const base = [...own, ...GROUPS[lang].flatMap((g) => g.items.map(([say, hint]) => ({ group: g.title, say, hint })))];
     const screen = targets().filter((t) => t.name && !t.el.closest("[role=dialog][aria-label]")).slice(0, 40).map((t) => ({ group: c.onScreen, say: t.name }));
     return [...base, ...screen];
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read the screen once per opening
