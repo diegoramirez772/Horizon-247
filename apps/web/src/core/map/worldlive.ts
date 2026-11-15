@@ -8,6 +8,7 @@
 
 import { type NaturalEvent, fetchEvents } from "@/core/live/eonet";
 import { type Omm, type Sat, fromOmm } from "./orbit";
+import { lastGood, markStale } from "@/core/live/lastgood";
 
 export type AnimalGroup = "Aves" | "Mammalia" | "Reptilia" | "Amphibia" | "Actinopterygii";
 
@@ -39,10 +40,20 @@ async function loadSats(): Promise<{ sats: Sat[]; at: number }> {
     const c = JSON.parse(localStorage.getItem(SAT_STORE) ?? "null") as { at: number; raw: [string, Omm[]][] } | null;
     if (c && Date.now() - c.at < SAT_TTL) return { sats: parseGroups(c.raw), at: c.at };
   } catch { /* storage blocked: fetch */ }
-  const raw = await Promise.all(SAT_GROUPS.map(async (g) => {
-    const r = await fetch(`https://celestrak.org/NORAD/elements/gp.php?GROUP=${g}&FORMAT=json`);
-    return [g, r.ok ? ((await r.json()) as Omm[]) : []] as [string, Omm[]];
-  }));
+  let raw: [string, Omm[]][];
+  try {
+    raw = await Promise.all(SAT_GROUPS.map(async (g) => {
+      const got = await lastGood<Omm[]>(`https://celestrak.org/NORAD/elements/gp.php?GROUP=${g}&FORMAT=json`, { source: "Satélites (CelesTrak)", timeoutMs: 6000 });
+      return [g, got.data] as [string, Omm[]];
+    }));
+  } catch (e) {
+    // no network and nothing saved under the new key: the older browser copy is still good for days (orbits drift slowly)
+    try {
+      const c = JSON.parse(localStorage.getItem(SAT_STORE) ?? "null") as { at: number; raw: [string, Omm[]][] } | null;
+      if (c) { markStale("Satélites (CelesTrak)", c.at); return { sats: parseGroups(c.raw), at: c.at }; }
+    } catch { /* nothing kept */ }
+    throw e;
+  }
   const at = Date.now();
   try { localStorage.setItem(SAT_STORE, JSON.stringify({ at, raw })); } catch { /* not kept: fine */ }
   return { sats: parseGroups(raw), at };
@@ -83,8 +94,9 @@ export function parseObservations(doc: { results?: RawObs[] }): AnimalObs[] {
 }
 
 async function loadAnimals(): Promise<AnimalObs[]> {
-  const r = await fetch("https://api.inaturalist.org/v1/observations?iconic_taxa=Aves,Mammalia,Reptilia,Amphibia,Actinopterygii&geo=true&photos=true&order_by=created_at&per_page=200");
-  return r.ok ? parseObservations(await r.json()) : [];
+  const got = await lastGood("https://api.inaturalist.org/v1/observations?iconic_taxa=Aves,Mammalia,Reptilia,Amphibia,Actinopterygii&geo=true&photos=true&order_by=created_at&per_page=200",
+    { source: "Animales (iNaturalist)", key: "inat-latest", parse: (d) => parseObservations(d as { results?: RawObs[] }) });
+  return got.data;
 }
 
 // ---- shared store ----

@@ -23,6 +23,7 @@ import { consumeRedirect } from "@/core/live/auth";
 import { LoginDialog } from "./LoginDialog";
 import { Sidebar } from "./Sidebar";
 import { useHome, useIndex, useLayer, useMapData, useSeries } from "./useBundles";
+import { OfflineBanner } from "./OfflineBanner";
 
 const C = {
   es: { back: "Regresar", backLong: "Regresar al inicio", map: "Monitoreo", theme: "Cambiar tema", skip: "Ir a la caja de preguntas", empty: "Aún no hay capas de datos." },
@@ -240,6 +241,7 @@ export function HorizonApp() {
   return (
     <HubProvider value={hub}>
     <div className="flex h-dvh overflow-x-hidden bg-bg">
+      <OfflineBanner lang={s.lang} />
       <Sidebar lang={s.lang} setLang={(l) => store.set({ lang: l })} panel={panel} setPanel={openPanel} home={home}
         onHome={goHome} onLogin={() => setLogin(true)} dark={theme.pref !== "light"} toggleTheme={() => theme.setPref(theme.pref === "light" ? "dark" : "light")} />
       <div className="flex min-w-0 flex-1 flex-col">

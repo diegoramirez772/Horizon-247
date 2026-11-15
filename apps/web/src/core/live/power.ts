@@ -3,6 +3,8 @@
 // Livestock heat stress (THI) is computed here from POWER's maximum temperature and humidity: a published formula
 // (NRC 1971), not a prediction about any animal (SANTUARIO H12, H17).
 
+import { lastGood } from "./lastgood";
+
 export interface PowerDay {
   date: string; // YYYY-MM-DD
   t2m: number | null; // °C, daily mean
@@ -57,10 +59,9 @@ export function fetchPowerPoint(lat: number, lon: number, days = 21): Promise<Po
   const url = powerUrl(lat, lon, days, Math.floor(Date.now() / 36e5) * 36e5); // one request per hour and place
   let p = memo.get(url);
   if (!p) {
-    p = fetch(url).then(async (r) => {
-      if (!r.ok) throw new Error(`POWER ${r.status}`);
-      return { lat, lon, days: parsePower(await r.json()), url };
-    });
+    // keyed by place (not by hour), so the last good reading of this place is shown when the network fails
+    p = lastGood(url, { source: "Clima (NASA POWER)", key: `power:${lat.toFixed(2)},${lon.toFixed(2)}:${days}`, parse: (d) => parsePower(d as Parameters<typeof parsePower>[0]) })
+      .then((g) => ({ lat, lon, days: g.data, url }));
     p.catch(() => memo.delete(url));
     memo.set(url, p);
   }

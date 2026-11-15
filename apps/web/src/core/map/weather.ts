@@ -11,6 +11,7 @@
 // · City lights: VIIRS 2012 composite.
 // One shared store: the globe and «En vivo» read the same frame, fetched once (~2–4 MB) and then every 10 minutes.
 
+import { markStale, readSaved, saveBlob } from "@/core/live/lastgood";
 import { detectTier } from "./tier";
 import { layer, liveSlot, loadMosaic, type LayerDef, type Mosaic } from "./imagery";
 
@@ -222,6 +223,8 @@ async function compose(prev: LiveDetection[], signal: AbortSignal): Promise<Weat
   g.clearRect(0, 0, W, H);
   for (const m of irs) if (m && m.missing < m.total) place(g, m, W, H);
   const ir = irs.some((m) => m && m.missing < m.total) ? g.getImageData(0, 0, W, H).data : null;
+  // Nothing live arrived (offline, or a dead network): keep the last good sky instead of painting an empty one.
+  if (!ir && !(rainM && rainM.missing < rainM.total)) throw new Error("sin imágenes en vivo");
   const vi = read(viirsM), li = read(lightsM);
 
   const clouds = canvas(W, H), cg = clouds.getContext("2d")!;
@@ -271,18 +274,58 @@ let timer = 0;
 let ctrl: AbortController | null = null;
 const REFRESH_MS = 10 * 60e3;
 
+const SKY = "Nubes y lluvia (NASA GIBS)";
+
+/** Keep the last good sky (two PNGs + what was detected) so the next visit shows it at once, even without network. */
+async function saveFrame(f: WeatherFrame): Promise<void> {
+  const png = (c: HTMLCanvasElement) => new Promise<Blob | null>((ok) => c.toBlob(ok, "image/png"));
+  const [cl, rn] = await Promise.all([png(f.clouds), png(f.rain)]);
+  if (!cl || !rn) return;
+  await Promise.all([
+    saveBlob("sky:clouds", cl, "image/png", f.at), saveBlob("sky:rain", rn, "image/png", f.at),
+    saveBlob("sky:meta", JSON.stringify({ irTime: f.irTime, rainTime: f.rainTime, cloudFillDate: f.cloudFillDate, detections: f.detections, at: f.at }), "application/json", f.at),
+  ]);
+}
+
+async function restoreFrame(): Promise<WeatherFrame | null> {
+  const [m, cl, rn] = await Promise.all([readSaved("sky:meta"), readSaved("sky:clouds"), readSaved("sky:rain")]);
+  if (!m || !cl || !rn) return null;
+  try {
+    const meta = JSON.parse(await m.res.text()) as Omit<WeatherFrame, "clouds" | "rain">;
+    const toCanvas = async (r: Response) => {
+      const bmp = await createImageBitmap(await r.blob());
+      const c = canvas(bmp.width, bmp.height);
+      c.getContext("2d")!.drawImage(bmp, 0, 0);
+      bmp.close();
+      return c;
+    };
+    return { ...meta, clouds: await toCanvas(cl.res), rain: await toCanvas(rn.res) };
+  } catch { return null; }
+}
+
 async function refresh(): Promise<void> {
   if (typeof document !== "undefined" && document.hidden) return;
   ctrl?.abort();
   const c = new AbortController();
   ctrl = c;
+  // first visit of this page: the last saved sky right away (labelled), while the new one is composed
+  if (!frame) {
+    void restoreFrame().then((old) => {
+      if (!old || frame || c.signal.aborted) return;
+      frame = old;
+      markStale(SKY, old.at);
+      for (const l of listeners) l(old);
+    });
+  }
   try {
     const f = await compose(frame?.detections ?? [], c.signal);
     if (c.signal.aborted) return;
     frame = f;
+    markStale(SKY, null);
     for (const l of listeners) l(f);
+    void saveFrame(f);
   } catch (e) {
-    if (!c.signal.aborted) console.warn("[h247] cielo en vivo:", e);
+    if (!c.signal.aborted) { console.warn("[h247] cielo en vivo:", e); if (frame) markStale(SKY, frame.at); }
   }
 }
 
