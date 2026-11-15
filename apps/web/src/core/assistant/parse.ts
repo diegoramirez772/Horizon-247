@@ -5,7 +5,7 @@ import type { Region } from "@/contract/types";
 import type { FaunaGroup } from "@/core/live/fauna";
 import type { Register } from "@/core/i18n/texts";
 import { findPlace, type Where } from "@/core/genui/places";
-import { P, normalize } from "./patterns";
+import { P, isObservation, normalize } from "./patterns";
 import { worldRequest } from "@/core/scene/worlds";
 import { type HowKey, howtoOf, speedOf } from "./howto";
 
@@ -135,6 +135,7 @@ export function parse(raw: string, regions: Region[]): Command {
   const intent: Intent =
     !text ? { t: "unknown" }
     : P.report.test(text) ? { t: "report", text: raw.replace(/^\s*(quiero reportar|reporta(r)?|reporte|aviso|i want to report|report)\s*(:|que)?\s*/i, "").trim(), where: whereOf(raw, place) }
+    : isObservation(raw) ? { t: "report", text: raw.trim().replace(/^./, (c) => c.toUpperCase()), where: whereOf(raw, place) }
     : P.swarm.test(text) ? { t: "topic", topic: "red", where: whereOf(raw, place) }
     : P.advice.test(text) ? { t: "advice" }
     : P.cause.test(text) ? { t: "cause" }
