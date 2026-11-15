@@ -278,7 +278,7 @@ const SKY = "Nubes y lluvia (NASA GIBS)";
 
 /** Keep the last good sky (two PNGs + what was detected) so the next visit shows it at once, even without network. */
 async function saveFrame(f: WeatherFrame): Promise<void> {
-  const png = (c: HTMLCanvasElement) => new Promise<Blob | null>((ok) => c.toBlob(ok, "image/png"));
+  const png = (c: HTMLCanvasElement) => new Promise<Blob | null>((ok) => c.toBlob((b) => ok(b), "image/png"));
   const [cl, rn] = await Promise.all([png(f.clouds), png(f.rain)]);
   if (!cl || !rn) return;
   await Promise.all([

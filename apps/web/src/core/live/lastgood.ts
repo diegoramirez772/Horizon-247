@@ -40,7 +40,7 @@ function store(): Promise<Cache | null> {
 
 const keyOf = (k: string) => `https://h247.local/last/${encodeURIComponent(k)}`;
 
-export async function saveBlob(key: string, body: Blob | string, type: string, savedAt = Date.now()): Promise<void> {
+export async function saveBlob(key: string, body: BodyInit, type: string, savedAt = Date.now()): Promise<void> {
   const c = await store();
   if (!c) return;
   try { await c.put(keyOf(key), new Response(body, { headers: { "content-type": type, "x-saved-at": String(savedAt) } })); } catch { /* quota: fine */ }
