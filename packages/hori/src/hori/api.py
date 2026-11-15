@@ -19,7 +19,7 @@ import numpy as np
 from . import __version__
 from .aggregate import prepare, to_annual
 from .config import Config
-from .anomaly import AnomalyResult, accumulated_z
+from .anomaly import AnomalyResult, accumulated_z, z_last
 from .anomaly import detect as detect_anomalies
 from .anomaly import events as anomaly_events
 from .cube import Cube
@@ -38,7 +38,7 @@ from .stats import Z_CRIT, analyze, p_two
 from .verdict import (CODES, PROBADO, FLAG_BITS, F_QUIEBRE_POSIBLE, NO_CONCLUYENTE, F_AUTOCORR_ALTA, F_COBERTURA_BAJA, F_DEPENDE_METODO, F_RECONSTRUCCION,
                       F_RESOLUCION_GRUESA, F_SIMULADO, decide)
 
-__all__ = ["physical_class", "accumulated_z", "entity_state", "explain", "classify_report", "swarm_signals", "AnomalyResult", "anomaly_events", "detect_anomalies", "Config", "Cube", "Entity", "IdentityError", "LayerResult", "Profile", "cell_stats", "infer_profile", "auto_entity", "run_grid",
+__all__ = ["z_last", "physical_class", "accumulated_z", "entity_state", "explain", "classify_report", "swarm_signals", "AnomalyResult", "anomaly_events", "detect_anomalies", "Config", "Cube", "Entity", "IdentityError", "LayerResult", "Profile", "cell_stats", "infer_profile", "auto_entity", "run_grid",
            "run_timeline", "summarize", "to_annual", "Timeline", "EVENT_CODES", "TIER_CODES",
            "run_layer", "write_bundle"]
 CONTRACT = "0.4"

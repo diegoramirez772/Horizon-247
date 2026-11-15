@@ -5,12 +5,10 @@
     new = store.ingest("mon-chihuahua-t2m", times, values)        # runs HORI's detectors, opens alerts for NEW events
     store.transition(alert_id, "reconocida", actor="carolina", note="la revisa Diego")
 
-What it keeps (plain files, no database, reproducible):
-  monitors.json   the monitors (entity card, variable, period, parameters)
-  obs/<id>.json   the observations received so far (times as given + values, null = missing)
-  alerts.json     the CURRENT state of every alert
-  audit.jsonl     append-only log: every opening, update and transition, chained by SHA-256 (prev_hash -> hash), so any
-                  edit of the past is detectable with verify_audit()
+What it keeps: one SQLite file (zon.db, see zon/db.py) with the monitors, the observations, the CURRENT state of every
+alert and the append-only audit log (every opening, update and transition chained by SHA-256, prev_hash -> hash, written
+in the SAME transaction as the change it records; verify_audit() detects any edit of the past). Several processes can use
+it at once (WAL); a laptop copy is a single file.
 Alert id = hash(monitor, event type, start label): ingesting the same data twice never duplicates an alert; an event that
 grows (same start, later end) UPDATES its alert. Lifecycle: abierta -> reconocida -> derivada -> cerrada (any open state
 can be closed). Honesty (H12/H16/H17): every alert says «observación calculada por HORI», shows its evidence and
@@ -27,6 +25,8 @@ from pathlib import Path
 import numpy as np
 
 from hori.api import anomaly_events, detect_anomalies, physical_class      # public API only
+
+from . import db
 
 STATES = ("abierta", "reconocida", "derivada", "cerrada")
 TRANSITIONS = {"abierta": ("reconocida", "derivada", "cerrada"), "reconocida": ("derivada", "cerrada"),
@@ -84,61 +84,68 @@ def _sha(obj) -> str:
 class MonitorStore:
     def __init__(self, root: str | Path, clock=None):
         self.root = Path(root)
-        (self.root / "obs").mkdir(parents=True, exist_ok=True)
+        self.con = db.connect(self.root)
         self.clock = clock or (lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
 
-    # ------------------------------------------------------------ files
-    def _read(self, name: str, default):
-        p = self.root / name
-        return json.loads(p.read_text(encoding="utf-8")) if p.exists() else default
+    def close(self) -> None:
+        self.con.close()
 
-    def _write(self, name: str, obj) -> None:
-        (self.root / name).write_text(json.dumps(obj, ensure_ascii=False, indent=1, default=str) + "\n", encoding="utf-8")
+    def __del__(self):
+        try:
+            self.con.close()
+        except Exception:
+            pass
 
-    def monitors(self) -> dict[str, Monitor]:
-        return {k: Monitor(**v) for k, v in self._read("monitors.json", {}).items()}
+    # ------------------------------------------------------------ reads
+    def monitors(self, org: str | None = None) -> dict[str, Monitor]:
+        q = "SELECT doc FROM monitors" + (" WHERE org = ?" if org else "")
+        return {d["id"]: Monitor(**d) for d in (json.loads(r["doc"]) for r in self.con.execute(q, (org,) if org else ()))}
+
+    def monitor_org(self, monitor: str) -> str | None:
+        r = self.con.execute("SELECT org FROM monitors WHERE id = ?", (monitor,)).fetchone()
+        return r["org"] if r else None
 
     def alerts(self, monitor: str | None = None, state: str | None = None) -> list[dict]:
-        al = self._read("alerts.json", {})
-        return [a for a in al.values() if (monitor is None or a["monitor"] == monitor) and (state is None or a["state"] == state)]
+        q, a = "SELECT doc FROM alerts WHERE 1=1", []
+        if monitor:
+            q, a = q + " AND monitor = ?", a + [monitor]
+        if state:
+            q, a = q + " AND state = ?", a + [state]
+        return [json.loads(r["doc"]) for r in self.con.execute(q + " ORDER BY id", a)]
 
-    # ------------------------------------------------------------ audit log (hash chain)
+    def alert(self, alert_id: str) -> dict | None:
+        r = self.con.execute("SELECT doc FROM alerts WHERE id = ?", (alert_id,)).fetchone()
+        return json.loads(r["doc"]) if r else None
+
+    def _put_alert(self, a: dict) -> None:
+        self.con.execute("INSERT OR REPLACE INTO alerts VALUES (?,?,?,?)", (a["id"], a["monitor"], a["state"], json.dumps(a, ensure_ascii=False, default=str)))
+
+    # ------------------------------------------------------------ audit log (hash chain, inside the same transaction)
     def _audit(self, action: str, alert: str | None, actor: str, data: dict) -> dict:
-        p = self.root / "audit.jsonl"
-        lines = p.read_text(encoding="utf-8").splitlines() if p.exists() else []
-        prev = json.loads(lines[-1])["hash"] if lines else "0" * 64
-        rec = {"seq": len(lines) + 1, "at": self.clock(), "actor": actor, "action": action, "alert": alert, "data": data, "prev_hash": prev}
-        rec["hash"] = _sha(rec)
-        with p.open("a", encoding="utf-8") as f:
-            f.write(json.dumps(rec, ensure_ascii=False, default=str) + "\n")
-        return rec
+        with db.tx(self.con):
+            return db.audit(self.con, self.clock(), actor, action, alert, data)
+
+    def audit_records(self, since: int = 0) -> list[dict]:
+        return db.audit_records(self.con, since)
 
     def verify_audit(self) -> tuple[bool, int]:
         """(chain intact?, records). Any edited, removed or reordered record breaks it."""
-        p = self.root / "audit.jsonl"
-        prev, n = "0" * 64, 0
-        for line in (p.read_text(encoding="utf-8").splitlines() if p.exists() else []):
-            rec = json.loads(line)
-            h = rec.pop("hash")
-            if rec["prev_hash"] != prev or _sha(rec) != h or rec["seq"] != n + 1:
-                return False, n
-            prev, n = h, n + 1
-        return True, n
+        return db.verify_chain(self.con)
 
     # ------------------------------------------------------------ monitors and observations
-    def add_monitor(self, m: Monitor, actor: str = "sistema") -> Monitor:
-        ms = self._read("monitors.json", {})
-        if m.id in ms:
-            raise MonitorError(f"monitor {m.id} already exists")
+    def add_monitor(self, m: Monitor, actor: str = "sistema", org: str = "publica") -> Monitor:
         m.created_at = m.created_at or self.clock()
-        ms[m.id] = asdict(m)
-        self._write("monitors.json", ms)
-        self._audit("monitor_creado", None, actor, {"monitor": m.id, "entity": m.entity.get("id"), "status": m.entity.get("status")})
+        with db.tx(self.con):
+            if self.con.execute("SELECT 1 FROM monitors WHERE id = ?", (m.id,)).fetchone():
+                raise MonitorError(f"monitor {m.id} already exists")
+            self.con.execute("INSERT INTO monitors VALUES (?,?,?)", (m.id, org, json.dumps(asdict(m), ensure_ascii=False, default=str)))
+            db.audit(self.con, self.clock(), actor, "monitor_creado", None,
+                     {"monitor": m.id, "org": org, "entity": m.entity.get("id"), "status": m.entity.get("status")})
         return m
 
     def observations(self, monitor: str) -> tuple[list, np.ndarray]:
-        d = self._read(f"obs/{monitor}.json", {"times": [], "values": []})
-        return d["times"], np.array([np.nan if v is None else v for v in d["values"]], dtype=float)
+        rows = self.con.execute("SELECT t, v FROM obs WHERE monitor = ? ORDER BY i", (monitor,)).fetchall()
+        return [r["t"] for r in rows], np.array([np.nan if r["v"] is None else r["v"] for r in rows], dtype=float)
 
     def ingest(self, monitor: str, times: list, values, actor: str = "sistema", signed: dict | None = None,
                trust=None) -> list[dict]:
@@ -163,16 +170,18 @@ class MonitorStore:
                 self._audit("observaciones_rechazadas", None, actor, {"monitor": monitor, "motivo": sig_status})
                 raise MonitorError(f"observations rejected: {sig_status}")
         T, X = t0 + times, np.concatenate([x0, values])
-        self._write(f"obs/{monitor}.json", {"times": T, "values": [None if not np.isfinite(v) else float(v) for v in X]})
-        self._audit("observaciones", None, actor, {"monitor": monitor, "n_new": len(times), "n_total": len(T), "last": T[-1] if T else None,
-                                                   "firma": sig_status,
-                                                   "sha256": _sha({"t": T, "v": [None if not np.isfinite(v) else float(v) for v in X]})})
+        with db.tx(self.con):
+            self.con.executemany("INSERT INTO obs VALUES (?,?,?,?)", [(monitor, len(t0) + k, str(t), None if not np.isfinite(v) else float(v))
+                                                                       for k, (t, v) in enumerate(zip(times, values))])
+            db.audit(self.con, self.clock(), actor, "observaciones", None,
+                     {"monitor": monitor, "n_new": len(times), "n_total": len(T), "last": T[-1] if T else None, "firma": sig_status,
+                      "sha256": _sha({"t": T, "v": [None if not np.isfinite(v) else float(v) for v in X]})})
         params = {k: v for k, v in m.params.items() if k != "require_signature"}
         if "transform" not in params and physical_class(m.variable) == "flujo_de_agua":
             params["transform"] = "sqrt"                                   # rain is skewed: measured 16.8 -> 4.1 alarms per 1000 months
         res = detect_anomalies(X, m.period, **params)
         evs = anomaly_events(res, T, m.variable.get("unit", ""))
-        al = self._read("alerts.json", {})
+        al = {a["id"]: a for a in self.alerts(monitor)}
         touched = []
         for e in evs:
             aid = "al-" + _sha([monitor, e["type"], str(e["t_start"])])[:12]
@@ -183,14 +192,17 @@ class MonitorStore:
                            "variable": m.variable.get("name"), "type": e["type"], "severity": e["severity"], "state": "abierta",
                            "opened_at": self.clock(), "evidence": ev, "evidence_level": "observacion", "origin": "HORI",
                            "simulated": m.entity.get("status") == "simulada", "note": {"es": NOTE_ES, "en": NOTE_EN}, "history": []}
-                self._audit("alerta_abierta", aid, actor, {"type": e["type"], "t_start": e["t_start"], "severity": e["severity"]})
+                with db.tx(self.con):
+                    self._put_alert(al[aid])
+                    db.audit(self.con, self.clock(), actor, "alerta_abierta", aid, {"type": e["type"], "t_start": e["t_start"], "severity": e["severity"]})
                 touched.append(al[aid])
             elif al[aid]["evidence"].get("end") != e["end"] or al[aid]["severity"] != e["severity"]:
                 if al[aid]["state"] != "cerrada":
                     al[aid]["evidence"], al[aid]["severity"] = ev, e["severity"]
-                    self._audit("alerta_actualizada", aid, actor, {"end": e["end"], "severity": e["severity"]})
+                    with db.tx(self.con):
+                        self._put_alert(al[aid])
+                        db.audit(self.con, self.clock(), actor, "alerta_actualizada", aid, {"end": e["end"], "severity": e["severity"]})
                     touched.append(al[aid])
-        self._write("alerts.json", al)
         return touched
 
     def open_swarm_alerts(self, monitor: str, signals: list[dict], min_level: str = "senal_ciudadana", actor: str = "sistema") -> list[dict]:
@@ -200,7 +212,7 @@ class MonitorStore:
         m = self.monitors().get(monitor)
         if m is None:
             raise MonitorError(f"no monitor {monitor}")
-        al, touched = self._read("alerts.json", {}), []
+        al, touched = {a["id"]: a for a in self.alerts(monitor)}, []
         for sgn in signals:
             if LEVELS.index(sgn["level"]) < LEVELS.index(min_level):
                 continue
@@ -214,19 +226,25 @@ class MonitorStore:
                            "opened_at": self.clock(), "evidence": ev, "evidence_level": sgn["evidence_level"],
                            "origin": "enjambre (fuente no verificada), clasificado por HORI", "source_class": "no_verificada",
                            "simulated": sgn.get("simulated", False), "note": {"es": sgn["note_es"], "en": NOTE_EN}, "history": []}
-                self._audit("alerta_abierta", aid, actor, {"type": "enjambre", "level": sgn["level"], "theme": sgn["theme"]})
+                with db.tx(self.con):
+                    self._put_alert(al[aid])
+                    db.audit(self.con, self.clock(), actor, "alerta_abierta", aid, {"type": "enjambre", "level": sgn["level"], "theme": sgn["theme"]})
                 touched.append(al[aid])
             elif al[aid]["evidence"]["level"] != sgn["level"] and al[aid]["state"] != "cerrada":
                 al[aid]["evidence"], al[aid]["severity"] = ev, sev
-                self._audit("alerta_actualizada", aid, actor, {"level": sgn["level"]})
+                with db.tx(self.con):
+                    self._put_alert(al[aid])
+                    db.audit(self.con, self.clock(), actor, "alerta_actualizada", aid, {"level": sgn["level"]})
                 touched.append(al[aid])
-        self._write("alerts.json", al)
         return touched
 
     # ------------------------------------------------------------ lifecycle
-    def transition(self, alert_id: str, to: str, *, actor: str, note: str = "") -> dict:
-        al = self._read("alerts.json", {})
-        a = al.get(alert_id)
+    def transition(self, alert_id: str, to: str, *, actor: str, note: str = "", at: str | None = None) -> dict:
+        with db.tx(self.con):                                          # read-check-write under one lock: no lost updates
+            return self._transition(alert_id, to, actor=actor, note=note, at=at)
+
+    def _transition(self, alert_id, to, *, actor, note, at):
+        a = self.alert(alert_id)
         if a is None:
             raise MonitorError(f"no alert {alert_id}")
         if to not in STATES:
@@ -235,8 +253,8 @@ class MonitorStore:
             raise MonitorError(f"{a['state']} -> {to} is not allowed (allowed: {TRANSITIONS[a['state']] or 'none, it is closed'})")
         if not actor or actor == "sistema":
             raise MonitorError("a person (or named agent) must own a state change: pass actor")
-        a["history"].append({"from": a["state"], "to": to, "actor": actor, "note": note, "at": self.clock()})
+        a["history"].append({"from": a["state"], "to": to, "actor": actor, "note": note, "at": at or self.clock()})
         a["state"] = to
-        self._write("alerts.json", al)
-        self._audit("alerta_" + to, alert_id, actor, {"note": note})
+        self._put_alert(a)
+        db.audit(self.con, self.clock(), actor, "alerta_" + to, alert_id, {"note": note, "at": at or self.clock()})
         return a

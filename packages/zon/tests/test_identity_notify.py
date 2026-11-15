@@ -62,7 +62,7 @@ class TestVerifiedReporters(unittest.TestCase):
             ms.ingest("mon-s", t, v, trust=reg)                                                          # unsigned: refused
         stmt = {"monitor": "mon-s", "times": t, "values": [float(x) for x in v]}
         ms.ingest("mon-s", t, v, signed={"key_id": "dev-1", "signature": sign(dev, canonical(stmt)).hex()}, trust=reg)
-        log = [json.loads(x) for x in (self.tmp / "m" / "audit.jsonl").read_text().splitlines()]
+        log = ms.audit_records()
         self.assertTrue(any(r["action"] == "observaciones" and r["data"]["firma"].startswith("firma válida") for r in log))
         self.assertTrue(any(r["action"] == "observaciones_rechazadas" for r in log))
 

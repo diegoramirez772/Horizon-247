@@ -184,6 +184,18 @@ En 18 estados reales (México y EE. UU., 1981–2026, 7,722 meses juzgados): sin
 - **Avisos y escalamiento:** cada alerta nueva se avisa una vez al nivel 0 (bandeja de archivo y/o webhook firmado con HMAC-SHA256); si sigue «abierta» después del plazo de su gravedad (alta 30 min, media 4 h, leve sin plazo), sube al siguiente nivel, una vez por nivel. Un canal caído no detiene a los demás. Lo simulado lo dice en el asunto.
 - **Vigilancia continua:** `zon watch --config watch.json --once` (para cron o un temporizador de systemd) o en bucle: pide solo los datos nuevos, detecta, abre alertas y avisa. No se dejó corriendo ningún servicio.
 
+### 3.19 ZON como runtime [probado en pruebas; medido donde se indica]
+| Pieza | Qué hace | Cómo se comprobó |
+|---|---|---|
+| **Almacén SQLite** (`zon/db.py`) | Un archivo `zon.db`: monitores, observaciones, alertas, bitácora encadenada, reportes, trabajos, salud, llaves. Cada cambio y su registro de auditoría van en **la misma transacción**, con bloqueo inmediato (dos procesos no bifurcan la cadena); modo WAL | Pruebas: editar un registro pasado rompe la cadena; todo lo anterior migró sin cambiar resultados |
+| **Conectores enchufables** (`zon/connectors.py`) | POWER por lugar, Marte, CSV de cualquier sensor, cualquier API JSON, CoCoRaHS (reportes) y **NASA Earthdata CMR** (dónde están los gránulos; descargar la mayoría pide token y NetCDF4/HDF5 aún no se lee: dicho) | Pruebas con respuestas simuladas; CMR y POWER no se llamaron en las pruebas |
+| **Salud de fuentes** | Por fuente: última vez bien, último error, fallas seguidas, duración. Estados ok / degradada / caída / sin datos recientes | Pruebas |
+| **Cola de trabajos aislada** (`zon/jobs.py`) | Cada trabajo en **su propio proceso** con tope de memoria y de tiempo; reintentos con espera exponencial (1, 2, 4… min, máx. 1 h); periódicos se reprograman | Pruebas: un trabajo colgado se mata por tiempo y uno que pide 2 GB muere por el tope sin tumbar el runtime |
+| **Llaves, roles y organizaciones** (`zon/auth.py`) | lector / operador / admin; cada llave ve solo sus organizaciones; se guarda solo el SHA-256; comparación en tiempo constante; revocación inmediata | Pruebas |
+| **API HTTP + eventos en vivo** (`zon/server.py`, `zon serve`) | Monitores, observaciones, alertas, estado de la entidad (6 respuestas + prioridad), enjambre, bitácora, `/health`, `/metrics` (Prometheus), bundles estáticos, y **/events por SSE** que reanuda con Last-Event-ID | La lógica (`Api.handle`) se probó completa sin sockets; **el servidor y SSE no se probaron con una conexión real** (no se levantó ningún servidor) |
+| **Sincronización sin red ↔ servidor** (`zon/sync.py`) | Observaciones por (monitor, tiempo), transiciones como operaciones con id, reportes con firma re-verificada del otro lado; idempotente; conflictos se reportan, no se fuerzan | Pruebas: aplicar dos veces no cambia nada; una alerta cerrada en el servidor no se reabre desde la laptop |
+| **Mapa de anomalías del planeta** (`zon anomaly-map`) | z del último mes en las 207,936 celdas, en paralelo, idéntico al detector (diferencia < 1e-9) | **Medido:** T2M 2026-09 en **570 s con 2 núcleos**; 4,858 celdas marcadas (2.9 % del área; 2.1 % más cálido de lo normal, 0.8 % más frío) frente a ~312 esperadas por azar si fueran independientes |
+
 ## 4 · Limitaciones conocidas
 1. **Memoria larga:** no se corrige el veredicto; se publica un marcador (`robust_mem`) y el límite medido (§3.10). La caminata aleatoria sigue engañando al consenso (12 %).
 2. Un **salto artificial** grande se lee como tendencia en la mitad de los casos; la bandera avisa en ~40 %. En T2M no se vio apilamiento en los cambios de corriente de MERRA-2 (§3.11).
@@ -193,6 +205,7 @@ En 18 estados reales (México y EE. UU., 1981–2026, 7,722 meses juzgados): sin
 6. δ de cada clase física es **valor de trabajo del equipo**, no de la literatura.
 7. Solo tendencias monótonas; aceleraciones o ciclos no se modelan.
 8. Fronteras de Natural Earth admin-1: algunas en disputa (advertencia del propio proveedor). Las regiones físicas («Sahara», «Andes», «Golfo de México») tienen límites aproximados; un lugar que cruza el antimeridiano funciona pero lee todas las columnas de longitud.
+12. **Runtime:** el servidor HTTP/SSE no se ha probado con conexiones reales ni bajo carga; un solo nodo (SQLite) — no es un sistema distribuido; NetCDF4/HDF5 sin lector (IMERG, GRACE, MODIS necesitan permiso para instalar una librería); la firma Ed25519 no es de tiempo constante.
 10. **Anomalías:** falsas alarmas 3–15 por 1000 muestras según el ruido (§3.13); potencia baja para desviaciones < 4σ; Marte tiene solo 13 años (no calibrado); la persona es simulada y no valida nada médico.
 11. **Enjambre:** el valor de «k personas independientes» está medido con 180 mil reportes reales (§3.16); los pesos por rol y evidencia siguen siendo valores de trabajo; la clasificación por palabras se equivoca con frases que no están en la lista; nunca se presenta como prueba.
 9. La actualización incremental (Z3) re-lee los 260 trozos del planeta: un trozo de Zarr abarca todos los meses, así que «solo el mes nuevo» no existe a nivel de descarga (§Z3 en `zon/update.py`).

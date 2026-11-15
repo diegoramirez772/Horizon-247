@@ -28,3 +28,20 @@ python3 -m zon.fetch.power cube --bbox 22.3 -107.2 26.8 -102.5 --start 2001 --en
 python3 -m unittest discover -s packages/zon/tests -v     # 23 tests, no network (fake server)
 ```
 Cache: `data/cache/` (git-ignored; override with `ZON_CACHE_DIR`). Cite POWER with the text stored in each cube's `meta.citation`.
+
+
+## Runtime (v0.8)
+Todo con la biblioteca estándar de Python + NumPy, un solo archivo `zon.db` (SQLite, WAL).
+```bash
+export PYTHONPATH=packages/zon/src:packages/hori/src
+python -m zon key --root data/zon --name diego --role admin --orgs '*'      # la llave se muestra UNA vez
+python -m zon serve --root data/zon --port 8247 --bundles data/bundles      # API + /events (SSE)
+python -m zon watch --config watch.json --once                               # datos nuevos -> alertas -> avisos (cron/systemd)
+python -m zon anomaly-map --param T2M --out data                             # el planeta este mes (paralelo)
+python -m zon update-planet --param T2M --out data                           # tendencias: ¿mes nuevo? recalcula + eventos
+python -m zon export-web --src data/bundles --out apps/web/public/bundles     # estáticos para la web
+```
+Módulos: `db` (almacén y cadena) · `monitors` (monitores, alertas, ciclo de vida) · `swarm` (enjambre) · `signing` (Ed25519) ·
+`auth` (llaves/roles/organizaciones) · `connectors` (fuentes + salud) · `jobs` (cola aislada con reintentos) · `notify` (avisos,
+escalamiento, vigilancia) · `server` (API + SSE) · `sync` (sin red ↔ servidor) · `anomaly_map` · `update` · `serve` (export).
+Contrato: `contract/SPEC.md` §11–14. Números medidos: `docs/MODEL_CARD.md` §3.13–3.19.

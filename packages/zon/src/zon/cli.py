@@ -37,7 +37,37 @@ def main() -> None:
                     '"levels": [[..],[..]], "ack_minutes": {..}, "sources": [{"monitor","place","var","start"}]}')
     wt.add_argument("--every", type=float, default=3600)
     wt.add_argument("--once", action="store_true", help="one pass (for cron or a systemd timer)")
+    am = sub.add_parser("anomaly-map", help="where on the planet the LAST month is unusual (parallel, from the POWER chunks)")
+    am.add_argument("--param", required=True)
+    am.add_argument("--out", default="data")
+    am.add_argument("--workers", type=int, default=2)
+    am.add_argument("--online", action="store_true", help="read the store from the network instead of the cache")
+    sv = sub.add_parser("serve", help="ZON API: HTTP + JSON + live events (SSE)")
+    sv.add_argument("--root", default="data/zon")
+    sv.add_argument("--port", type=int, default=8247)
+    sv.add_argument("--host", default="127.0.0.1")
+    sv.add_argument("--bundles", default="data/bundles")
+    ky = sub.add_parser("key", help="create an API key (shown once)")
+    ky.add_argument("--root", default="data/zon")
+    ky.add_argument("--name", required=True)
+    ky.add_argument("--role", choices=["lector", "operador", "admin"], required=True)
+    ky.add_argument("--orgs", nargs="+", default=["publica"])
     args = ap.parse_args()
+    if args.cmd == "anomaly-map":
+        import json
+        from .anomaly_map import anomaly_map
+        from .fetch.power_zarr import PowerZarr
+        print(json.dumps(anomaly_map(args.param, args.out, store=PowerZarr(offline=not args.online), workers=args.workers,
+                                     progress=lambda i: print(f"\r  {i} trozos", end="", file=sys.stderr)), ensure_ascii=False, indent=1))
+        return
+    if args.cmd == "serve":
+        from .server import serve
+        serve(args.root, args.port, args.host, args.bundles)
+        return
+    if args.cmd == "key":
+        from . import auth, db
+        print(auth.create_key(db.connect(args.root), args.name, args.role, args.orgs))
+        return
     if args.cmd == "watch":
         import json
         from pathlib import Path

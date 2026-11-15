@@ -19,6 +19,7 @@ from pathlib import Path
 
 from hori.api import classify_report, swarm_signals                       # public API only
 
+from . import db
 from .signing import TrustRegistry
 
 ROLES = ("persona", "cientifico", "institucion", "sensor_ciudadano")
@@ -36,13 +37,19 @@ def _sha(obj) -> str:
 class SwarmStore:
     def __init__(self, root: str | Path, clock=None, trust: TrustRegistry | None = None):
         self.root = Path(root)
+        self.con = db.connect(self.root)
         self.trust = trust or TrustRegistry.load(Path(root) / "trust.json")
         (self.root / "evidence").mkdir(parents=True, exist_ok=True)
         self.clock = clock or (lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
 
-    def reports(self) -> list[dict]:
-        p = self.root / "reports.jsonl"
-        return [json.loads(x)["report"] for x in p.read_text(encoding="utf-8").splitlines()] if p.exists() else []
+    def reports(self, since_seq: int = 0) -> list[dict]:
+        return [json.loads(r["doc"]) for r in self.con.execute("SELECT doc FROM reports WHERE seq > ? ORDER BY seq", (since_seq,))]
+
+    def __del__(self):
+        try:
+            self.con.close()
+        except Exception:
+            pass
 
     def add_report(self, rep: dict, evidence: list | None = None) -> dict:
         """Validate, round the location, store evidence by hash, append to the chained log. Returns the stored report."""
@@ -90,27 +97,25 @@ class SwarmStore:
         out = {"id": rep.get("id") or "rp-" + _sha([who["id"], rep["time"], rep["text"]])[:12], "reporter": who,
                "lat": round(float(rep["lat"]), 2), "lon": round(float(rep["lon"]), 2), "time": str(rep["time"]),
                "text": rep["text"], "kind": rep.get("kind", ""), "evidence": evs, "themes": themes, "directions": dirs,
-               "source_class": "no_verificada", "simulated": bool(rep.get("simulated")), "received_at": self.clock()}
-        if any(r["id"] == out["id"] for r in self.reports()):
-            raise SwarmError(f"duplicate report {out['id']}")
-        p = self.root / "reports.jsonl"
-        lines = p.read_text(encoding="utf-8").splitlines() if p.exists() else []
-        prev = json.loads(lines[-1])["hash"] if lines else "0" * 64
-        rec = {"seq": len(lines) + 1, "report": out, "prev_hash": prev}
-        rec["hash"] = _sha(rec)
-        with p.open("a", encoding="utf-8") as f:
-            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+               "source_class": "no_verificada", "simulated": bool(rep.get("simulated")), "received_at": self.clock(),
+               **({"attestation": att} if att else {})}
+        with db.tx(self.con):
+            if self.con.execute("SELECT 1 FROM reports WHERE id = ?", (out["id"],)).fetchone():
+                raise SwarmError(f"duplicate report {out['id']}")
+            row = self.con.execute("SELECT seq, hash FROM reports ORDER BY seq DESC LIMIT 1").fetchone()
+            seq, prev = (row["seq"] + 1, row["hash"]) if row else (1, "0" * 64)
+            rec = {"seq": seq, "report": out, "prev_hash": prev}
+            h = _sha(rec)
+            self.con.execute("INSERT INTO reports VALUES (?,?,?,?,?)", (out["id"], seq, json.dumps(out, ensure_ascii=False), prev, h))
         return out
 
     def verify(self) -> tuple[bool, int]:
-        p = self.root / "reports.jsonl"
         prev, n = "0" * 64, 0
-        for line in (p.read_text(encoding="utf-8").splitlines() if p.exists() else []):
-            rec = json.loads(line)
-            h = rec.pop("hash")
-            if rec["prev_hash"] != prev or _sha(rec) != h:
+        for r in self.con.execute("SELECT * FROM reports ORDER BY seq"):
+            rec = {"seq": r["seq"], "report": json.loads(r["doc"]), "prev_hash": r["prev_hash"]}
+            if r["prev_hash"] != prev or _sha(rec) != r["hash"]:
                 return False, n
-            prev, n = h, n + 1
+            prev, n = r["hash"], n + 1
         return True, n
 
     def signals(self, **kw) -> list[dict]:

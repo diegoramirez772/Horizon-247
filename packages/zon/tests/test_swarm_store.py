@@ -32,12 +32,9 @@ class TestSwarmStore(unittest.TestCase):
         with self.assertRaises(SwarmError):
             sw.add_report({"reporter": {}, "lat": 0, "lon": 0, "time": "t", "text": "x"})
         self.assertEqual(sw.verify(), (True, 2))
-        p = self.tmp / "s" / "reports.jsonl"
-        lines = p.read_text().splitlines()
-        rec = json.loads(lines[0])
-        rec["report"]["text"] = "otra cosa"
-        lines[0] = json.dumps(rec, ensure_ascii=False)
-        p.write_text("\n".join(lines) + "\n")
+        doc = json.loads(sw.con.execute("SELECT doc FROM reports WHERE seq = 1").fetchone()["doc"])
+        doc["text"] = "otra cosa"
+        sw.con.execute("UPDATE reports SET doc = ? WHERE seq = 1", (json.dumps(doc, ensure_ascii=False),))   # edit the past
         self.assertFalse(sw.verify()[0])
 
     def test_swarm_signal_becomes_an_alert_marked_unverified(self):

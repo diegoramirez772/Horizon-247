@@ -77,9 +77,7 @@ def notify_and_escalate(store, sinks: list, policy: EscalationPolicy, now: str |
     """One pass: send new alerts to level 0 and escalate overdue ones. Returns what was sent. Idempotent per alert/level."""
     now = now or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     done = set()
-    audit = store.root / "audit.jsonl"
-    for line in (audit.read_text(encoding="utf-8").splitlines() if audit.exists() else []):
-        r = json.loads(line)
+    for r in store.audit_records():
         if r["action"] in ("aviso_enviado", "escalada"):
             done.add((r["alert"], r["data"]["level"]))
     sent = []

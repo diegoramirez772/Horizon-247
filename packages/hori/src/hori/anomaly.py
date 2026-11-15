@@ -307,3 +307,75 @@ def accumulated_z(x, period: int, window: int, *, min_years: int = 10, max_years
         s = np.maximum(mad, 1e-9 + 0.05 * np.abs(med))
         z[t] = np.where((n >= min_years) & np.isfinite(acc[t]), (acc[t] - med) / s, np.nan)
     return z[:, 0] if one else z.reshape(x.shape)
+
+
+def z_last(X, period: int, *, cycles: int | None = None, scale_window: int | None = None, min_sigma: float = 0.0,
+           phase_prior: float = DEFAULTS["phase_prior"], transform: str | None = None) -> np.ndarray:
+    """The z of the LAST sample for every column of X [T, cells], vectorised: the same number detect() gives for that sample
+    (checked in the tests), but for a whole planet at once. Used for the «this month, where is it unusual?» map."""
+    X = np.asarray(X, dtype=float)
+    if transform == "sqrt":
+        X = np.sqrt(np.clip(X, 0, None))
+    elif transform == "log1p":
+        X = np.log1p(np.clip(X, 0, None))
+    T, C = X.shape
+    P = int(period)
+    K = cycles or (5 if P >= 24 else 10)
+    S = scale_window or max(K * P, 60)
+    K2 = max(S // P, 3)
+    fin = np.isfinite(X)
+    cs = np.vstack([np.zeros((1, C)), np.cumsum(np.where(fin, X, 0.0), axis=0)])
+    cn = np.vstack([np.zeros((1, C)), np.cumsum(fin, axis=0)])
+    L = np.full((T, C), np.nan)
+    if T >= P:
+        cnt = cn[P:] - cn[:-P]
+        with np.errstate(all="ignore"):
+            L[P - 1:] = np.where(cnt >= P // 2 + 1, (cs[P:] - cs[:-P]) / cnt, np.nan)
+    d = X - np.vstack([np.full((1, C), np.nan), L[:-1]])
+    D = np.full((K, T, C), np.nan)
+    for k in range(1, K + 1):
+        if T > k * P:
+            D[k - 1, k * P:] = d[:T - k * P]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        e = np.nanmedian(D, axis=0)
+    e[np.isfinite(D).sum(axis=0) < max(3, K // 2)] = np.nan
+    r = d - e
+    t = T - 1
+    if t - S < 0:
+        return np.full(C, np.nan)
+    # rolling median of r over the S samples before each tau, for every tau the scale needs (exactly as detect does)
+    need = sorted({tau for tau in range(t - S, t + 1)} | {t - k * P for k in range(1, K2 + 1) if t - k * P >= S})
+    medr = {}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        lo = max(need[0] - S, 0)
+        if t - lo >= S:
+            win = sliding_window_view(r[lo:t], S, axis=0)               # window k ends at lo+k+S-1 -> it is the one before tau = lo+k+S
+            mm = np.nanmedian(win, axis=-1)
+            for k in range(mm.shape[0]):
+                medr[lo + k + S] = mm[k]
+    zero = np.zeros(C)
+    med_t = medr.get(t, np.full(C, np.nan))
+    w = r[t - S:t]
+    dev = np.stack([np.abs(r[tau] - np.nan_to_num(medr.get(tau, zero), nan=0.0)) if tau >= S else np.full(C, np.nan)
+                    for tau in range(t - S, t)])
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        mad = np.nanmedian(dev, axis=0)
+        q = np.nanpercentile(w, [25, 75], axis=0)
+    s_pool = np.maximum(MAD_TO_SD * mad, (q[1] - q[0]) / 1.349)
+    R = np.full((K2, C), np.nan)
+    for k in range(1, K2 + 1):
+        tau = t - k * P
+        if tau >= 0:
+            R[k - 1] = r[tau] - np.nan_to_num(medr.get(tau, np.full(C, np.nan)), nan=0.0)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        m_ph = np.nanmedian(R, axis=0)
+        s_ph = MAD_TO_SD * np.nanmedian(np.abs(R - m_ph), axis=0)
+    n_ph = np.isfinite(R).sum(axis=0)
+    with np.errstate(all="ignore"):
+        s2 = (n_ph * np.nan_to_num(s_ph) ** 2 + phase_prior * s_pool ** 2) / (n_ph + phase_prior)
+        s = np.maximum(np.sqrt(np.where(np.isfinite(s_pool), s2, np.nan)), min_sigma)
+        return np.where(s > 0, (r[t] - np.nan_to_num(med_t, nan=0.0)) / s, np.nan)

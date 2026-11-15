@@ -296,3 +296,22 @@ Alerta: `id` (hash de monitor + tipo + inicio: reingerir no duplica; un evento q
 - **Aviso** (bandeja JSONL o webhook con cabecera `X-Horizon-Signature` = HMAC-SHA256 del cuerpo): `{kind: aviso_enviado|escalada, alert, to[], level, severity, subject, evidence, origin, evidence_level, note, state}`.
 - **Señal del enjambre** añade `calibration: {k_bin, agree_real_data, chance, lift, source, scope}` (medido con CoCoRaHS).
 - **index.json** de `zon export-web` es ahora el **arreglo** que la web lee (`IndexEntry[]`: id, profile, title, variable, window{start,end,n}, path) más campos aditivos (kind, files con SHA-256, last_month, has_events).
+
+## 14 · API de ZON (v0.8) — para la web y para cualquier sistema
+Base `http://<host>:8247`. JSON en UTF-8. Llave: `Authorization: Bearer <llave>` (crear con `python -m zon key --name … --role lector|operador|admin --orgs …`).
+| Método y ruta | Rol | Respuesta |
+|---|---|---|
+| `GET /health` · `GET /metrics` | público | estado, cadena íntegra, salud por fuente · texto Prometheus |
+| `GET /bundles/<ruta>` | público | archivos estáticos (manifest, arreglos, `index.json` = `IndexEntry[]`) |
+| `GET /monitors` | lector | monitores de tus organizaciones (+ `org`) |
+| `GET /monitors/{id}/observations?since=` | lector | `{times, values}` |
+| `GET /alerts?state=&monitor=` | lector | alertas (§11.2) |
+| `GET /entities/{id}/state?recent_from=` | lector | estado de la entidad (§12.3): 6 respuestas + prioridad P0–P4 con textos |
+| `GET /swarm/signals` | lector | señales del enjambre (§12.2) |
+| `GET /audit?since=` | lector | `{intact, records[]}` |
+| `GET /events` (SSE) | lector | cada registro nuevo de la bitácora: `id: <seq>`, `event: <acción>`, `data: <registro JSON>`; reanuda con `Last-Event-ID` |
+| `POST /monitors/{id}/observations` | operador | `{times, values, signed?}` → `{alerts_opened_or_updated}` |
+| `POST /reports` | operador | reporte del enjambre (§12.1) → 201 |
+| `POST /alerts/{id}/transition` | operador | `{to, note}`; el actor es el nombre de la llave |
+| `POST /monitors` | admin | `{id, entity, variable, period, params?, org?}` → 201 |
+Errores: 400 (dato inválido, con motivo), 401 (sin llave), 403 (sin permiso), 404, 413 (> 5 MB). CORS abierto por defecto (configurable).

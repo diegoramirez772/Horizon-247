@@ -71,12 +71,7 @@ class TestMonitors(unittest.TestCase):
         self.store.transition(self.store.alerts()[0]["id"], "reconocida", actor="carolina")
         ok, n = self.store.verify_audit()
         self.assertTrue(ok and n >= 4)
-        p = self.tmp / "audit.jsonl"
-        lines = p.read_text().splitlines()
-        rec = json.loads(lines[1])
-        rec["actor"] = "otra-persona"
-        lines[1] = json.dumps(rec, ensure_ascii=False)
-        p.write_text("\n".join(lines) + "\n")
+        self.store.con.execute("UPDATE audit SET actor = 'otra-persona' WHERE seq = 2")          # someone edits the past
         self.assertFalse(self.store.verify_audit()[0])
 
 
