@@ -11,7 +11,7 @@ A short guide to what HORIZON 247 is and how its parts fit. It describes **what*
 | [Database](database.md) | What is stored, and what the public can see. |
 | [Use of AI](AI_DISCLOSURE.md) | How AI was (and was not) used, and when the project was built. |
 | [Contributing](../CONTRIBUTING.md) | How to send a change. |
-| [License](../LICENSE) | Source-available, non-commercial. |
+| [License](../LICENSE) | Apache License 2.0 (data keep their own terms: [LICENSE-DATA](../LICENSE-DATA)). |
 
 ## Principles
 
