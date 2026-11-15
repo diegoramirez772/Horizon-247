@@ -1,17 +1,27 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "HORIZON 247",
-  description: "Universal Monitoring & Entity Intelligence — Identify. Observe. Detect.",
+  description: "Pregúntale al mapa: qué cambia en la Tierra, dónde, cuánto y si ya se puede saber. Con datos de la NASA.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export const viewport: Viewport = {
+  themeColor: "#FFFFFF",
+};
+
+// Runs before the first paint (Next 16 guide «Preventing flash before hydration»):
+// applies the saved theme and the language from the URL so nothing flickers.
+const BOOT = `(function(){try{var d=document.documentElement;var t=localStorage.getItem("h247-theme");if(t==="dark")d.setAttribute("data-theme","dark");var l=new URLSearchParams(location.search).get("lang");if(l==="en"||l==="es")d.lang=l;else if(!l&&(navigator.language||"").toLowerCase().indexOf("en")===0)d.lang="en";}catch(e){}})()`;
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="es" className={`${GeistSans.variable} h-full`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: BOOT }} />
+      </head>
+      <body className="min-h-full bg-bg text-text">{children}</body>
     </html>
   );
 }

@@ -5,26 +5,36 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint:texts": "node scripts/lint-texts.mjs",
+    "bundle:sim": "node scripts/make-sim-bundle.mjs",
     "contract:sync": "node scripts/sync-contract.mjs",
+    "check": "npm run lint:texts && npm run typecheck && npm run lint && npm run test",
     "predev": "npm run contract:sync",
-    "prebuild": "npm run contract:sync"
+    "prebuild": "npm run contract:sync && npm run lint:texts"
   },
   "dependencies": {
+    "geist": "1.9.2",
     "next": "16.4.6",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "topojson-client": "3.1.0",
+    "world-atlas": "2.0.2"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
+    "@types/geojson": "7946.0.16",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/topojson-client": "3.1.5",
+    "@types/topojson-specification": "1.0.5",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "tailwindcss": "4.3.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "4.1.12"
   }
 }

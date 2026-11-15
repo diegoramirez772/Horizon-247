@@ -1,0 +1,58 @@
+# Checks the web (text lint, types, tests, static build) and the ZON imagery tool on every push and PR.
+name: CI
+
+on:
+  push:
+    branches: [main, "diego/**", "william/**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - name: Textos prohibidos
+        run: npm run lint:texts
+      - name: Tipos
+        run: npm run typecheck
+      - name: Pruebas
+        run: npm test
+      - name: ESLint (informativo)
+        run: npm run lint
+        continue-on-error: true
+      - name: Build estático
+        run: npm run build
+
+  zon-visual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Matemática de tiles y CLI
+        env:
+          PYTHONPATH: packages/zon/src
+        run: |
+          python - <<'PY'
+          import zon.visual as v
+          assert v.tiles("gibs", 6, (-104.67, 24.02, -104.67, 24.02)) == [(6, 14, 16)]
+          assert v.geometry("gibs", 0) == (288.0, 2, 1)
+          assert v.geometry("trek", 2) == (45.0, 8, 4)
+          assert v.url("BlueMarble_ShadedRelief_Bathymetry", 0, 0, 0, None).endswith("/BlueMarble_ShadedRelief_Bathymetry/default/500m/0/0/0.jpeg")
+          print("zon.visual ok")
+          PY
+          python -m zon.visual --help > /dev/null
