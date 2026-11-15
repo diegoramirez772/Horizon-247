@@ -1,69 +1,73 @@
-HORIZON 247 — Source-Available License, No Commercial Use (HSAL-NC) v1.0
-=========================================================================
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
 
-Copyright (c) 2026 AETHRA (the HORIZON 247 team: Diego, William, Estela, Carolina).
-All rights not expressly granted below are reserved.
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
-The source code of HORIZON 247 is published so that anyone can read it, learn from it, check its
-science and help improve it. It is NOT open source in the OSI sense: it may not be monetized, and it
-may not be copied into other projects or republished.
+1. Definitions.
 
-1. Definitions
-   "Software"      — everything in this repository except third-party components and data (section 6).
-   "Official repository" — https://github.com/diegoramirez772/Horizon-247 and any repository the
-                     team designates in writing.
-   "Contribution"  — any code, documentation, data, design or other material you submit to the
-                     Official repository (pull request, issue, patch, comment with code).
-   "Commercial use" — any use intended for, or directed toward, commercial advantage or monetary
-                     compensation, including: selling or licensing the Software or a work based on it;
-                     offering it, or a work based on it, as a paid or ad-supported service (SaaS,
-                     API, app, consulting deliverable); embedding it in a product or service that is
-                     sold, rented or monetized; or using it to obtain grants, prizes or contracts
-                     for anyone other than the team.
+"License" shall mean the terms and conditions for use, reproduction, and distribution as defined by Sections 1 through 9 of this document.
 
-2. What you MAY do (free of charge)
-   a. Read and study the Software, and cite it.
-   b. Download it and run it on your own devices for personal, educational, research, journalistic
-      or evaluation purposes that are not Commercial use.
-   c. Make changes in a fork hosted on the same platform as the Official repository, ONLY to prepare
-      and submit Contributions back to the Official repository.
-   d. Share links to the Official repository and quote short excerpts with attribution.
+"Licensor" shall mean the copyright owner or entity authorized by the copyright owner that is granting the License.
 
-3. What you may NOT do
-   a. Any Commercial use of the Software or of any work based on it.
-   b. Copy, redistribute, publish, re-host or sublicense the Software, or works based on it (in whole
-      or in substantial part), outside the Official repository and the forks allowed in 2.c.
-   c. Present the Software, or a work based on it, as your own, or remove these notices.
-   d. Use the names "HORIZON 247", "HORI", "ZON" or "AETHRA", or the project's logos, for anything
-      other than referring to this project.
-   Any of the above requires prior written permission from the team.
+"Legal Entity" shall mean the union of the acting entity and all other entities that control, are controlled by, or are under common control with that entity. For the purposes of this definition, "control" means (i) the power, direct or indirect, to cause the direction or management of such entity, whether by contract or otherwise, or (ii) ownership of fifty percent (50%) or more of the outstanding shares, or (iii) beneficial ownership of such entity.
 
-4. Contributions
-   a. Contributions are welcome under CONTRIBUTING.md.
-   b. By submitting a Contribution you confirm that you have the right to do so (Developer
-      Certificate of Origin 1.1, signed with `git commit -s`), and you grant AETHRA a perpetual,
-      worldwide, non-exclusive, royalty-free, irrevocable license to use, modify, publish and
-      relicense your Contribution as part of HORIZON 247, under these or other terms.
-   c. You keep the copyright of your Contribution and will be credited in AUTHORS or the changelog.
+"You" (or "Your") shall mean an individual or Legal Entity exercising permissions granted by this License.
 
-5. Termination
-   Any breach of sections 3 terminates the rights granted in section 2 automatically. They are
-   restored if you cure the breach within 30 days of becoming aware of it, unless it is repeated.
+"Source" form shall mean the preferred form for making modifications, including but not limited to software source code, documentation source, and configuration files.
 
-6. Third-party components and data
-   Dependencies (listed in NOTICE and in the package manifests) and datasets (LICENSE-DATA) keep their
-   own licenses. Nothing in this license limits the rights those licenses give you over those
-   components or data. Derived data that must stay under a share-alike license (for example the Mars
-   dust climatology, CC BY-SA 3.0) remains under that license.
+"Object" form shall mean any form resulting from mechanical transformation or translation of a Source form, including but not limited to compiled object code, generated documentation, and conversions to other media types.
 
-7. No warranty
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. HORIZON 247 reports
-   statistical evidence; it does not give advice, forecasts or warnings. IN NO EVENT SHALL THE AUTHORS
-   BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
+"Work" shall mean the work of authorship, whether in Source or Object form, made available under the License, as indicated by a copyright notice that is included in or attached to the work (an example is provided in the Appendix below).
 
-8. Contact
-   For permissions beyond this license, open an issue in the Official repository titled
-   "Permission request".
+"Derivative Works" shall mean any work, whether in Source or Object form, that is based on (or derived from) the Work and for which the editorial revisions, annotations, elaborations, or other modifications represent, as a whole, an original work of authorship. For the purposes of this License, Derivative Works shall not include works that remain separable from, or merely link (or bind by name) to the interfaces of, the Work and Derivative Works thereof.
 
-Este texto no es asesoría legal. / This text is not legal advice.
+"Contribution" shall mean any work of authorship, including the original version of the Work and any modifications or additions to that Work or Derivative Works thereof, that is intentionally submitted to Licensor for inclusion in the Work by the copyright owner or by an individual or Legal Entity authorized to submit on behalf of the copyright owner. For the purposes of this definition, "submitted" means any form of electronic, verbal, or written communication sent to the Licensor or its representatives, including but not limited to communication on electronic mailing lists, source code control systems, and issue tracking systems that are managed by, or on behalf of, the Licensor for the purpose of discussing and improving the Work, but excluding communication that is conspicuously marked or otherwise designated in writing by the copyright owner as "Not a Contribution."
+
+"Contributor" shall mean Licensor and any individual or Legal Entity on behalf of whom a Contribution has been received by Licensor and subsequently incorporated within the Work.
+
+2. Grant of Copyright License. Subject to the terms and conditions of this License, each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare Derivative Works of, publicly display, publicly perform, sublicense, and distribute the Work and such Derivative Works in Source or Object form.
+
+3. Grant of Patent License. Subject to the terms and conditions of this License, each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable (except as stated in this section) patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer the Work, where such license applies only to those patent claims licensable by such Contributor that are necessarily infringed by their Contribution(s) alone or by combination of their Contribution(s) with the Work to which such Contribution(s) was submitted. If You institute patent litigation against any entity (including a cross-claim or counterclaim in a lawsuit) alleging that the Work or a Contribution incorporated within the Work constitutes direct or contributory patent infringement, then any patent licenses granted to You under this License for that Work shall terminate as of the date such litigation is filed.
+
+4. Redistribution. You may reproduce and distribute copies of the Work or Derivative Works thereof in any medium, with or without modifications, and in Source or Object form, provided that You meet the following conditions:
+
+     (a) You must give any other recipients of the Work or Derivative Works a copy of this License; and
+
+     (b) You must cause any modified files to carry prominent notices stating that You changed the files; and
+
+     (c) You must retain, in the Source form of any Derivative Works that You distribute, all copyright, patent, trademark, and attribution notices from the Source form of the Work, excluding those notices that do not pertain to any part of the Derivative Works; and
+
+     (d) If the Work includes a "NOTICE" text file as part of its distribution, then any Derivative Works that You distribute must include a readable copy of the attribution notices contained within such NOTICE file, excluding those notices that do not pertain to any part of the Derivative Works, in at least one of the following places: within a NOTICE text file distributed as part of the Derivative Works; within the Source form or documentation, if provided along with the Derivative Works; or, within a display generated by the Derivative Works, if and wherever such third-party notices normally appear. The contents of the NOTICE file are for informational purposes only and do not modify the License. You may add Your own attribution notices within Derivative Works that You distribute, alongside or as an addendum to the NOTICE text from the Work, provided that such additional attribution notices cannot be construed as modifying the License.
+
+     You may add Your own copyright statement to Your modifications and may provide additional or different license terms and conditions for use, reproduction, or distribution of Your modifications, or for any such Derivative Works as a whole, provided Your use, reproduction, and distribution of the Work otherwise complies with the conditions stated in this License.
+
+5. Submission of Contributions. Unless You explicitly state otherwise, any Contribution intentionally submitted for inclusion in the Work by You to the Licensor shall be under the terms and conditions of this License, without any additional terms or conditions. Notwithstanding the above, nothing herein shall supersede or modify the terms of any separate license agreement you may have executed with Licensor regarding such Contributions.
+
+6. Trademarks. This License does not grant permission to use the trade names, trademarks, service marks, or product names of the Licensor, except as required for reasonable and customary use in describing the origin of the Work and reproducing the content of the NOTICE file.
+
+7. Disclaimer of Warranty. Unless required by applicable law or agreed to in writing, Licensor provides the Work (and each Contributor provides its Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE. You are solely responsible for determining the appropriateness of using or redistributing the Work and assume any risks associated with Your exercise of permissions under this License.
+
+8. Limitation of Liability. In no event and under no legal theory, whether in tort (including negligence), contract, or otherwise, unless required by applicable law (such as deliberate and grossly negligent acts) or agreed to in writing, shall any Contributor be liable to You for damages, including any direct, indirect, special, incidental, or consequential damages of any character arising as a result of this License or out of the use or inability to use the Work (including but not limited to damages for loss of goodwill, work stoppage, computer failure or malfunction, or any and all other commercial damages or losses), even if such Contributor has been advised of the possibility of such damages.
+
+9. Accepting Warranty or Additional Liability. While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
+
+END OF TERMS AND CONDITIONS
+
+APPENDIX: How to apply the Apache License to your work.
+
+To apply the Apache License to your work, attach the following boilerplate notice, with the fields enclosed by brackets "[]" replaced with your own identifying information. (Don't include the brackets!)  The text should be enclosed in the appropriate comment syntax for the file format. We also recommend that a file or class name and description of purpose be included on the same "printed page" as the copyright notice for easier identification within third-party archives.
+
+Copyright [yyyy] [name of copyright owner]
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

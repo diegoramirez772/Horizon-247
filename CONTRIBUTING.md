@@ -1,8 +1,7 @@
 # Contributing to HORIZON 247
 
-Thanks for wanting to help. HORIZON 247 is **source-available**: you can read it, run it for
-non-commercial purposes and **contribute to it**, but you may not monetize it or republish copies
-(see [LICENSE](LICENSE)). Contributions go back to the official repository and are credited.
+Thanks for wanting to help. HORIZON 247 is open source under the **Apache License 2.0** (see [LICENSE](LICENSE)).
+Contributions to the official repository are credited and licensed under the same terms (Apache-2.0 §5).
 
 ## Ways to help
 
@@ -16,11 +15,11 @@ non-commercial purposes and **contribute to it**, but you may not monetize it or
 
 ## How to submit a change
 
-1. Fork the official repository (forks are allowed only to prepare contributions; LICENSE §2.c).
+1. Fork the official repository.
 2. Create a branch: `tu-nombre/lo-que-cambia`.
 3. Make the change with its tests, then run the checks below.
 4. Commit with sign-off (Developer Certificate of Origin): `git commit -s -m "…"`.
-   By signing off you confirm you have the right to contribute it and accept LICENSE §4.
+   By signing off you confirm you have the right to contribute it under the Apache License 2.0.
 5. Open a pull request against `main` explaining *what* and *why*. A team member reviews it.
 
 ## Checks before a pull request

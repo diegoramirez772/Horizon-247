@@ -100,13 +100,9 @@ the Mars Climate Database, Sentinel-2 cloudless (EOX) and AWS Terrain Tiles. Cre
 
 ## License and contributing
 
-**Source-available, non-commercial** — [LICENSE](LICENSE).
-
-| ✅ You may | ❌ You may not (without written permission) |
-| --- | --- |
-| Read, study and cite it | Sell it or offer it as a paid or ad-supported service |
-| Run it for personal, educational or research use | Republish copies or derived projects |
-| Fork it **to contribute** back here | Use the names or logos for other projects |
+**Apache License 2.0** — [LICENSE](LICENSE). Free to use, modify and redistribute, including commercially, keeping the
+copyright and [NOTICE](NOTICE). The license does not grant use of the names «HORIZON 247», «HORI», «ZON» or «AETHRA».
+Data keep their own terms ([LICENSE-DATA](LICENSE-DATA)).
 
 Contributions are welcome — read [CONTRIBUTING.md](CONTRIBUTING.md) and open a pull request.
 

@@ -1,7 +1,12 @@
 HORIZON 247 — third-party notices
 =================================
-HORIZON 247's own code is under LICENSE (source-available, no commercial use). The components and data
-below keep their own licenses; nothing in LICENSE restricts the rights they grant.
+HORIZON 247
+Copyright 2026 AETHRA (the HORIZON 247 team: Diego, William, Estela, Carolina).
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE). The names «HORIZON 247»,
+«HORI», «ZON» and «AETHRA» and their logos are not licensed by it (Apache-2.0 §6).
+
+The components and data below keep their own licenses; nothing in LICENSE restricts the rights they grant.
 
 Software
   - NumPy — BSD-3-Clause (HORI, ZON)
@@ -26,3 +31,13 @@ Data and services (fetched at run time or shipped as derived bundles)
   - NASA GISS Surface Temperature Analysis (GISTEMP) v4 — cite per NASA GISS instructions.
   - Natural Earth boundaries — public domain.
   - Livestock Temperature-Humidity Index: NRC (1971); LCI thresholds.
+  - CelesTrak GP orbital elements (Dr. T.S. Kelso) — free public data; positions computed in the web from them.
+  - NASA official live streams from the International Space Station (YouTube) — embedded, not copied.
+  - NOAA/NESDIS STAR GOES-19/GOES-18 ABI GeoColor sector imagery — US Government work (public domain); linked, not copied.
+  - NASA GPM IMERG Early Run precipitation (30-min) and NASA GIBS Blue Marble Next Generation — NASA open data.
+  - iNaturalist observations and photos (California Academy of Sciences / National Geographic Society) —
+      each observation and photo keeps its own license (CC0, CC BY, CC BY-NC or all rights reserved);
+      the web only links and shows them from iNaturalist, it does not copy them.
+  - NASA MODIS MOD13C2 v061 NDVI (doi:10.5067/MODIS/MOD13C2.061), NSIDC-0051 sea-ice concentration v2,
+      MERRA-2 M2TMNXAER (aerosols) and M2TMNXLND (snow cover) via NASA Earthdata — NASA open data.
+  - NSIDC Sea Ice Index (G02135) v4 — used to validate the sea-ice processing.
