@@ -100,15 +100,15 @@ export function rainStrength(r: number, g: number, b: number, a: number): { v: n
 
 const KM_PER_DEG = 111.32;
 
-interface Blob { kind: LiveKind; lat: number; lon: number; areaKm2: number; strength: number }
+interface Cluster { kind: LiveKind; lat: number; lon: number; areaKm2: number; strength: number }
 
 /**
  * Objects on a 1° grid: cells where the strong signal covers ≥ 20 % (rain ≥ 0.55, deep convection, or strong snow),
  * joined by 8-neighbourhood (wrapping in longitude). Objects under 3 cells are dropped as noise.
  * `rain`, `conv`, `snow` are 360×180 shares, row 0 = 90° N.
  */
-export function findObjects(rain: Float32Array, conv: Float32Array, snow: Float32Array): Blob[] {
-  const W = 360, H = 180, seen = new Uint8Array(W * H), out: Blob[] = [];
+export function findObjects(rain: Float32Array, conv: Float32Array, snow: Float32Array): Cluster[] {
+  const W = 360, H = 180, seen = new Uint8Array(W * H), out: Cluster[] = [];
   const hot = (i: number) => rain[i] >= 0.2 || conv[i] >= 0.2 || snow[i] >= 0.2;
   for (let s = 0; s < W * H; s++) {
     if (seen[s] || !hot(s)) continue;
@@ -151,7 +151,7 @@ export function distanceKm(aLat: number, aLon: number, bLat: number, bLon: numbe
 let nextId = 1;
 
 /** Follow objects between frames: same kind within 600 km = the same object (grew, weakened, kept going). */
-export function track(prev: LiveDetection[], blobs: Blob[], now: string, max = 24): LiveDetection[] {
+export function track(prev: LiveDetection[], blobs: Cluster[], now: string, max = 24): LiveDetection[] {
   const free = new Set(prev);
   return blobs.slice(0, max).map((b) => {
     let best: LiveDetection | null = null, bestD = 600;
