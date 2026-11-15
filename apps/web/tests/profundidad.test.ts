@@ -115,7 +115,7 @@ describe("since your last visit (doc v2 §5.2)", () => {
 });
 
 describe("calibration shown = calibration measured", () => {
-  it("the web's fallback numbers equal the ones ZON exports (MODEL_CARD §3.1, §3.9)", () => {
+  it("the web's fallback numbers equal the ones ZON exports (team model card §3.1, §3.9)", () => {
     expect(MEASURED.fdr_probado_real_null).toEqual(doc.calibration.fdr_probado_real_null);
     expect(MEASURED.fdr_ebh_real_null).toEqual(doc.calibration.fdr_ebh_real_null);
     expect(MEASURED.power_at_delta).toEqual(doc.calibration.power_at_delta);

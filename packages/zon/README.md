@@ -44,7 +44,7 @@ python -m zon export-web --src data/bundles --out apps/web/public/bundles     # 
 Módulos: `db` (almacén y cadena) · `monitors` (monitores, alertas, ciclo de vida) · `swarm` (enjambre) · `signing` (Ed25519) ·
 `auth` (llaves/roles/organizaciones) · `connectors` (fuentes + salud) · `jobs` (cola aislada con reintentos) · `notify` (avisos,
 escalamiento, vigilancia) · `server` (API + SSE) · `sync` (sin red ↔ servidor) · `anomaly_map` · `update` · `serve` (export).
-Contrato: `contract/SPEC.md` §11–14. Números medidos: `docs/MODEL_CARD.md` §3.13–3.19.
+Contrato: `contract/SPEC.md` §11–14. Números medidos: ficha del modelo del equipo (fuera del repositorio).
 
 ### Dependencias opcionales (licencias BSD/Apache, en `.venv`)
 `python3 -m venv --system-site-packages .venv && .venv/bin/pip install h5py pynacl` — h5py (BSD-3) lee HDF5/NetCDF4 (IMERG);

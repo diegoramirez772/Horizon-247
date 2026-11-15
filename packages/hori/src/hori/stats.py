@@ -1,6 +1,6 @@
 """Trend statistics. Ported from the calibration study in sim/ (same rule, same numbers). NumPy only.
 
-Rule (docs/SPEC.md section 2, step 4): a trend is "detected" only when THREE reasonable methods agree —
+Rule (the team method spec section 2, step 4): a trend is "detected" only when THREE reasonable methods agree —
 Mann-Kendall with variance correction (MK-VC), iterative trend-free prewhitening (TFPW-WS) and
 regression with AR(1) variance (OLS-AR1). Plain prewhitening is NOT used: it loses power on strong trends.
 

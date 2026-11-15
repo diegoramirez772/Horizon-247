@@ -8,8 +8,7 @@ non-commercial purposes and **contribute to it**, but you may not monetize it or
 
 - **Report a problem** — open an issue with what you did, what you expected and what happened
   (screenshot or the URL of the view: the web keeps its state in the address).
-- **Check the science** — results, thresholds and limits are documented in
-  [docs/MODEL_CARD.md](docs/MODEL_CARD.md) and [packages/hori/docs/SPEC.md](packages/hori/docs/SPEC.md).
+- **Check the science** — open an issue with the place, variable and years, and what you expected.
   Disagreements with evidence are the most valuable issues.
 - **Code** — pick an issue labelled `good first issue` or propose one before a large change.
 - **Translations and plain-language texts** — every sentence the app shows exists in Spanish and

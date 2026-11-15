@@ -61,7 +61,7 @@ export function limitsFor(x: LimitInput): Limit[] {
       : FLAG_TEXT[k];
     out.push({ key: k, bit: FLAG[k], text });
   }
-  // Measured on this source (MODEL_CARD §3.5): MERRA-2 shows ~45 % less Arctic warming than GISTEMP stations.
+  // Measured on this source (team model card §3.5): MERRA-2 shows ~45 % less Arctic warming than GISTEMP stations.
   if (x.lat !== undefined && x.lat >= 66.5 && /power|merra/i.test(x.datasetName ?? "")) {
     out.push({ key: "ARTICO_MERRA2", bit: null, text: L(
       "En el Ártico esta fuente marca cerca de 45 % menos calentamiento que las estaciones (GISTEMP); medido.",

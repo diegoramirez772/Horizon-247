@@ -1459,7 +1459,7 @@
   "en": "Every number and every priority comes from HORI. Regional means of ~50 km cells: they do not describe a street. An anomaly is a statistical deviation, not evidence of danger. No advice."
  },
  "calibration": {
-  "source": "docs/MODEL_CARD.md §3.1 and §3.9",
+  "source": "the team model card §3.1 and §3.9",
   "fdr_probado_real_null": {
    "optimistic": 0.059,
    "pessimistic": 0.238

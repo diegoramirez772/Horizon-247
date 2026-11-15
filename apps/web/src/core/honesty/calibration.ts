@@ -1,5 +1,5 @@
 // «¿Qué tan seguro?» (design doc «Modos de profundidad… v2» §3.4): how often HORI is wrong, as MEASURED, never as promised.
-// Numbers: docs/MODEL_CARD.md §3.1 (AR(1) simulation) and §3.9 (real null: the planet's own noise without trend).
+// Numbers: the team model card §3.1 (AR(1) simulation) and §3.9 (real null: the planet's own noise without trend).
 // home.json (SPEC §15) carries the same numbers; these are the fallback when it is absent, and a test keeps them equal.
 
 import type { HomeCalibration } from "@/contract/types";
@@ -7,7 +7,7 @@ import type { Lang, Register } from "@/core/i18n/texts";
 import { num } from "@/core/format/format";
 
 export const MEASURED: HomeCalibration = {
-  source: "docs/MODEL_CARD.md §3.1 and §3.9",
+  source: "the team model card §3.1 and §3.9",
   fdr_probado_real_null: { optimistic: 0.059, pessimistic: 0.238 },
   fdr_ebh_real_null: { optimistic: 0.011, pessimistic: 0.093 },
   power_at_delta: { optimistic: 0.697, pessimistic: 0.462 },

@@ -8,7 +8,7 @@ Model (causal: each sample is judged with the past only):
   deviation  d_t  = x_t - L_{t-1};
   expected   e_t  = median over the previous K cycles of d at the same phase (robust to earlier anomalies);
   residual   r_t  = d_t - e_t;   scale s_t = 1.4826 MAD of the previous S residuals;   z_t = r_t / s_t.
-Three detectors, each with a stated false-alarm rate (sim/anomaly_calibration.py, docs/MODEL_CARD.md 3.13):
+Three detectors, each with a stated false-alarm rate (sim/anomaly_calibration.py, the team model card 3.13):
   punto          |z_t| >= z_alarm                         (one-off value)
   cambio_nivel   two-sided CUSUM on z / sqrt((1+phi)/(1-phi)) (a sustained shift; phi = lag-1 of z)
   sin_datos      a run of missing samples >= gap_min       (the sensor/source went quiet)

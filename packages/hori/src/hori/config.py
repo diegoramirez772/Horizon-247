@@ -1,4 +1,4 @@
-"""Configuration (defaults mirror config/hori.yaml and docs/SPEC.md)."""
+"""Configuration (defaults mirror config/hori.yaml and the team method spec)."""
 from __future__ import annotations
 
 from dataclasses import dataclass

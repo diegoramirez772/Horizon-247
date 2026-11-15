@@ -221,7 +221,7 @@ def build_home(places: list[str], variables: list[str], start: int, end: int, *,
                              "Una anomalía es una desviación estadística, no prueba de peligro. Sin consejos.",
                        "en": "Every number and every priority comes from HORI. Regional means of ~50 km cells: they do not describe a street. "
                              "An anomaly is a statistical deviation, not evidence of danger. No advice."},
-           "calibration": {"source": "docs/MODEL_CARD.md §3.1 and §3.9",
+           "calibration": {"source": "the team model card §3.1 and §3.9",
                            "fdr_probado_real_null": {"optimistic": 0.059, "pessimistic": 0.238},
                            "fdr_ebh_real_null": {"optimistic": 0.011, "pessimistic": 0.093},
                            "power_at_delta": {"optimistic": 0.697, "pessimistic": 0.462},
