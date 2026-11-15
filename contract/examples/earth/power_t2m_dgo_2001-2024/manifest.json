@@ -1,17 +1,44 @@
 {
-  "contract": "0.1",
-  "id": "power_PRECTOTCORR_monthly_2001-2024",
+  "contract": "0.4",
+  "id": "power_T2M_monthly_2001-2024",
   "profile": "earth",
   "variable": {
-    "name": "PRECTOTCORR",
-    "unit": "mm/day",
-    "unit_per_decade": "mm/day/década"
+    "name": "T2M",
+    "unit": "C",
+    "unit_per_decade": "C/década"
   },
   "entity": {
     "kind": "region_cell",
     "body": "earth",
     "count": 72,
-    "valid": 72
+    "valid": 72,
+    "id": "mx-dgo",
+    "type": "region",
+    "name": {
+      "es": "Durango",
+      "en": "Durango"
+    },
+    "status": "real",
+    "version": "1",
+    "source": {
+      "name": "equipo AETHRA",
+      "note": "caja aproximada del estado, NO el polígono oficial"
+    },
+    "geometry": {
+      "type": "bbox",
+      "bbox": [
+        22.3,
+        -107.2,
+        26.8,
+        -102.5
+      ]
+    },
+    "relations": [
+      {
+        "rel": "part_of",
+        "target": "mx"
+      }
+    ]
   },
   "grid": {
     "type": "latlon",
@@ -44,8 +71,10 @@
     "alpha": 0.05,
     "fdr_q": 0.1,
     "delta_sigma_per_decade": 2.0,
-    "delta_per_decade": 0.2,
-    "min_valid_years": 10
+    "delta_per_decade": 0.3,
+    "delta_source": "profile",
+    "min_valid_years": 10,
+    "min_months": 9
   },
   "methods": [
     "MK-VC",
@@ -70,11 +99,11 @@
   },
   "summary": {
     "cells_valid": 72,
-    "naive_marked": 22,
+    "naive_marked": 72,
     "insuficiente": 0,
-    "probado": 2,
-    "candidata": 23,
-    "no_concluyente": 47,
+    "probado": 66,
+    "candidata": 1,
+    "no_concluyente": 5,
     "sin_cambio_mayor_que_delta": 0
   },
   "calibration": {
@@ -92,11 +121,46 @@
     "python": "3.14.8",
     "numpy": "2.5.4",
     "seed": 247,
-    "created_at": "2026-11-14T22:17:49Z"
+    "input_sha256": "faf27af98789ba5be2eb82e2dbb7df33c196fffed258ab540fb0ea57b4b6e2a5",
+    "created_at": "2026-11-14T23:46:40Z"
+  },
+  "profile_spec": {
+    "id": "tierra.temperatura",
+    "version": "1",
+    "body": "earth",
+    "mode": "trend",
+    "variables": [
+      "T2M",
+      "tempanomaly"
+    ],
+    "unit": "°C",
+    "aggregation": {
+      "step": "annual",
+      "method": "mean_monthly_anomaly",
+      "min_months": 9
+    },
+    "delta_per_decade": 0.3,
+    "delta_rationale": "Del orden del calentamiento global reciente (~0.2 °C/década en superficie); 0.3 hace visible un cambio regional mayor que el global. Valor de trabajo del equipo, no de la literatura.",
+    "review": "propuesto",
+    "methods": [
+      "MK-VC",
+      "TFPW-WS",
+      "OLS-AR1"
+    ],
+    "name": {
+      "es": "Temperatura del aire",
+      "en": "Air temperature"
+    },
+    "catalog_version": "1"
+  },
+  "layer": "mx-dgo.t2m.power",
+  "registry": {
+    "catalog_version": "2026-11-14.1",
+    "catalog_sha256": "c8ec2a1c93248a85b6e741922bbbc683d0d53df6fed044f6b55b1d2a6796c7ab"
   },
   "title": {
-    "es": "Precipitación corregida · Durango (caja aproximada)",
-    "en": "Corrected precipitation · Durango (approximate box)"
+    "es": "Temperatura del aire a 2 m · Durango (caja aproximada)",
+    "en": "Air temperature at 2 m · Durango (approximate box)"
   },
   "arrays": {
     "effect": {

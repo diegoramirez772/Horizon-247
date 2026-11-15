@@ -33,7 +33,7 @@ class TestBuild(unittest.TestCase):
             orig = power.PowerClient.__init__
             power.PowerClient.__init__ = lambda s, *a, **k: orig(s, *a, **{**k, "base_url": self.srv.url, "min_interval": 0.0})
             bundle, res = build_power_layer((24.0, -105.0, 25.0, -104.0), "T2M", 2001, 2014, self.tmp, region="test",
-                                            cache_dir=Path(self.tmp) / "cache")
+                                            cache_dir=Path(self.tmp) / "cache", profile="auto")
         finally:
             power.PowerClient.__init__ = orig
             power.BASE_URL = old
@@ -44,6 +44,10 @@ class TestBuild(unittest.TestCase):
         self.assertEqual(m["dataset"]["kind"], "reanalysis")
         self.assertEqual(len(m["dataset"]["sha256"]), 64)
         self.assertTrue(m["honesty"]["data_real"])
+        self.assertEqual(m["profile_spec"]["id"], "auto.temperatura.t2m")                # H1: inferred, not seeded
+        self.assertEqual(m["entity"]["name"]["en"], "test")
+        idx = json.loads((Path(self.tmp) / "bundles" / "index.json").read_text())       # Z2: index of what was computed
+        self.assertEqual([e["path"] for e in idx], ["earth/power_t2m_test_2001-2014"])
 
 
 if __name__ == "__main__":

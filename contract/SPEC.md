@@ -183,3 +183,84 @@ export interface Region { id: string; name: {es: string; en: string}; layers: Re
 export interface ContextCard { id: string; region: string; level: EvidenceLevel; text: {es: string; en: string};
   source: {title: string; url: string; year: number}; status: "borrador" | "revisado" }
 ```
+
+## 9 · Extensiones v0.3 (aditivas, 2026-11-14) — sala de monitoreo y asistente
+### 9.1 `monitors.json` (HORI/ZON lo escriben; la web lo lee)
+```json
+[{ "id": "mon-dgo-temp", "profile": "earth",
+   "entity": {"kind": "region", "id": "mx-dgo", "name": {"es": "Durango", "en": "Durango"}},
+   "layer": "temp_gistemp_1980-2024",
+   "state": {"verdict": 1, "effect": 0.0, "unit_per_decade": "°C/década", "last_change_year": 2019, "data_real": true},
+   "relevance": 0 }]
+```
+`relevance` (entero, menor = más relevante) lo calcula HORI con una regla fija; **la web y el asistente no recalculan veredictos**.
+### 9.2 `events.json`
+```json
+[{ "id": "ev-001", "type": "EMERGENCIA", "monitor": "mon-dgo-temp", "year": 2019,
+   "from": "NO_CONCLUYENTE", "to": "PROBADO", "evidence": {"window": "1980-2019", "q": 0.0, "n_sig": 3} }]
+```
+Tipos: `EMERGENCIA`, `CAMBIO_DE_VERSION`, `NUEVO_DATO` (este último solo en operación continua).
+### 9.3 `assistant.json` (uno por perfil)
+`{ "profile", "entity_word", "synonyms": {"layers": {...}, "regions": {...}}, "chips": [...], "templates": {"<clave>": {"es": "...", "en": "..."}} }` — vocabulario, sugerencias y plantillas de narración. **Plantillas de números y veredictos:** las de §5 y §8.5. Cada mensaje declara `origin`: `"HORI" | "EXTERNAL" | "INTERFACE"`.
+### 9.4 Tipos (TypeScript)
+```ts
+export type Origin = "HORI" | "EXTERNAL" | "INTERFACE";
+export interface Monitor { id: string; profile: string; entity: { kind: string; id: string; name: {es: string; en: string} };
+  layer: string; state: { verdict: Verdict; effect: number; unit_per_decade: string; last_change_year: number | null; data_real: boolean };
+  relevance: number }
+export interface MonitorEvent { id: string; type: "EMERGENCIA" | "CAMBIO_DE_VERSION" | "NUEVO_DATO"; monitor: string; year: number;
+  from: string; to: string; evidence: { window: string; q: number; n_sig: number } }
+```
+Los tipos reflejan el JSON tal cual (snake_case), sin adaptador.
+
+## 10 · Extensiones v0.4 (aditivas, 2026-11-14) — identidad (H1) y registro (Z2)
+Todo lo anterior **no cambia de significado**. Los manifests nuevos declaran `"contract": "0.4"`.
+
+### 10.1 `entity` ampliado (L0)
+Las claves de siempre se quedan **con su significado**: `entity.kind` = tipo de **cada celda** de los arreglos (`region_cell`), `count`, `valid`, `body`. Se agregan las de la **entidad monitoreada** (mapeable a NGSI-LD: entidad · propiedad · relación):
+```json
+"entity": {"kind": "region_cell", "body": "earth", "count": 72, "valid": 72,
+  "id": "mx-dgo", "type": "region", "name": {"es": "Durango", "en": "Durango"},
+  "status": "real", "version": "1",
+  "source": {"name": "equipo AETHRA", "note": "caja aproximada del estado, NO el polígono oficial"},
+  "geometry": {"type": "bbox", "bbox": [22.3, -107.2, 26.8, -102.5]},
+  "relations": [{"rel": "part_of", "target": "mx"}]}
+```
+`status` dice si **la cosa** es real (`real` · `simulada` · `no_verificada`); si los **datos** son reales lo sigue diciendo `honesty`. HORI **rechaza** mezclar entidad real con datos simulados (y al revés).
+
+### 10.2 `profile_spec` (el perfil que HORI aplicó)
+`profile` sigue siendo la cadena del cuerpo (`"earth"`). El perfil completo va aparte:
+```json
+"profile_spec": {"id": "tierra.temperatura", "version": "1", "body": "earth", "mode": "trend",
+  "variables": ["T2M", "tempanomaly"], "unit": "°C",
+  "aggregation": {"step": "annual", "method": "mean_monthly_anomaly", "min_months": 9},
+  "delta_per_decade": 0.3, "delta_rationale": "…", "review": "propuesto",
+  "methods": ["MK-VC", "TFPW-WS", "OLS-AR1"], "name": {"es": "Temperatura del aire", "en": "Air temperature"},
+  "catalog_version": "1"}
+```
+Perfiles v1: `tierra.temperatura` (δ 0.3 °C/década) · `tierra.precipitacion` (δ 0.2 mm/día/década) · `marte.polvo` (sin δ físico → 2σ) · `persona.simulada` (modo secuencial, aún no construido). **Todos con `review: "propuesto"`**: δ es valor de trabajo del equipo, no de la literatura.
+
+### 10.3 Parámetros y reproducibilidad
+- `params.delta_source`: `"profile"` · `"config"` (alguien lo fijó a mano) · `"sigma"` (δ = k·σ). `params.min_months`.
+- `build.input_sha256`: hash de lo que HORI leyó (valores, ejes, variable). Misma entrada → mismo hash.
+- `build.created_at` usa `SOURCE_DATE_EPOCH` si existe → **bundle idéntico byte a byte** (probado).
+- `layer` (id de capa del catálogo) y `registry: {catalog_version, catalog_sha256}` (los escribe ZON).
+
+### 10.4 `index.json` (v0.4)
+Rutas relativas a `bundles/` (`"path": "earth/power_t2m_dgo_2001-2024"`) y por entrada: `layer`, `entity`, `profile_id`, además de lo de antes. Ordenado por `layer`.
+
+### 10.5 Línea de tiempo de la evidencia (`kind: "timeline"`) — máquina del tiempo, eventos y prioridad
+Carpeta `earth/timeline_<var>_<inicio>-<fin>/` con `timeline.json` + arreglos por celda (mismo orden que los bundles):
+| Archivo | Qué es |
+|---|---|
+| `verdict_by_window.u8` | `[ventanas × celdas]`: veredicto de HORI usando solo los años hasta cada `windows.ends[i]` (FDR dentro de cada ventana) |
+| `emergence_year.f32` | año desde el que la celda es PROBADO **y se mantiene** hasta hoy; NaN si hoy no lo es |
+| `first_probado_year.f32` | primera vez que fue PROBADO (aunque luego se retirara) |
+| `reversals.u8` · `sign_flip.u8` | veces que un PROBADO se retiró · 1 si fue PROBADO con ambos signos |
+| `event.u8` | cambio entre la penúltima y la última ventana: 0 ninguno · 1 NUEVO · 2 SE_DEBILITO · 3 CRUZO · 4 CAMBIO_SIGNO |
+| `priority_tier.u8` · `priority_strength.f32` · `priority_order.u32` | nivel (0 EVENTO · 1 PROBADO · 2 POR_EMERGER · 3 RESTO), fuerza = \|efecto\|/MDE, y el orden final de celdas |
+`timeline.json` trae `stats` (tasas de reversión **medidas en datos reales**, con su definición), `emergence_histogram`, `priority_top[]` (celda, lat, lon, razón en texto con `origin: "HORI"`) y `honesty` (texto obligatorio: es un ensayo retrospectivo con la versión actual de los datos; ventanas anidadas). Sustituye a las carpetas `windows/AAAA/` del §8.1 (mismo contenido, un solo archivo).
+
+### 10.6 Calidad (L1) y detectabilidad (D2) en cada bundle
+- Bandera `128 = quiebre_posible` + arreglo `break_year.f32`: posible salto (recta vs recta + escalón). **No cambia el veredicto.** «Sin bandera» no significa «homogéneo»: con 24–45 años solo se atrapan saltos grandes (medido: 55 % de los de 3σ).
+- Arreglo `delta.f32` (el δ con el que se juzgó cada celda) y `manifest.detectability` (qué parte del mapa ya podría ver un cambio δ y cuántos años faltan en el resto).

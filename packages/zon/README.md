@@ -6,7 +6,7 @@ and writes **bundles** (`contract/SPEC.md`) with full provenance. Entry point: `
 * Base install is light on purpose (laptops with ~6 GB RAM): process month by month, aggregate while reading.
 * Optional extras: `earthdata` (earthaccess), `netcdf` (netCDF4/h5py).
 * Credentials: environment variables or `~/.netrc` — never in the repo.
-* Layer configs: `src/zon/layers/*.yaml`.
+* Catalog of entities and layers (Z2): `src/zon/catalog.json` (`python -m zon registry`, `python -m zon build <layer-id>`).
 
 Status: **skeleton.**
 

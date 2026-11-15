@@ -7,7 +7,7 @@ name = "zon"
 version = "0.0.1"
 description = "ZON — runtime of HORIZON 247"
 requires-python = ">=3.10"
-dependencies = ["numpy>=1.26", "pyyaml>=6", "hori"]
+dependencies = ["numpy>=1.26", "hori"]
 license = { file = "LICENSE" }
 
 [project.optional-dependencies]
@@ -19,3 +19,6 @@ dev = ["pytest"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+zon = ["catalog.json"]

@@ -202,7 +202,7 @@ class TestEndToEnd(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             out = write_bundle(self.res, d, title_es="Prueba", title_en="Test")
             m = json.loads((out / "manifest.json").read_text())
-            self.assertEqual(m["contract"], "0.1")
+            self.assertEqual(m["contract"], "0.4")
             self.assertEqual(m["title"]["en"], "Test")
             for name, spec in m["arrays"].items():
                 size = (out / spec["file"]).stat().st_size

@@ -22,6 +22,10 @@ class LayerResult:
     nvalid: np.ndarray
     nsig_methods: np.ndarray
     naive_sig: np.ndarray
-    series: np.ndarray          # [cells, n] annual anomaly series used for the tests
+    series: np.ndarray | None   # [cells, n] annual anomaly series used for the tests (None for global maps)
     years: list = field(default_factory=list)
     manifest: dict = field(default_factory=dict)
+    break_year: np.ndarray | None = None   # [cells] first year of a possible new regime (NaN = no break flagged)
+    e_cons: np.ndarray | None = None       # [cells] mean e-value of the voting tests (parallel evidence, H6)
+    ebh_sig: np.ndarray | None = None      # [cells] 1 if discovered by e-BH at fdr_q (valid under any dependence)
+    delta: np.ndarray | None = None   # [cells] the delta each cell was judged against (D2: always visible)

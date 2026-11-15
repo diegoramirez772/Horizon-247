@@ -1,6 +1,0 @@
-id: temp_gistemp_1980-2024
-profile: earth
-variable: {name: tempanomaly, unit: "°C"}
-source: gistemp
-window: {start: 1980, end: 2024, step: annual}
-grid: {native_resolution_deg: 2.0}

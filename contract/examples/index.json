@@ -1,6 +1,9 @@
 [
   {
     "id": "power_PRECTOTCORR_monthly_2001-2024",
+    "layer": "mx-dgo.prectotcorr.power",
+    "entity": "mx-dgo",
+    "profile_id": "tierra.precipitacion",
     "profile": "earth",
     "title": {
       "es": "Precipitación corregida · Durango (caja aproximada)",
@@ -8,12 +11,15 @@
     },
     "variable": "PRECTOTCORR",
     "window": "2001-2024",
-    "path": "power_prectotcorr_dgo_2001-2024",
+    "path": "earth/power_prectotcorr_dgo_2001-2024",
     "data_real": true,
     "delta_per_decade": 0.2
   },
   {
     "id": "power_T2M_monthly_2001-2024",
+    "layer": "mx-dgo.t2m.power",
+    "entity": "mx-dgo",
+    "profile_id": "tierra.temperatura",
     "profile": "earth",
     "title": {
       "es": "Temperatura del aire a 2 m · Durango (caja aproximada)",
@@ -21,7 +27,7 @@
     },
     "variable": "T2M",
     "window": "2001-2024",
-    "path": "power_t2m_dgo_2001-2024",
+    "path": "earth/power_t2m_dgo_2001-2024",
     "data_real": true,
     "delta_per_decade": 0.3
   }

@@ -18,3 +18,4 @@ class Config:
     mde_power: float = 0.80
     coarse_resolution_deg: float = 2.0   # cells at least this coarse get the `resolucion_gruesa` flag
     seed: int = 247
+    methods: tuple = ("MK-VC", "TFPW-WS", "OLS-AR1")   # which tests vote; PROBADO needs all of them (calibrated: all 3)

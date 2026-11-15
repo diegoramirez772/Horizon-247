@@ -1,6 +1,7 @@
 # data and heavy artifacts — never in git
 data/
 *.npz
+!contract/examples/cubes/*.npz
 *.nc
 *.nc4
 *.hdf
