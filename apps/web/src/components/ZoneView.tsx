@@ -11,8 +11,18 @@ import type { Lang } from "@/core/i18n/texts";
 import { registerView } from "@/core/interaction/manipulate";
 import type { ZoneTarget } from "@/core/state/store";
 import { TerrainView, reliefBase, type TerrainStatus } from "@/core/terrain/TerrainView";
+import type { EffectKind } from "@/core/terrain/effects";
 
 export type { ZoneTarget };
+
+const FX_NAME: Record<EffectKind, { es: string; en: string }> = {
+  lluvia: { es: "la lluvia", en: "the rain" }, inundacion: { es: "el agua en las zonas bajas", en: "water in the low ground" },
+  tormenta: { es: "la tormenta (nubes, lluvia y relámpagos)", en: "the storm (clouds, rain and lightning)" }, incendio: { es: "el fuego y el humo", en: "fire and smoke" },
+  volcan: { es: "la ceniza", en: "the ash" }, nieve: { es: "la nieve", en: "the snow" }, calor: { es: "el calor", en: "the heat" },
+  sequia: { es: "la vegetación seca", en: "the dry vegetation" }, bruma: { es: "la bruma", en: "the haze" },
+  anomalia: { es: "una marca abstracta (anomalía sin tipo físico)", en: "an abstract mark (anomaly without a physical kind)" },
+  bolido: { es: "la estela y el estallido del bólido", en: "the fireball's trail and burst" },
+};
 
 export function ZoneView({ zone, lang, reading, onScene, drapeFor, layerName }: {
   zone: ZoneTarget; lang: Lang; reading: { title: string; line: string } | null; onScene: () => void;
@@ -51,6 +61,11 @@ export function ZoneView({ zone, lang, reading, onScene, drapeFor, layerName }: 
   useEffect(() => { void view.current?.load(zone.lat, zone.lon, zone.box); }, [zone.lat, zone.lon, boxKey]); // eslint-disable-line react-hooks/exhaustive-deps -- the key says when the box changed
   useEffect(() => { view.current?.setExaggeration(ex); }, [ex]);
   useEffect(() => { view.current?.setDrape(drapeOn ? drape : null); }, [drape, drapeOn]);
+  // «lo que está pasando», generated from the data on the real place; the switch shows the place clean
+  const [fxOn, setFxOn] = useState(true);
+  const evKey = zone.event ? `${zone.event.kind}|${zone.event.intensity}|${zone.event.radiusKm}` : "";
+  useEffect(() => { view.current?.setEvent(zone.event ?? null); }, [evKey]); // eslint-disable-line react-hooks/exhaustive-deps -- the key says when the event changed
+  useEffect(() => { view.current?.setShowFx(fxOn); }, [fxOn]);
 
   const base = reliefBase(status.halfKm ?? 6);
   const sideKm = status.halfKm ? Math.round(status.halfKm * 2) : 12;
@@ -66,6 +81,19 @@ export function ZoneView({ zone, lang, reading, onScene, drapeFor, layerName }: 
         <p className="tabular text-xs text-text-2">{zone.lat.toFixed(3)}°, {zone.lon.toFixed(3)}° · {sideKm} × {sideKm} km</p>
         {reading ? (
           <p className="mt-1.5 text-xs"><span className="font-semibold">{reading.title}</span> · {reading.line}</p>
+        ) : null}
+        {zone.event ? (
+          <div className="mt-2 border-t border-border pt-2 text-xs">
+            <p className="font-semibold"><span className="live-dot" aria-hidden="true" />{zone.event.label}</p>
+            <p className="text-text-2">
+              <span className="font-medium text-text">{es ? "Real:" : "Real:"}</span> {es ? "relieve y foto del lugar" : "relief and photo of the place"} ·{" "}
+              <span className="font-medium text-text">{es ? "Generado:" : "Generated:"}</span> {FX_NAME[zone.event.kind][lang]} {es ? "a partir de" : "from"} {zone.event.source}
+            </p>
+            <label className="mt-1 inline-flex items-center gap-1.5">
+              <input type="checkbox" checked={fxOn} onChange={(e) => setFxOn(e.target.checked)} />
+              {es ? "Mostrar lo que está pasando (generado)" : "Show what is happening (generated)"}
+            </label>
+          </div>
         ) : null}
       </div>
 

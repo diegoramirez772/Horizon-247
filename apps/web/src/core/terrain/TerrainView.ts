@@ -15,6 +15,7 @@
 import { DETAIL_EARTH, levelFor, loadMosaic, type Mosaic } from "@/core/map/imagery";
 import { detectTier } from "@/core/map/tier";
 import type { Drape } from "@/core/detect/drape";
+import { EffectLayer, type ZoneEvent, terrainTints } from "./effects";
 
 const TERRAIN = "https://s3.amazonaws.com/elevation-tiles-prod/terrarium";
 
@@ -72,6 +73,8 @@ void main(){
 }`;
 const FS = `precision mediump float;
 uniform sampler2D uTex; uniform float uHas; uniform vec3 uSun; uniform vec3 uSky; uniform vec3 uFogC; uniform float uFog;
+// generated «lo que está pasando» (effects.ts): x wet, y heat, z drought, w haze; snow on flat ground; lightning
+uniform vec4 uFx; uniform float uSnow; uniform float uFlash; uniform float uSea;
 uniform sampler2D uDrape; uniform float uHasDrape; uniform float uDrapeA; uniform vec2 uDrapeN; uniform vec3 uInk; uniform vec3 uGrey;
 varying vec2 vT; varying vec2 vE; varying vec3 vN; varying float vD; varying float vO; varying float vH;
 vec3 lin(vec3 c){ return pow(c, vec3(2.2)); }
@@ -79,10 +82,16 @@ vec3 aces(vec3 x){ return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14), 0.0, 1
 void main(){
   vec3 n = normalize(vN);
   vec3 base = lin(uHas>0.5 ? texture2D(uTex,vT).rgb : vec3(0.62,0.58,0.48));
+  if (uSea > 0.5 && vH < 0.00001) base = mix(base, lin(vec3(0.07,0.2,0.33)), 0.75); // open sea at 0 m: water, not the mosaic's grey
   float diff = max(dot(n,uSun),0.0);
   vec3 amb = mix(vec3(0.30,0.27,0.22), lin(uSky), n.y*0.5+0.5) * 0.55;
   vec3 c = base * (vec3(1.0,0.96,0.88)*diff*1.55*(0.6+0.4*vO) + amb*vO);
-  float haze = 1.0 - exp(-max(vD-0.6,0.0)*uFog);
+  if (uFx.x > 0.0) c *= mix(1.0, 0.62, uFx.x*(0.6+0.4*n.y));                       // wet ground is darker
+  if (uFx.y > 0.0) c = mix(c, c*vec3(1.35,0.92,0.7), uFx.y);                          // heat
+  if (uFx.z > 0.0) { float g = dot(c, vec3(0.3,0.59,0.11)); c = mix(c, vec3(g*1.25,g*1.0,g*0.62), uFx.z); } // drying
+  if (uSnow > 0.0) c = mix(c, vec3(0.86,0.9,0.95)*(0.55+0.5*diff), uSnow*smoothstep(0.55,0.85,n.y));
+  c += vec3(0.5,0.55,0.75)*uFlash*0.35;
+  float haze = 1.0 - exp(-max(vD-0.6,0.0)*(uFog + uFx.w*0.9));
   c = mix(c, lin(uFogC), clamp(haze,0.0,0.7));
   c = pow(aces(c*1.1), vec3(1.0/2.2));
   if (uHasDrape > 0.5 && vE.x >= 0.0 && vE.x <= 1.0 && vE.y >= 0.0 && vE.y <= 1.0) {
@@ -129,13 +138,14 @@ export function zoneHalfKm(lat: number, box?: Box): number {
 /** Base relief factor of a zone: 1 for 12 km, gently larger for a zone hundreds of km wide (it would look flat), capped at 2.5 so a state still looks like itself (×10 made Guanajuato a spike). */
 export function reliefBase(halfKm: number): number { return Math.max(1, Math.min(2.5, (halfKm / 6) ** 0.3)); }
 
-function img(url: string, signal: AbortSignal): Promise<HTMLImageElement> {
+function img(url: string, signal: AbortSignal, timeoutMs = 0): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
     const i = new Image();
     i.crossOrigin = "anonymous";
-    i.onload = () => res(i);
-    i.onerror = () => rej(new Error(url));
-    signal.addEventListener("abort", () => rej(new Error("abort")));
+    const t = timeoutMs ? setTimeout(() => { i.src = ""; rej(new Error(`tarde: ${url}`)); }, timeoutMs) : 0;
+    i.onload = () => { clearTimeout(t); res(i); };
+    i.onerror = () => { clearTimeout(t); rej(new Error(url)); };
+    signal.addEventListener("abort", () => { clearTimeout(t); rej(new Error("abort")); });
     i.src = url;
   });
 }
@@ -165,6 +175,14 @@ export class TerrainView {
   private cleanup: (() => void)[] = [];
   private heights: Float32Array | null = null;
   private exaggeration = 1.6;
+  // «lo que está pasando», generated on the real relief (effects.ts)
+  private fx: EffectLayer | null = null;
+  private event: ZoneEvent | null = null;
+  private showFx = true;
+  private grid: { y: Float32Array; N: number; max: number } | null = null;
+  private t0 = performance.now();
+  private lastFrame = 0;
+  private seaOk = true;
   private box: Box | null = null;
   private halfKm = 6;
   private sun: [number, number, number] = [-0.45, 0.8, -0.4];
@@ -196,7 +214,10 @@ export class TerrainView {
     // Draw only when something changed or while it turns by itself: a still view costs nothing.
     const loop = () => {
       if (this.spin) { this.yaw += 0.0025; this.dirty = true; }
-      if (this.dirty) { this.dirty = false; this.draw(); }
+      // a generated effect moves: ~30 frames a second at most (enough for rain and flames, light on a modest laptop)
+      const now = performance.now();
+      if (this.showFx && this.fx?.active && !document.hidden && now - this.lastFrame > 33) this.dirty = true;
+      if (this.dirty) { this.dirty = false; this.lastFrame = now; this.draw(); }
       this.raf = requestAnimationFrame(loop);
     };
     this.raf = requestAnimationFrame(loop);
@@ -305,16 +326,22 @@ export class TerrainView {
     const w = (tx1 - tx0 + 1) * 256, h = (ty1 - ty0 + 1) * 256;
     const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
     const g = cv.getContext("2d", { willReadFrequently: true })!;
+    g.fillStyle = "rgb(128,0,0)"; g.fillRect(0, 0, w, h); // Terrarium 0 m
     const jobs: Promise<void>[] = [];
+    let missing = 0;
     for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
       const wrapX = ((tx % 2 ** z) + 2 ** z) % 2 ** z;
-      jobs.push(img(`${TERRAIN}/${z}/${wrapX}/${ty}.png`, signal).then((i) => { g.drawImage(i, (tx - tx0) * 256, (ty - ty0) * 256); }));
+      // a tile that is late or missing stays at sea level (the canvas starts as 0x8000 = 0 m) instead of blocking the view
+      jobs.push(img(`${TERRAIN}/${z}/${wrapX}/${ty}.png`, signal, 20000).then((i) => { g.drawImage(i, (tx - tx0) * 256, (ty - ty0) * 256); }).catch((e) => { if (signal.aborted) throw e; missing++; }));
     }
     await Promise.all(jobs);
+    // 0 m is the sea only when the relief really arrived; a tile that did not is unknown ground, not water
+    this.seaOk = missing === 0;
     const px = g.getImageData(0, 0, w, h).data;
     const at = (sx: number, sy: number) => {
       const k = (Math.min(h - 1, Math.max(0, sy)) * w + Math.min(w - 1, Math.max(0, sx))) * 4;
-      return px[k] * 256 + px[k + 1] + px[k + 2] / 256 - 32768; // Terrarium encoding
+      // Terrarium encoding; the sea is drawn at its surface (0 m), not as its floor: a storm over the ocean sits on water
+      return Math.max(0, px[k] * 256 + px[k + 1] + px[k + 2] / 256 - 32768);
     };
     const out = new Float32Array(N * N);
     for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
@@ -380,7 +407,34 @@ export class TerrainView {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buf.o); gl.bufferData(gl.ARRAY_BUFFER, ao, gl.STATIC_DRAW);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buf.i); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
     this.count = idx.length;
+    // heights for the generated effects (rain lands on the ground, water fills the low parts)
+    const ys = new Float32Array(N * N);
+    let max = 0;
+    for (let i = 0; i < N * N; i++) { ys[i] = pos[i * 3 + 1]; if (ys[i] > max) max = ys[i]; }
+    this.grid = { y: ys, N, max };
+    this.rebuildFx();
     this.dirty = true;
+  }
+
+  /** Model height under a model x,z (−1…1), bilinear on the mesh grid. */
+  private heightAt(x: number, z: number): number {
+    const g = this.grid;
+    if (!g) return 0;
+    const fx = ((Math.max(-1, Math.min(1, x)) + 1) / 2) * (g.N - 1), fz = ((Math.max(-1, Math.min(1, z)) + 1) / 2) * (g.N - 1);
+    const c = Math.min(g.N - 2, Math.floor(fx)), r = Math.min(g.N - 2, Math.floor(fz)), ax = fx - c, az = fz - r;
+    const Y = (rr: number, cc: number) => g.y[rr * g.N + cc];
+    return (Y(r, c) * (1 - ax) + Y(r, c + 1) * ax) * (1 - az) + (Y(r + 1, c) * (1 - ax) + Y(r + 1, c + 1) * ax) * az;
+  }
+
+  /** What is happening here, generated from the data (null = the place as it is). */
+  setEvent(e: ZoneEvent | null): void { this.event = e; this.rebuildFx(); this.dirty = true; }
+  /** Show or hide the generated layer (the real place stays). */
+  setShowFx(on: boolean): void { this.showFx = on; this.dirty = true; }
+
+  private rebuildFx(): void {
+    if (!this.grid) return;
+    this.fx ??= new EffectLayer(this.gl, (vs, fs) => this.program(vs, fs));
+    this.fx.set(this.event, this.halfKm, (x, z) => this.heightAt(x, z), this.grid.max, detectTier().tier >= 2 ? 5000 : 2500);
   }
 
   private upload(m: Mosaic): void {
@@ -449,12 +503,21 @@ export class TerrainView {
       gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.drapeTex);
       gl.uniform1i(u("uDrape"), 1);
     } else gl.uniform4f(u("uDrapeMap"), 0, 0, -1, -1);
+    const t = (performance.now() - this.t0) / 1000;
+    const tint = terrainTints(this.showFx ? this.event : null);
+    gl.uniform4fv(u("uFx"), tint.fx);
+    gl.uniform1f(u("uSnow"), tint.snow);
+    gl.uniform1f(u("uSea"), this.seaOk ? 1 : 0);
+    gl.uniform1f(u("uFlash"), this.showFx && this.fx ? this.fx.flash(t) : 0);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buf.i);
     gl.drawElements(gl.TRIANGLES, this.count, gl.UNSIGNED_INT, 0);
+    for (const n of ["aP", "aT", "aN", "aO"]) { const l = gl.getAttribLocation(P, n); if (l >= 0) gl.disableVertexAttribArray(l); }
+    if (this.showFx && this.fx?.active) this.fx.draw(mvp, t);
   }
 
   destroy(): void {
     cancelAnimationFrame(this.raf);
+    this.fx?.destroy();
     this.abort?.abort();
     this.ro.disconnect();
     for (const f of this.cleanup) f();

@@ -3,7 +3,12 @@
 
 import { normalize } from "@/core/assistant/patterns";
 
-export interface Where { name: string; lat: number; lon: number }
+export interface Where {
+  name: string; lat: number; lon: number;
+  /** A municipality's extent (lonMin, latMin, lonMax, latMax) and its INEGI identity (core/genui/municipios.ts). */
+  box?: [number, number, number, number];
+  inegi?: { cvegeo: string; pop: number };
+}
 
 const PLACES: [string[], string, number, number][] = [
   [["durango"], "Durango", 24.02, -104.67],

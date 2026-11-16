@@ -10,7 +10,8 @@ import type { Lang } from "@/core/i18n/texts";
 import { LAYERS, liveSlot } from "@/core/map/imagery";
 import { type LiveDetection, type WeatherFrame, distanceKm, subscribeWeather } from "@/core/map/weather";
 import { EventsWidget, NowWidget } from "./genui/Widgets";
-import { IssCam, SkyCam } from "./genui/LiveViews";
+import { IssCam, SkyCam, SpaceCard } from "./genui/LiveViews";
+import type { ZoneTarget } from "@/core/state/store";
 
 const PLACES_STORE = "h247-places-v1";
 
@@ -40,8 +41,9 @@ function parsePlace(text: string): Where | null {
   return { name: `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`, lat, lon };
 }
 
-export function LivePanel({ lang, imagery, onImagery, onLook }: {
+export function LivePanel({ lang, imagery, onImagery, onLook, onZone }: {
   lang: Lang; imagery: string | null; onImagery: (id: string | null) => void; onLook: (lat: number, lon: number) => void;
+  onZone?: (z: ZoneTarget) => void;
 }) {
   const es = lang === "es";
   const [places, setPlaces] = useState<Where[]>([HOME_PLACE]);
@@ -79,6 +81,7 @@ export function LivePanel({ lang, imagery, onImagery, onLook }: {
           <IssCam lang={lang} />
           <SkyCam lang={lang} near={places[0] ?? null} />
         </div></div>
+        <div className="mt-3"><SpaceCard lang={lang} onZone={onZone} onLook={onLook} /></div>
         <p className="mt-3 text-sm text-text-2">
           {es ? `Infrarrojo térmico de las ${slot.slice(11, 16)} UTC: lo brillante son nubes frías y altas, también de noche. Se actualiza cada 10 minutos.`
             : `Thermal infrared at ${slot.slice(11, 16)} UTC: bright means cold, high clouds, day or night. Updated every 10 minutes.`}

@@ -10,7 +10,7 @@ import { HOME_PLACE, findPlace, type Where } from "@/core/genui/places";
 import { type FaunaGroup, type FaunaSignal, type TopSpecies, GROUPS, boxAround, topSpecies, watchFauna } from "@/core/live/fauna";
 import { type LiveDetection, distanceKm, subscribeWeather } from "@/core/map/weather";
 import { FaunaGroupCard, faunaLine } from "../FaunaPanel";
-import { IssCam, JointMap, SkyCam } from "./LiveViews";
+import { IssCam, JointMap, SkyCam, SpaceCard } from "./LiveViews";
 import { FichaHori } from "./Ficha";
 import type { StepKey } from "@/core/hori/ficha";
 import type { Lang } from "@/core/i18n/texts";
@@ -20,12 +20,16 @@ import { dbConfigured, listSwarmReports, sendSwarmReport, type SwarmReport } fro
 import { loadLayer, loadSeries } from "@/core/contract/loader";
 import { BUNDLES } from "../useBundles";
 import { DailyLine, LevelBars } from "../charts";
+import { zoneFromEvent, zoneFromStorm } from "@/core/terrain/events";
+import type { ZoneTarget } from "@/core/state/store";
 
 export interface WidgetActions {
   /** Fly the Monitoreo globe to a point and open it. */
   look: (lat: number, lon: number) => void;
   /** Put a NASA layer under the data and open Monitoreo. */
   imagery: (id: string) => void;
+  /** Open a place in «Vista 3D real» (with a live anomaly's generated effect). */
+  zone?: (z: ZoneTarget) => void;
 }
 
 const fmt = (x: number | null | undefined, lang: Lang, d = 1) =>
@@ -51,6 +55,7 @@ export function Widgets({ widgets, lang, actions }: { widgets: Widget[]; lang: L
             : w.w === "fauna" ? <FaunaWidget where={w.where} group={w.group} lang={lang} />
             : w.w === "storms" ? <StormsWidget near={w.near} lang={lang} actions={actions} />
             : w.w === "ficha" ? <FichaWidget where={w.where} focus={w.focus as StepKey | null} lang={lang} actions={actions} />
+            : w.w === "space" ? <SpaceCard lang={lang} onZone={actions.zone} onLook={actions.look} />
             : w.w === "iss" ? <IssCam lang={lang} />
             : w.w === "sky" ? <SkyCam lang={lang} near={w.near} />
             : w.w === "joint" ? <Frame title={lang === "es" ? "Cambio conjunto · HORI" : "Joint change · HORI"} badge={{ text: "HORI", kind: "hori" }}><JointMap lang={lang} hint={w.hint} onLook={actions.look} /></Frame>
@@ -590,6 +595,8 @@ const STORM_TREND = {
 function StormRow({ d, km: dist, lang, actions }: { d: LiveDetection; km: number | null; lang: Lang; actions: WidgetActions }) {
   const es = lang === "es";
   return (
+    <div className="flex items-stretch gap-1.5">
+    {actions.zone ? <button type="button" onClick={() => actions.zone!(zoneFromStorm(d, lang))} title={es ? "Ver en 3D real" : "See in real 3D"} className="shrink-0 rounded-xl border border-border bg-surface px-2.5 text-xs font-semibold hover:border-accent">3D</button> : null}
     <button type="button" onClick={() => actions.look(d.lat, d.lon)} className="flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-left text-sm hover:border-accent">
       <span aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${d.kind === "tormenta" ? "bg-[#ff5a3c]" : d.kind === "nieve" ? "bg-[#7fd8ff]" : "bg-[#3cb4ff]"}`} />
       <span className="min-w-0 flex-1">
@@ -600,6 +607,7 @@ function StormRow({ d, km: dist, lang, actions }: { d: LiveDetection; km: number
       </span>
       <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${d.trend === "nuevo" || d.trend === "crece" ? "bg-accent text-on-accent" : "bg-surface-2 text-text-2"}`}>{STORM_TREND[lang][d.trend]}</span>
     </button>
+    </div>
   );
 }
 
@@ -694,7 +702,8 @@ function AlertsWidget({ where, lang, actions }: { where: Where | null; lang: Lan
       {evNear.length ? (
         <ul className="mt-3 space-y-1.5">
           {evNear.slice(0, 4).map(({ e, k }) => (
-            <li key={e.id}>
+            <li key={e.id} className="flex items-stretch gap-1.5">
+              {actions.zone ? <button type="button" onClick={() => actions.zone!(zoneFromEvent(e, lang))} title={es ? "Ver en 3D real" : "See in real 3D"} className="shrink-0 rounded-xl border border-border bg-surface px-2.5 text-xs font-semibold hover:border-accent">3D</button> : null}
               <button type="button" onClick={() => actions.look(e.lat, e.lon)} className="flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-left text-sm hover:border-accent">
                 <span aria-hidden="true" className="text-base">{CAT_LABEL[e.cat].icon}</span>
                 <span className="min-w-0 flex-1"><span className="block truncate font-medium">{e.title}</span><span className="block text-xs text-text-3">{CAT_LABEL[e.cat][lang]} · {Math.round(k).toLocaleString(lang)} km · {e.date.slice(0, 10)}</span></span>
