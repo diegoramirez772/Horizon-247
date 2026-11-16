@@ -58,6 +58,51 @@ class Summary(unittest.TestCase):
         self.assertEqual((s["new_ha"], s["lost_ha"], s["floor_ha"]), (0, 80, 0))
 
 
+class Water(unittest.TestCase):
+    def test_excess_over_the_background_in_hm3(self):
+        green = np.zeros((1, 4, 4), bool)
+        green[0, :2] = True                              # 8 green pixels of 5 ha
+        et = np.full((1, 2, 2), 30.0, dtype="float32")   # coarse grid: desert evaporates 30 mm
+        et[0, 0] = 130.0                                 # the green rows: 130 mm
+        iy, ix = np.array([0, 0, 1, 1]), np.array([0, 0, 1, 1])
+        w = riego.et_excess(green, [2020], et, [2020], iy, ix, 5.0)[2020]
+        self.assertEqual((w["background_mm"], w["excess_mm"], w["coverage"]), (30.0, 100.0, 1.0))
+        self.assertAlmostEqual(w["hm3"], 0.04)           # 8 px x 5 ha x 100 mm = 40 ha x 0.1 m = 0.04 hm3
+
+    def test_pixels_without_et_lower_the_coverage_not_the_volume(self):
+        green = np.ones((1, 2, 2), bool)
+        green[0, 1, 1] = False
+        et = np.array([[[80.0, np.nan], [20.0, 20.0]]], dtype="float32")
+        w = riego.et_excess(green, [2020], et, [2020], np.array([0, 1]), np.array([0, 1]), 10.0)[2020]
+        self.assertAlmostEqual(w["coverage"], 2 / 3, places=3)
+        self.assertAlmostEqual(w["hm3"], round(60 * 10 * 1e-5, 2))
+
+    def test_regrid_maps_two_fine_pixels_to_one_coarse(self):
+        fine = {"grid": {"xll": 0.0, "yll": 0.0, "cs": 250.0, "ny": 4, "nx": 4}}
+        coarse = {"grid": {"xll": 0.0, "yll": 0.0, "cs": 500.0, "ny": 2, "nx": 2}}
+        iy, ix = riego.regrid_index(fine, coarse)
+        self.assertEqual((iy.tolist(), ix.tolist()), ([0, 0, 1, 1], [0, 0, 1, 1]))
+
+    def test_window_sum_needs_every_composite(self):
+        layer = {2020: {1: np.ones((1, 1)), 9: np.ones((1, 1)) * 2}, 2021: {1: np.ones((1, 1))}}
+        years, s = riego.window_sum(layer, (1, 9))
+        self.assertEqual((years, float(s[0, 0, 0])), ([2020], 3.0))
+
+
+class Zones(unittest.TestCase):
+    def test_ranked_by_new_green(self):
+        lat = 25.5 - 0.01 * np.arange(20)
+        lon = np.broadcast_to(-103.5 + 0.01 * np.arange(20), (20, 20))
+        g = np.zeros((10, 20, 20), bool)
+        g[:, :4, :4] = True                              # west: always green
+        g[5:, :4, 12:16] = True                          # east: green only in the last years
+        sq = lambda x0, x1: [np.array([[x0, 25.6], [x1, 25.6], [x1, 25.2], [x0, 25.2]])]
+        rows = riego.by_zone({"Oeste": sq(-103.51, -103.42), "Este": sq(-103.41, -103.30), "Lejos": sq(-90, -89)},
+                             list(range(2001, 2011)), g, 5.0, lat, lon, min_ha=1)
+        self.assertEqual([r["name"] for r in rows], ["Este", "Oeste"])
+        self.assertEqual((rows[0]["new_ha"], rows[1]["core_ha"], rows[1]["floor_ha"]), (80, 80, 80))
+
+
 class Fetch(unittest.TestCase):
     def test_evidence_and_resume(self):
         calls = []

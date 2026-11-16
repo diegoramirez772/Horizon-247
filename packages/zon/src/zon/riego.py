@@ -14,7 +14,7 @@ What is measured and what is inferred (kept apart in the output):
 - NOT measured: wells, volumes. The water bracket multiplies hectares by irrigation depths the caller states.
 
 A pixel is «green» in a year when its pre-canal NDVI is >= `thr` AND stands >= `excess` above that year's
-scene median. The second condition removes rain-fed greening of wet years (measured in La Laguna: without it
+scene median. The second condition removes rain-fed greening of wet years (measured in La Laguna, 6 Mar-6 Apr: without it
 2015 counts 189,000 ha, with it 47,000; the year-to-year spread falls from 56 % to 16 %).
 """
 from __future__ import annotations
@@ -28,12 +28,18 @@ from pathlib import Path
 
 import numpy as np
 
-ORNL = ("https://modis.ornl.gov/rst/api/v1/MOD13Q1/subset?latitude={lat}&longitude={lon}&band=250m_16_days_NDVI"
+ORNL = ("https://modis.ornl.gov/rst/api/v1/{product}/subset?latitude={lat}&longitude={lon}&band={band}"
         "&startDate=A{d}&endDate=A{d}&kmAboveBelow={ns}&kmLeftRight={ew}")
+NDVI = {"product": "MOD13Q1", "band": "250m_16_days_NDVI", "scale": 1e-4, "valid": (-2000, 10000)}
+# gap-filled MOD16 (the plain MOD16A2 is only served from 2021 on); kg/m2 per 8 days = mm per 8 days
+ET = {"product": "MOD16A2GF", "band": "ET_500m", "scale": 0.1, "valid": (0, 32700)}
+ET_DOYS = tuple(range(1, 74, 8))        # 1 Jan .. 21 Mar: ten 8-day sums before the canals open
 R_SIN = 6371007.181            # radius of the MODIS sinusoidal sphere (m)
-FILL = -2000                   # MOD13 NDVI fill is -3000; valid range starts at -2000
-DOYS = (65, 81, 97, 113, 129, 145)      # 6 Mar .. 9 Jun composites: the dry season before the monsoon
-PRE_CANAL = (65, 81)                    # 6 Mar .. 6 Apr: before the spring-summer canal releases (caller may change it)
+DOYS = (33, 49, 65, 81, 97, 113, 129, 145)   # 2 Feb .. 9 Jun composites: the dry season before the monsoon
+# 18 Feb .. 21 Mar. In District 017 the dams open in mid March (13-14 Mar 2022, 15-16 Mar 2016, 28 Feb 2008, press
+# reports of CONAGUA's Comité Hidráulico) and a crop sown on that water needs weeks to turn a pixel green, so
+# what is green in this window was irrigated in winter, with no canal water. The caller may change it.
+PRE_CANAL = (49, 65)
 
 
 class RiegoError(RuntimeError):
@@ -42,9 +48,9 @@ class RiegoError(RuntimeError):
 
 # ------------------------------------------------------------------ fetch (resumable, with evidence)
 def fetch(lat: float, lon: float, km_ns: int, km_ew: int, years, out: str | Path, *, doys=DOYS, workers: int = 3,
-          progress=None, opener=None) -> dict:
-    """Box of MOD13Q1 NDVI around (lat, lon) for every year x composite -> out/A<yyyyddd>.npy (raw int16) and
-    out/evidence.json. Dates already read are not asked again. `opener(url) -> bytes` is injectable for tests."""
+          progress=None, opener=None, layer: dict = NDVI) -> dict:
+    """Box of a MODIS layer (NDVI by default) around (lat, lon) for every year x composite -> out/A<yyyyddd>.npy
+    (raw int16) and out/evidence.json. Dates already read are not asked again. `opener(url) -> bytes` is injectable."""
     if not (0 < km_ns <= 100 and 0 < km_ew <= 100):
         raise RiegoError("the ORNL service allows at most 100 km above/below and left/right")
     out = Path(out)
@@ -55,7 +61,7 @@ def fetch(lat: float, lon: float, km_ns: int, km_ew: int, years, out: str | Path
         urllib.request.Request(u, headers={"Accept": "application/json"}), timeout=120).read())
 
     def one(d: str):
-        url = ORNL.format(lat=lat, lon=lon, d=d, ns=km_ns, ew=km_ew)
+        url = ORNL.format(lat=lat, lon=lon, d=d, ns=km_ns, ew=km_ew, product=layer["product"], band=layer["band"])
         err = ""
         for i in range(5):
             try:
@@ -85,8 +91,9 @@ def fetch(lat: float, lon: float, km_ns: int, km_ew: int, years, out: str | Path
     return ev
 
 
-def load(out: str | Path) -> dict:
-    """-> {"ndvi": {year: {doy: [ny, nx] float32, NaN = fill}}, "lat": [ny], "lon": [ny, nx], "ha": per pixel}."""
+def load(out: str | Path, layer: dict = NDVI) -> dict:
+    """-> {"ndvi": {year: {doy: [ny, nx] float32, NaN = fill}}, "lat": [ny], "lon": [ny, nx], "ha": per pixel}.
+    (the key is "ndvi" whatever the layer: it is the scaled value of that layer)."""
     out = Path(out)
     ev = {d: r for d, r in json.loads((out / "evidence.json").read_text(encoding="utf-8")).items() if "error" not in r}
     if not ev:
@@ -98,11 +105,13 @@ def load(out: str | Path) -> dict:
     ndvi: dict = {}
     for d in sorted(ev):
         a = np.load(out / f"A{d}.npy").astype("float32")
-        ndvi.setdefault(int(d[:4]), {})[int(d[4:])] = np.where(a < FILL, np.nan, a / 10000.0)
+        lo, hi = layer["valid"]
+        ndvi.setdefault(int(d[:4]), {})[int(d[4:])] = np.where((a < lo) | (a > hi), np.nan, a * layer["scale"])
     lat = np.degrees((yll + cs * (ny - np.arange(ny) - 0.5)) / R_SIN)
     x = np.degrees((xll + cs * (np.arange(nx) + 0.5)) / R_SIN)
     lon = x[None, :] / np.cos(np.radians(lat))[:, None]          # sinusoidal: longitude depends on the row
-    return {"ndvi": ndvi, "lat": lat, "x": x, "lon": lon, "ha": cs * cs / 1e4, "evidence": ev}
+    return {"ndvi": ndvi, "lat": lat, "x": x, "lon": lon, "ha": cs * cs / 1e4, "evidence": ev,
+            "grid": {"xll": xll, "yll": yll, "cs": cs, "ny": ny, "nx": nx}}
 
 
 # ------------------------------------------------------------------ the measure
@@ -126,6 +135,73 @@ def green_mask(pre: np.ndarray, thr: float = 0.40, excess: float = 0.20) -> np.n
     with np.errstate(invalid="ignore"):
         med = np.nanmedian(pre.reshape(len(pre), -1), axis=1)[:, None, None]
         return (pre >= thr) & (pre - med >= excess)
+
+
+def window_sum(layer: dict, doys) -> tuple[list, np.ndarray]:
+    """Sum of the composites per year (e.g. mm of ET over the window) -> (years, [T, ny, nx]); NaN if any is missing."""
+    years = [y for y in sorted(layer) if all(d in layer[y] for d in doys)]
+    return years, np.stack([np.stack([layer[y][d] for d in doys]).sum(0) for y in years]).astype("float32") if years else np.empty((0,))
+
+
+def regrid_index(fine: dict, coarse: dict) -> tuple[np.ndarray, np.ndarray]:
+    """Row and column of the coarse (ET 500 m) pixel under each fine (NDVI 250 m) pixel, both on the sinusoidal grid."""
+    f, c = fine["grid"], coarse["grid"]
+    yf = f["yll"] + f["cs"] * (f["ny"] - np.arange(f["ny"]) - 0.5)
+    xf = f["xll"] + f["cs"] * (np.arange(f["nx"]) + 0.5)
+    iy = c["ny"] - 1 - np.floor((yf - c["yll"]) / c["cs"]).astype(int)
+    ix = np.floor((xf - c["xll"]) / c["cs"]).astype(int)
+    return np.clip(iy, 0, c["ny"] - 1), np.clip(ix, 0, c["nx"] - 1)
+
+
+def et_excess(green: np.ndarray, years: list, et: np.ndarray, et_years: list, iy: np.ndarray, ix: np.ndarray, ha: float,
+              inside: np.ndarray | None = None) -> dict:
+    """Water the green pixels evaporated ABOVE the scene's non-green background, per year, in hm3 (1 mm on 1 ha = 10 m3).
+    The background (median ET of the pixels that are not green that year) is what rain and soil give anyway, so the
+    excess is water that was brought there. `coverage` = share of the green area that has an ET value."""
+    out = {}
+    for k, y in enumerate(years):
+        if y not in et_years:
+            continue
+        e = et[et_years.index(y)][np.ix_(iy, ix)]                 # ET on the fine grid
+        g = green[k] if inside is None else green[k] & inside
+        ok = g & np.isfinite(e)
+        if not g.any() or not ok.any():
+            continue
+        bg = float(np.nanmedian(e[~green[k]]))
+        ex = np.clip(e[ok] - bg, 0, None)
+        out[int(y)] = {"hm3": round(float(ex.sum() * ha * 1e-5), 2), "excess_mm": round(float(ex.mean()), 1),
+                       "background_mm": round(bg, 1), "coverage": round(float(ok.sum() / g.sum()), 3)}
+    return out
+
+
+def by_zone(zones: dict, years: list, green: np.ndarray, ha: float, lat: np.ndarray, lon: np.ndarray, *, verdict=None,
+            effect=None, span: int = 5, min_ha: float = 50.0) -> list:
+    """The same counts per named zone (e.g. municipality) -> rows sorted by new green, then by core. `zones` =
+    {name: rings (zon.places)}. This is the «where to look first» list."""
+    from . import places
+    la = np.broadcast_to(lat[:, None], lon.shape)
+    n = len(years)
+    freq, first, last = green.sum(0), green[:span].sum(0), green[-span:].sum(0)
+    new, lost, core = (last >= span - 1) & (first <= 1), (first >= span - 1) & (last <= 1), freq >= 0.8 * n
+    rows = []
+    for name, rings in zones.items():
+        y0, x0, y1, x1 = places.rings_bbox(rings)             # (lat min, lon min, lat max, lon max)
+        box = (lon >= x0) & (lon <= x1) & (la >= y0) & (la <= y1)
+        if not box.any():
+            continue
+        m = np.zeros(lon.shape, bool)
+        m[box] = places.points_in_rings(rings, lon[box], la[box])
+        area = (green & m[None]).reshape(n, -1).sum(1) * ha
+        if area.max() < min_ha:
+            continue
+        r = {"name": name, "floor_ha": int(round(area.min())), "median_ha": int(round(float(np.median(area)))),
+             "core_ha": int(round(float((core & m).sum() * ha))), "new_ha": int(round(float((new & m).sum() * ha))),
+             "lost_ha": int(round(float((lost & m).sum() * ha)))}
+        if verdict is not None:
+            r["hori_up_green_ha"] = int(round(float(((verdict == 1) & (effect > 0) & m & (last >= span - 1)).sum() * ha)))
+            r["hori_down_was_green_ha"] = int(round(float(((verdict == 1) & (effect < 0) & m & (first >= span - 1)).sum() * ha)))
+        rows.append(r)
+    return sorted(rows, key=lambda r: (-(r["new_ha"] + r.get("hori_up_green_ha", 0)), -r["core_ha"]))
 
 
 def centroid_shift(a: np.ndarray, b: np.ndarray, lat: np.ndarray, lon: np.ndarray) -> dict | None:
@@ -182,7 +258,11 @@ def summarize(years: list, green: np.ndarray, ha: float, lat: np.ndarray, lon: n
     if verdict is not None:
         m = np.ones(verdict.shape, bool) if inside is None else inside
         up, down = (verdict == 1) & (effect > 0) & m, (verdict == 1) & (effect < 0) & m
+        # a rising NDVI on a pixel that is NOT green is not irrigation (sparse desert cover, or the satellite's slow
+        # orbit drift): the count that matters for water is the rise on pixels green in the last years
         out["hori"] = {"supported_up_ha": int(round(float(up.sum() * ha))), "supported_down_ha": int(round(float(down.sum() * ha))),
+                       "supported_up_green_ha": int(round(float((up & (last >= span - 1)).sum() * ha))),
+                       "supported_down_was_green_ha": int(round(float((down & (first >= span - 1)).sum() * ha))),
                        "no_change_px": int(((verdict == 4) & m).sum()), "inconclusive_px": int(((verdict == 3) & m).sum()),
                        "candidate_px": int(((verdict == 2) & m).sum()), "pixels": int(m.sum())}
     # coarse cells for a map: hectares of core / new / lost green per bin
@@ -199,13 +279,17 @@ def summarize(years: list, green: np.ndarray, ha: float, lat: np.ndarray, lon: n
 
 def run(lat: float, lon: float, km_ns: int, km_ew: int, start: int, end: int, out: str | Path, *, name: str = "",
         thr: float = 0.40, excess: float = 0.20, pre_canal=PRE_CANAL, depths_m: dict | None = None,
-        region_rings=None, region_name: str = "", workers: int = 3, progress=None, offline: bool = False) -> dict:
+        region_rings=None, region_name: str = "", workers: int = 3, progress=None, offline: bool = False,
+        water: bool = True, zones: dict | None = None) -> dict:
     """Fetch (unless offline) -> measure -> HORI -> out/finding.json. `region_rings` (zon.places rings) adds the
     same finding restricted to that region."""
     from . import places
     out = Path(out)
     if not offline:
         ev = fetch(lat, lon, km_ns, km_ew, range(start, end + 1), out, workers=workers, progress=progress)
+        if water:
+            ev = {**ev, **{"et" + d: r for d, r in fetch(lat, lon, km_ns, km_ew, range(start, end + 1), out / "et", doys=ET_DOYS,
+                                                          workers=workers, progress=progress, layer=ET).items()}}
         bad = [d for d, r in ev.items() if "error" in r]
         if bad:
             raise RiegoError(f"{len(bad)} dates could not be read (run again to retry): {bad[:5]}")
@@ -222,10 +306,31 @@ def run(lat: float, lon: float, km_ns: int, km_ew: int, start: int, end: int, ou
            "all": summarize(years, green, d["ha"], d["lat"], d["lon"], verdict=verdict, effect=effect, depths_m=depths_m),
            "evidence": {"dates": len(d["evidence"]),
                         "sha256": hashlib.sha256("".join(d["evidence"][k]["sha256"] for k in sorted(d["evidence"])).encode()).hexdigest()}}
+    inside = None
     if region_rings is not None:
         la = np.broadcast_to(d["lat"][:, None], d["lon"].shape)
         inside = places.points_in_rings(region_rings, d["lon"].ravel(), la.ravel()).reshape(d["lon"].shape)
         doc["region"] = {"name": region_name, **summarize(years, green, d["ha"], d["lat"], d["lon"], verdict=verdict,
                                                           effect=effect, inside=inside, depths_m=depths_m)}
+    if water and (out / "et" / "evidence.json").exists():
+        e = load(out / "et", ET)
+        ey, et = window_sum(e["ndvi"], ET_DOYS)
+        iy, ix = regrid_index(d, e)
+        doc["method"]["water"] = {
+            "product": "MOD16A2GF v061 (evapotranspiration, 500 m, 8 days, gap-filled)", "doi": "10.5067/MODIS/MOD16A2GF.061",
+            "window_doys": list(ET_DOYS),
+            "measured": "ET of the green pixels above the median ET of the non-green pixels of the same year, 1 Jan - 21 Mar",
+            "limits": "MOD16 is a model driven by satellite leaf area and reanalysis weather, and is known to read low over "
+                      "irrigated crops in dry regions; it is water CONSUMED in 80 days, not water pumped in a year. A lower bound."}
+        for key, m in (("all", None), ("region", inside)):
+            if key in doc:
+                w = et_excess(green, years, et, ey, iy, ix, d["ha"], m)
+                doc[key]["water_consumed"] = w
+                if w:
+                    v = [r["hm3"] for r in w.values()]
+                    doc[key]["water_consumed_hm3"] = {"min": min(v), "median": round(float(np.median(v)), 2), "max": max(v)}
+        doc["evidence"]["et_dates"] = len(e["evidence"])
+    if zones:
+        doc["zones"] = by_zone(zones, years, green, d["ha"], d["lat"], d["lon"], verdict=verdict, effect=effect)
     (out / "finding.json").write_text(json.dumps(doc, indent=1, ensure_ascii=False), encoding="utf-8")
     return doc

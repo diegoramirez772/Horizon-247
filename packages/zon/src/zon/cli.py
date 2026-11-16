@@ -88,6 +88,9 @@ def main() -> None:
     rg.add_argument("--places-dir", default="data/places")
     rg.add_argument("--copy-to", help="also write the finding here (e.g. apps/web/public/bundles/riego/laguna.json)")
     rg.add_argument("--offline", action="store_true", help="use the composites already in --out")
+    rg.add_argument("--no-water", action="store_true", help="skip the evapotranspiration (MOD16) water estimate")
+    rg.add_argument("--municipios", help="folder with municipios.json + municipios/<ent>.json (INEGI) for the per-municipality list")
+    rg.add_argument("--ents", default="", help="state codes to rank municipalities in, e.g. 10,05")
     ed = sub.add_parser("earthdata", help="any NASA Earthdata mission: search, monthly cube + evidence, reproduce")
     ed.add_argument("action", choices=["search", "cube", "reproduce", "recipes"])
     ed.add_argument("--short-name")
@@ -124,15 +127,26 @@ def main() -> None:
                 sys.exit(f"no admin-1 region named {args.state!r}")
             rings = geoms[hit[0]]
         depths = {k: float(v) for k, v in (d.split("=", 1) for d in args.depth)} or None
+        zones = None
+        if args.municipios and args.ents:
+            import numpy as np
+            base = Path(args.municipios)
+            idx = json.loads((base / "municipios.json").read_text(encoding="utf-8"))
+            f = idx["fields"]
+            names = {r[f.index("cvegeo")]: r[f.index("name")] for r in idx.get("rows") or idx.get("items") or idx.get("m") or []}
+            zones = {}
+            for ent in args.ents.split(","):
+                for cve, geom in json.loads((base / "municipios" / f"{ent}.json").read_text(encoding="utf-8"))["m"].items():
+                    zones[f"{names.get(cve, cve)}, {idx['states'].get(ent, ent)}"] = [np.asarray(r, dtype=float) for r in geom]
         doc = riego.run(args.lat, args.lon, args.km_ns, args.km_ew, args.start, args.end, args.out, name=args.name,
                         thr=args.thr, excess=args.excess, depths_m=depths, region_rings=rings, region_name=args.state or "",
-                        offline=args.offline, progress=lambda i, n, d: print(f"\r  {i}/{n} A{d}", end="", file=sys.stderr))
+                        offline=args.offline, water=not args.no_water, zones=zones, progress=lambda i, n, d: print(f"\r  {i}/{n} A{d}", end="", file=sys.stderr))
         if args.copy_to:
             Path(args.copy_to).parent.mkdir(parents=True, exist_ok=True)
             Path(args.copy_to).write_text(json.dumps(doc, indent=1, ensure_ascii=False), encoding="utf-8")
         a = doc["all"]
         print(f"{doc['name'] or doc['id']}: piso {a['floor_ha']} ha ({a['floor_year']}), mediana {a['median_ha']} ha, "
-              f"nuevo {a['new_ha']} ha, perdido {a['lost_ha']} ha, HORI sube {a['hori']['supported_up_ha']} ha / baja {a['hori']['supported_down_ha']} ha")
+              f"nuevo {a['new_ha']} ha, perdido {a['lost_ha']} ha, HORI: sube en lo verde {a['hori']['supported_up_green_ha']} ha, baja en lo que era verde {a['hori']['supported_down_was_green_ha']} ha")
         return
     if args.cmd == "earthdata":
         from .earthdata_cli import run

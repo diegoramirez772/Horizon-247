@@ -1,0 +1,3252 @@
+{
+"2001001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2001001&endDate=A2001001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "6ebc39cc42e956475c6812cc9a5866535474fbf5d42e3c2f2bcb019a287342b8",
+"proc_date": "2020265165141",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2001009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2001009&endDate=A2001009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "0253254f5ac4ef5be407b8f68f6adc90d63624e7061e93abe2b8e60546bbaf4f",
+"proc_date": "2020265204612",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2001017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2001017&endDate=A2001017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "217bff837ad6477bb455e4f1b19f5d6d361b56fe8127be249417180b887ef47a",
+"proc_date": "2020266000517",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2001025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2001025&endDate=A2001025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "420b4362b2e67cae326ce4e61b6c5ea64d5954ab23cb7bd445d408eebd9027e3",
+"proc_date": "2020266024809",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2001033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2001033&endDate=A2001033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "4143a43b8bb0dbceb24bb34cdb9beecace6627dda10783be1ea932facb89404d",
+"proc_date": "2020266052510",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2001041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2001041&endDate=A2001041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "53daa6e465673045d15c801d230374a8bc3ae712c38906c952af8ab7166f76e9",
+"proc_date": "2020266073503",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2001049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2001049&endDate=A2001049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ef413e2893486a7a75bf079ed5fa99bd997cddffbe9f62ef88459dbc15d1a7bc",
+"proc_date": "2020266100224",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2001057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2001057&endDate=A2001057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "0389a8d5f9101f1aed9de7195a67c02aeb321c651a4dadce18ea0bee67d4c992",
+"proc_date": "2020266130827",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2001065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2001065&endDate=A2001065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "3fa9ac6c29160ec4e7a0c0a760c9184362c42db62dcb0f1fd4623cb2fb4a7ef0",
+"proc_date": "2020266171330",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2001073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2001073&endDate=A2001073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "848397f0d31526ff5ec4ee0f9b05ca4b2567ea6b551dc9b78c2c91267f06a22c",
+"proc_date": "2020266211503",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2002001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2002001&endDate=A2002001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "e4616d4f052b28e06fb145696a72c59117a119c3ff7fb27ecbb6a0a9e40fa1e0",
+"proc_date": "2020272212501",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2002009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2002009&endDate=A2002009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c5fca606df2f5f5e47f358677dabb2f8b9bce71957ae36a5d297aa44b1252292",
+"proc_date": "2020273052352",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2002017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2002017&endDate=A2002017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "4d7d1ed5dbb9b9b29948b444aabbbe79710d1ab3275b8a174dcacf7369611f50",
+"proc_date": "2020303204154",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2002025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2002025&endDate=A2002025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "9b0d836469a7f280eb4019654ff9960d091ae3a49a89e6c8ebbae51849b0e134",
+"proc_date": "2020303232052",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2002033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2002033&endDate=A2002033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "91865caf689c52815911f5be1bd627d990227578d8b5b318cb3699e918ae166d",
+"proc_date": "2020304013231",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2002041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2002041&endDate=A2002041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "63245cce82089e0ec0f72d792b411336bcd225288a22d834b85366c111b5d6aa",
+"proc_date": "2020304040549",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2002049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2002049&endDate=A2002049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "71f962669c506a38697be8e4ea9b549d900459c4ea096c39aa73b0aabec3ac55",
+"proc_date": "2020304055753",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2002057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2002057&endDate=A2002057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "55c956bf8a59f370ad60c5d52f07d3934f046989106f124522fc80f491fc0db5",
+"proc_date": "2020304083053",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2002065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2002065&endDate=A2002065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "9af7ef9f34c8499e05a01c97e0b1158084bf43ebfeaadbc4a79f11f25ed1493e",
+"proc_date": "2020304104354",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2002073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2002073&endDate=A2002073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "6230465cdedaf1e65e3b391332640add21d2d3677e31ff6250c0fadb9846ceba",
+"proc_date": "2020304131952",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2003001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2003001&endDate=A2003001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "1524735a718b5faeb2583c22e691a5a466cac4da88492a0b3182103974d72b2d",
+"proc_date": "2020320160827",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2003009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2003009&endDate=A2003009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a23aa7eb6a1e7aa78e78f5b87dabcb02d79346a732fa73a587251b56fceafb40",
+"proc_date": "2020320202715",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2003017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2003017&endDate=A2003017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "945eb7b2ec32e0b2998491429ec792565a2b512a02f1826fa11bf6d7250be9cf",
+"proc_date": "2020321001913",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2003025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2003025&endDate=A2003025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c3e7cf4eb9fb69616704e6e06e8d5cbd27c57dbe25f883c6b60d1f07fdea77b6",
+"proc_date": "2020321042254",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2003033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2003033&endDate=A2003033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "affa747c30fff65d26c0fa8d2b33f07afa04efc76576d01d3e4a7fd3b81af289",
+"proc_date": "2020321074351",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2003041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2003041&endDate=A2003041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "43e0a2377f48e54de2bb8b50043ce34a4f17f11d0f1ebce7387af5a54bf67055",
+"proc_date": "2020321102148",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2003049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2003049&endDate=A2003049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "52b7f78fd28bc15cddbb6627c71c3e39c8f78b90c98aece6038bb8a5636c4a5f",
+"proc_date": "2020321125400",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2003057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2003057&endDate=A2003057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "09666efb92cc3c6ebc0a5c6c2dc0b407aee8b8f8e03ea5bbae1990d53b23b2d0",
+"proc_date": "2020321153502",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2003065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2003065&endDate=A2003065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "95c271b602ce7c797494cbedfe62dcf8cee28b2da659b593ef0e2192da199c42",
+"proc_date": "2020321183301",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2003073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2003073&endDate=A2003073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "44cc59010ad9eb3699a0d7241a9c583b035b518bd00ef4dd36f419235aa35b41",
+"proc_date": "2020321214339",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2004001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2004001&endDate=A2004001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c943c8acd1f857368d366bb717f33c2931e058ea089dd389767701a265861bf9",
+"proc_date": "2020342225915",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2004009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2004009&endDate=A2004009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "5b476f6a8651ea5afee9c777448bfc36b78ead008027eaf6b957dd4dcd994142",
+"proc_date": "2020343053942",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2004017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2004017&endDate=A2004017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "64485cfe929e66f4ff93653abd76469bb15a8aa10d58cf12e43474ba43f82699",
+"proc_date": "2020343133315",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2004025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2004025&endDate=A2004025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "59d874dd765d4e22933c706dea4d3284dab38f00b27cb6c14b40ad3099c92be6",
+"proc_date": "2020343204305",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2004033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2004033&endDate=A2004033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "92fc255c0d59c16de36f18f524611d975dbdb650bb2c0c8bf632ac6d624a4434",
+"proc_date": "2020344073209",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2004041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2004041&endDate=A2004041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "e853414cd2a168616862067875b595524fa92dfe7f603a59976e186444fd4f0d",
+"proc_date": "2020344213354",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2004049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2004049&endDate=A2004049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "b72c289ea1dab6d7404b09bee922d139ead5eed95ec371309176927646f2c73c",
+"proc_date": "2020345054259",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2004057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2004057&endDate=A2004057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "64f4c3f19eff8d9087d395c123a5b53bb588a610a47ce0862676f6ecad66e0f3",
+"proc_date": "2020345140645",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2004065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2004065&endDate=A2004065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "555b92207fb5087d1d79b9c29b4baef7a7ed5f7b91c02333307782498741a0a3",
+"proc_date": "2020345211308",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2004073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2004073&endDate=A2004073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a8827bef8dab811ca3bf0705892031d297af0416e08033710ebeaf37ccccad3d",
+"proc_date": "2020346044151",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2005001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2005001&endDate=A2005001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "3f1b3782a106ca1bcac1287e337a8eff6c91108d956e2d4046076175277dfe87",
+"proc_date": "2020355193511",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2005009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2005009&endDate=A2005009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "730f6375bfdfe998803d31a5919c01010f87393273032a3634f50ca1e57f4aa8",
+"proc_date": "2020355234151",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2005017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2005017&endDate=A2005017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "98afa9feb5c89afdf8281e6fcb8374206e42c4c7c62ad4caacf23c355b643562",
+"proc_date": "2020356031811",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2005025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2005025&endDate=A2005025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "fdd42ffbe0010226409463f65de8b0edeff14307e83da06b142ba65f937becf8",
+"proc_date": "2020356054132",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2005033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2005033&endDate=A2005033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "31dc67aad8908e995b5d7ee932567c402b1d2d4b76dbf49a6dd2b5e89de225e5",
+"proc_date": "2020356075538",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2005041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2005041&endDate=A2005041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "461284a7a3af2ac0085f38ffe5bc6bc410cdb9affb3882a4d81a2c9d8e161f28",
+"proc_date": "2020356104210",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2005049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2005049&endDate=A2005049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "e23c5ab738463f1305591642b2f824b94edf06e5b84a1ffea61a5bcd50d399d1",
+"proc_date": "2020356163345",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2005057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2005057&endDate=A2005057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "18bf8ee604c5da88ec65052d6ea3983a798b0c7bdc7b036dd8b99b357d15b25d",
+"proc_date": "2020356221207",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2005065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2005065&endDate=A2005065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "599a0cc87f8033b333d9972568987471f8360216f37493956e911e721e6a83b0",
+"proc_date": "2020357022932",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2005073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2005073&endDate=A2005073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "979435868b6ef4c79614d58fec71283f4f180bc5a4e88e07fd6fdc7e73dec669",
+"proc_date": "2020357090940",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2006001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2006001&endDate=A2006001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "b98567ea319bce892469fd705e0937ead93c0b26352c140a4f4d72984fa81046",
+"proc_date": "2021051003241",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2006009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2006009&endDate=A2006009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "aeb76e91510cd8a730ba249d8a439e33b408ca9a9fb642bb7b8a3ea64ac83c7f",
+"proc_date": "2021051035959",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2006017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2006017&endDate=A2006017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "b894344e61e6ebe72072f2a71d60b35df711e5fca6315f2c21a20872a3a4c4db",
+"proc_date": "2021051072314",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2006025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2006025&endDate=A2006025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "508d14df49ff8402dfa3f65e82d3cdc247d4815f51818594779e7e07cea6e29b",
+"proc_date": "2021051103007",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2006033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2006033&endDate=A2006033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "689ec2ed47dd2b7d5022f9a27d9e5195824777ca3b9abe97bd23912fb14ae4f8",
+"proc_date": "2021051133402",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2006041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2006041&endDate=A2006041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "272e76d2dc08ed756e274bec4d99693abc97444df1786373b750a971f5063bdd",
+"proc_date": "2021051164454",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2006049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2006049&endDate=A2006049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ba1854609761a84214a37e7cb7c1476245a1589e9aa61fb126b03acee65bcfa1",
+"proc_date": "2021051205148",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2006057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2006057&endDate=A2006057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "b7a0962305e4444bdeecab5bb52f2cb9f8d31febee6a88e351266c721d9480db",
+"proc_date": "2021052012722",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2006065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2006065&endDate=A2006065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "aed102aa43b38b20139d94a09acd1db6a74f151be9fd7ec75eeb720828555697",
+"proc_date": "2021052043941",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2006073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2006073&endDate=A2006073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "1873a0b58b0e9972d82ffc91894a0ac0a08904a46fc0cb2f5bd6f66c427d98bc",
+"proc_date": "2021052072959",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2007001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2007001&endDate=A2007001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ae1a16bf394ab8f703e2a9145e57b764615173033b00eab4b92015ee4bef5bb0",
+"proc_date": "2021081201218",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2007009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2007009&endDate=A2007009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "5fa0466dba1c791a8fc506fc105d496b9fca17490af32993a64ba3b35da540e7",
+"proc_date": "2021082020139",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2007017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2007017&endDate=A2007017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a8fa564c5b1f558e6d8581b81bd406bd16bd5fb8a6f32d38d83aac201361be83",
+"proc_date": "2021082082112",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2007025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2007025&endDate=A2007025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "36a90cc46fc5e434383a496bd55e67d1699a3c37fc917c20dbbf9ba25a5463f1",
+"proc_date": "2021082125504",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2007033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2007033&endDate=A2007033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a4f0a16b9bb732084d81506c57caf958d4650594ad6a7f1c43ea9e7f4f67ceca",
+"proc_date": "2021082181809",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2007041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2007041&endDate=A2007041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "7df38bea2362fb61956b5d5d857b4001206234d9fc63a56410153a6b51fbc2e4",
+"proc_date": "2021083001925",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2007049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2007049&endDate=A2007049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ce368dd22a803430c697fe676026095013fc4b0c96e3a81a9131bfa1b7f2c6e0",
+"proc_date": "2021083040644",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2007057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2007057&endDate=A2007057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "b9e1b7886a3b76f9fc6174cd40bfe81c6349a0a0fc7c3703f8873eb882f92aaf",
+"proc_date": "2021083114452",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2007065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2007065&endDate=A2007065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "779d36cdd140ec5bfff0a92a83ecc95a007df4c2a6d4c5ad6b43768f223fa18c",
+"proc_date": "2021083175926",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2007073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2007073&endDate=A2007073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c275b2095c3ecb82799856a70f4c6899c82945a4d4018d9c0fc6978ca054904c",
+"proc_date": "2021083213409",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2008001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2008001&endDate=A2008001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "d646c704ecbd9591a9326ee2b9c52f6ae5c0ef1603ab2193fff7bfd183f502b8",
+"proc_date": "2021114052248",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2008009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2008009&endDate=A2008009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "29f8cf58cbfa797d9647210fc20faa806f71b99ebdd665993375143a7944e354",
+"proc_date": "2021114081733",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2008017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2008017&endDate=A2008017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "d7aed1e7c36d001730b6e650c3e4a3917a9742c77195ca96cb9fbe3fc8dacf55",
+"proc_date": "2021114105909",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2008025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2008025&endDate=A2008025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "e44b76399b1db5a237605ee4e0d96d119916f3094278540531b9a8db67356b3a",
+"proc_date": "2021114134023",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2008033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2008033&endDate=A2008033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c1333bb15f7f07763ba643620ccdd3e62fdd36399bc2e6e2f74fc59adaaed8fb",
+"proc_date": "2021114161011",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2008041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2008041&endDate=A2008041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c2837c321f4b02f7452518119b4197c0819a98288c7091a26678728c08083c0d",
+"proc_date": "2021114183307",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2008049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2008049&endDate=A2008049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "e1679e9c3fb85fee50e0ebf77da49301885eb1711044809aa71bcc77cf996038",
+"proc_date": "2021114205410",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2008057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2008057&endDate=A2008057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a13226c04e21b3bff22b78be19fc18e258bfa5552f0198e66ba293dedf80d8f2",
+"proc_date": "2021114234720",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2008065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2008065&endDate=A2008065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "74d65a8f5f798a1fc182a2cf646361ae9e2ba0634e0473b51f52003e2db2c09e",
+"proc_date": "2021115024155",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2008073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2008073&endDate=A2008073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "2e2c61ec8601c7bb9181197335389207b529a77549641d0ee0752f9fa674c6f2",
+"proc_date": "2021115050200",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2009001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2009001&endDate=A2009001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "9f209933890135a8da3cf5f6fc0b7973ddb3bff6e51a0d219071490a2801c66d",
+"proc_date": "2021162154030",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2009009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2009009&endDate=A2009009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "67582938557af1950c2c7a18487b11ef6c055953b1ce1ce10aaddd5474b55c18",
+"proc_date": "2021162202812",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2009017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2009017&endDate=A2009017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "b639387df2167214731315dc1edcdfeed7eb28843480c5e9b17f81ec630a47e5",
+"proc_date": "2021163005822",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2009025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2009025&endDate=A2009025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "2e9c06fcc3352959c274e9d9de06ac1a9ca450bd593a107a910b50a63f588792",
+"proc_date": "2021163065202",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2009033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2009033&endDate=A2009033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "4e87f9df0b1c8489f25b31e4c7cabb91eea47402386197ee2a56baea043aecac",
+"proc_date": "2021163103903",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2009041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2009041&endDate=A2009041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "9d9517180ef8b8ba70db6ed4653d6f96c0306ffbb2c9ba00fc2137c6ae4c1f33",
+"proc_date": "2021163143042",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2009049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2009049&endDate=A2009049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "b07c14998877eb3d3c1f1f8b1e02297f41cece693a2f9f2fe6a136af3e139e7f",
+"proc_date": "2021163175834",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2009057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2009057&endDate=A2009057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a5f1096b09c2ee3dafaec1bc009bda11dced2a221422363ee610364830cf8cc5",
+"proc_date": "2021163205452",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2009065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2009065&endDate=A2009065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "4f434f7fc9d2108e52efb747dd25d07d9dd8e548745c584f54048e2b05c666c3",
+"proc_date": "2021164023009",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2009073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2009073&endDate=A2009073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "e97fa18942e07a723b96433db5045a013a4a7f22b71c2e7285ba1b5ae6a3ae5c",
+"proc_date": "2021164095728",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2010001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2010001&endDate=A2010001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "f8173efbf2951a369100d313d12b5f861cab11ee94626f04789bd63ef51feb88",
+"proc_date": "2021180185115",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2010009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2010009&endDate=A2010009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "1153b90d24ad5ff69819e45d2825a0fe215b43f699238472515d6585f7854689",
+"proc_date": "2021180235642",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2010017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2010017&endDate=A2010017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "5f7376cefc34e73810ef534013c2a54e82078492cc2a3ca8bf07cae9fdc9e67f",
+"proc_date": "2021181054304",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2010025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2010025&endDate=A2010025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "d832559e72b7682560f9e93a841e612c2ee4c6f7c98631b4bfe509040ffa1288",
+"proc_date": "2021181111629",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2010033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2010033&endDate=A2010033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "1a0c84fd78f34e2054efbc271370769db7634f937e78d205255170740bd8e1a6",
+"proc_date": "2021181142844",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2010041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2010041&endDate=A2010041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "8bedf7b08b141c1770e01a7510388675ac716fdfc41d1a19a4f70a4dfed1783e",
+"proc_date": "2021181223453",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2010049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2010049&endDate=A2010049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ab40bf8d5223df00a8930cbb7c611f7c99b77cf9e39d38d375ad67de28fd426a",
+"proc_date": "2021182055336",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2010057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2010057&endDate=A2010057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c99ba8e70fa1f7fc0e3a7029614b2dbb306702891820d87b82e4bd1b2f93e536",
+"proc_date": "2021182100300",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2010065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2010065&endDate=A2010065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "1f3ca4ccd76c5740b5e999f3825a9c6b6ba4f9159545efcef06baaa634eca653",
+"proc_date": "2021182141242",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2010073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2010073&endDate=A2010073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "cf08886a37e761182620885f6301c7b107f2461117c649f0c753b30e88007f7e",
+"proc_date": "2021182191851",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2011001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2011001&endDate=A2011001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "57dcf65c3caa113447191dfb0d1b970a612b677fa9b385eef7f90f8655234784",
+"proc_date": "2021202104721",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2011009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2011009&endDate=A2011009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "b5752295f28cbc3ee66708042b691f1777e96f2a4858477f1fa4344d01ab26b6",
+"proc_date": "2021202215112",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2011017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2011017&endDate=A2011017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "61810b924f80f25ef047067003b127e99a3efde1c07fe335e6cf17d1e76916dd",
+"proc_date": "2021203110012",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2011025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2011025&endDate=A2011025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "85a5f59815003ab38f8f19e260a14bc852ae49167f28629adf251a94f7b5888b",
+"proc_date": "2021203212213",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2011033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2011033&endDate=A2011033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "8b957e97957aca38b16ef6fc2625809018e8684b73c3927431bc170e0de4e3d6",
+"proc_date": "2021204174309",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2011041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2011041&endDate=A2011041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "646ccd708afb9b8f16bb141f196127fe546db8f4ce2cd199afd8144af1ac9a9b",
+"proc_date": "2021205073104",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2011049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2011049&endDate=A2011049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a7d4cd519afca942cc6544b69bb739042a6a1def430e514527de433fd990a86d",
+"proc_date": "2021205131518",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2011057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2011057&endDate=A2011057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "6b32c127b04c02f8860fbee69d309b5ba1cd6572c50ce356b2fe0031fbec1226",
+"proc_date": "2021205204127",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2011065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2011065&endDate=A2011065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "55a063e8864149adeb9bb8cecb43255e060ad4dd89ee7f218bd2a9c55d1aabe9",
+"proc_date": "2021206013611",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2011073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2011073&endDate=A2011073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "3a7136690c9f986855ea97b815351c2c93e16e22cac89d4ecc42a9ca55cb9c2e",
+"proc_date": "2021206171719",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2012001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2012001&endDate=A2012001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "0739031c406efc5fbe929ba34fbcd4bb887b9f88c4167ceefc877df6e2b8b3cf",
+"proc_date": "2021224154652",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2012009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2012009&endDate=A2012009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "4ebc8da0f6b79d299806d348c1fb18ee43a92797651c69ea9062e76857fdb6a2",
+"proc_date": "2021225000010",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2012017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2012017&endDate=A2012017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "fe7a64fd81d852ba41f8cfcd55dd3e83c7cc3ea87ae5b390a83010a2f4893d7c",
+"proc_date": "2021225123203",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2012025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2012025&endDate=A2012025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "266da61340628e4a4b81db609b568fd174b1bef9cbab2ba754642cd40a3da29c",
+"proc_date": "2021226040510",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2012033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2012033&endDate=A2012033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "2238548cd15696cdbc47655154f2ff7e8b34a8bb0747ade01b5e6e0ccedbe08c",
+"proc_date": "2021226113528",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2012041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2012041&endDate=A2012041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "320ab58c26aad9447bf9eb8feff57513ca5cb47eaf3765585a874852268097d0",
+"proc_date": "2021227072631",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2012049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2012049&endDate=A2012049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "3391345e3bbf68e968a984799a132bd213f77a91aa759f3a4743e8c044e8cb14",
+"proc_date": "2021227231005",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2012057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2012057&endDate=A2012057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c16d1a6ba54cf89083bab73914239c80ca3e85c90b8f7f88a9ffa2d8cf768ee1",
+"proc_date": "2021228115430",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2012065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2012065&endDate=A2012065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "73537015f0e8dfb50515bdb2a8c14f52fdd7cc29e5275587e1de9bff8a79db1e",
+"proc_date": "2021228213025",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2012073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2012073&endDate=A2012073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "634f3bd8626e3ff98410d0cb901c5c09298434371d1c739c2600c8f0374548e0",
+"proc_date": "2021229135129",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2013001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2013001&endDate=A2013001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "bb144bd1681cdfb4829b50be66c2c7fc65b2f83e80c9bafe46940bb5c6e5e338",
+"proc_date": "2021299092406",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2013009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2013009&endDate=A2013009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "2a3aaa096021bfde70fe4e8d07d1d6ab32b17563319433212dfca3717d08fe4e",
+"proc_date": "2021299103338",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2013017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2013017&endDate=A2013017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "5f6cba518e3efd6439ed9117f2a13b8adf0df4049b3658c4bf1d10f204ae5a0f",
+"proc_date": "2021299113713",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2013025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2013025&endDate=A2013025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "14a0ab7e4647ffb739e06735dc2ab13075e467765474eff5238d67f17214aabc",
+"proc_date": "2021299124244",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2013033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2013033&endDate=A2013033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "f5275d5fe3b503c173939d8deddcbfd62b7487bc6b975306bfc7af62c070eafe",
+"proc_date": "2021299135008",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2013041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2013041&endDate=A2013041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "dfec5f4724e05009c1be7d74d51b5803dbfdd2b5cf9ed31133b3980d4576ddf0",
+"proc_date": "2021299150137",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2013049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2013049&endDate=A2013049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "553be29eba395c88c2876a5df9db4f718d93cec6926a45e275202d9e4cb6d6f1",
+"proc_date": "2021299160621",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2013057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2013057&endDate=A2013057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "0ce1d65d800b27fd5ff0c617c1a5179bb20e8cdefd10e18c62ea2eea7aa5c538",
+"proc_date": "2021299170323",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2013065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2013065&endDate=A2013065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "9f09c1cd064b2179e17c128135a8fe6422fc459066de524eb0be7479b8be8ed6",
+"proc_date": "2021299180728",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2013073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2013073&endDate=A2013073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a3a1422ad1f047237b00ded0a71e86c235b408efe468e4b574371f8f05bc0413",
+"proc_date": "2021299191539",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2014001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2014001&endDate=A2014001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "5220ac6fccac6c2aa3db39a0127e75aa545d1248da58e2a7f4977c2573814791",
+"proc_date": "2022075114601",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2014009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2014009&endDate=A2014009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "af24b6e55d662f58a48488003fc3d450805cab03125f88f8efddee901718ab63",
+"proc_date": "2022075125615",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2014017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2014017&endDate=A2014017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "53e86d5396673a5bdd2fb9d8bdc7fa17993a711edb22b8b055f6402f71a7c8b0",
+"proc_date": "2022075141229",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2014025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2014025&endDate=A2014025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "0a015c38738cf1282e0b0f2243fdeb77c276eeacc90ccb69b41b0afeec0dbda9",
+"proc_date": "2022075150929",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2014033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2014033&endDate=A2014033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "1ac185cc86c41281ffd4bda2915f94647ac298f7da1bd86cee49a1ac2db13ac7",
+"proc_date": "2022075162732",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2014041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2014041&endDate=A2014041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a4fcfb52e3821d35f911e66807fbe2d1d2b2a0f6c3f3ae7f56de9d6fac8eb372",
+"proc_date": "2022075172536",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2014049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2014049&endDate=A2014049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c80b9c2140b08907196be7905535721e12de738e37a0899e30c23f6dbfd4ab5b",
+"proc_date": "2022075182727",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2014057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2014057&endDate=A2014057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "74c2e8316da346149a781922b1c71bb1aa4f597bf6c28ae412b06100c8ea5dc3",
+"proc_date": "2022075192548",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2014065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2014065&endDate=A2014065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "531a3b209d7059a4e9973c36cf686c7c109b1ab831f94ca71e44e813e6495357",
+"proc_date": "2022075203032",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2014073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2014073&endDate=A2014073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "bddac1390e060b89bf6b2077fd65497c696b4175a9e6345b9d5341325807818d",
+"proc_date": "2022075213209",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2015001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2015001&endDate=A2015001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "4612f75824370c0b4d22b9c4a393e5522cb33ea65a136553c4ac29826be29ea6",
+"proc_date": "2021343223049",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2015009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2015009&endDate=A2015009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ad21dee1f22dbeb03b8ae714eee1abf7edaae7990016b1eeddbe548a95b0c3b9",
+"proc_date": "2021344031910",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2015017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2015017&endDate=A2015017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "399c1c78868bbc181c2291051644a19eedab10e0948cc3d6eb85434299c0fe7e",
+"proc_date": "2021344084311",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2015025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2015025&endDate=A2015025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "cdb8a6be80e4f1d542dd0fde79ca4be83af84d3fb0587397d0fb4c88a01a0218",
+"proc_date": "2021344131826",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2015033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2015033&endDate=A2015033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "61de91337c93da1a945fb6e617fe3bc769c7788d716f9ecc1253c855f3ce4c8d",
+"proc_date": "2021344163448",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2015041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2015041&endDate=A2015041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "68ae1dc59213c7347f29663758c679db0fd0eab55043eabceb329f1e7bddda85",
+"proc_date": "2021344190421",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2015049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2015049&endDate=A2015049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "6c4df225124ac3b6f8e5a1b4aad9159af4656196f94b9aeb57d2759443e02905",
+"proc_date": "2021344205454",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2015057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2015057&endDate=A2015057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "3112f06185151551e2c8d32427cc0a44abc012b86285de18c68fa7aab507bb78",
+"proc_date": "2021345005935",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2015065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2015065&endDate=A2015065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ca715badb7586654622f9d42a7bc642973a94e4b872ae7fb0b01aa35af7fe5c0",
+"proc_date": "2021345054028",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2015073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2015073&endDate=A2015073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "cab099e27358937eb86f0cc7bd4f7718797d56e542bf7d9f1c7b5ddc84cd31ef",
+"proc_date": "2021345100526",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2016001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2016001&endDate=A2016001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "e2e22d3d4cc55ac812128cfa714d23d214d82a769a934ecc12ee51e9ad85eb1a",
+"proc_date": "2022001110949",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2016009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2016009&endDate=A2016009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c460c74249fd3cbd199577615c176dcd26614113962e0551dbc7a73575243c84",
+"proc_date": "2022001125423",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2016017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2016017&endDate=A2016017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ec4f7e3ef2d96a985e7ee0b9742efad7bc7d8db0f478e0863c10621aacc088f1",
+"proc_date": "2022001140839",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2016025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2016025&endDate=A2016025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "098c81a2578ce717db55668019011e5f4ccc309993992489927f221fa0f885ca",
+"proc_date": "2022001152427",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2016033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2016033&endDate=A2016033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "1a40b334cac902700ef029ef1f60862a3181a8a11b9d4fffd2fc119ffb0a919f",
+"proc_date": "2022001164057",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2016041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2016041&endDate=A2016041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "b388081157705ce0f016df325271cf271a2b0d46c616dc3f76ba51b5c062d29d",
+"proc_date": "2022001175509",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2016049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2016049&endDate=A2016049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "e33d4408977af30dca0e27b35ddec871ef64461d70a81ee0f92951dd7703d92c",
+"proc_date": "2022001190927",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2016057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2016057&endDate=A2016057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "752bfa8fb98c2311836e6fd0361d4eb12f120c088fa59b09de156bafb9a4ba7d",
+"proc_date": "2022001202935",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2016065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2016065&endDate=A2016065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "7ea44ce5d4ae295cf83508073ed29d60d9950eae1536a803eb598d6a8aa2285a",
+"proc_date": "2022001213651",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2016073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2016073&endDate=A2016073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "9f612800d567af795cf7d981ae7d7eb9229a99aa43e33c3fae135589869394d6",
+"proc_date": "2022001225154",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2017001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2017001&endDate=A2017001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "2a89079a0528556480ae58bc92becfee900f91f5daeae63770da326383dbbbe7",
+"proc_date": "2021299234943",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2017009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2017009&endDate=A2017009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "05a3f4ed254286eb5feb06ec7412c0885da6ff9e28887776d0d233f02856a9c1",
+"proc_date": "2021300004501",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2017017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2017017&endDate=A2017017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "587608499e5a259b988a455d35d98294f01e732a069a589b9ece16c9d0215fcb",
+"proc_date": "2021300013521",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2017025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2017025&endDate=A2017025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "607a5b84ca0d6cae5a70bbfa20f5edf48fdf8ad810fba5579b753fa4b09934e5",
+"proc_date": "2021300022907",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2017033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2017033&endDate=A2017033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "31c4dae6fbeb19127b3adf1fd3b84a8cd261624cc20a54d4127e0d7d8772ef08",
+"proc_date": "2021300032720",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2017041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2017041&endDate=A2017041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "8f91d5a43afe5c29dab8631ffe3236586e6d6bea61c23e4aff3eb35083b76d1c",
+"proc_date": "2021300041854",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2017049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2017049&endDate=A2017049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "835723e7ea27b198dca3707f901a2bd0abf8c852696b278731bd969673ade631",
+"proc_date": "2021300051232",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2017057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2017057&endDate=A2017057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "19cac4355a66af85aa8e20c8fac6126903f09229c21bde0283f39f8462bd3648",
+"proc_date": "2021300060932",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2017065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2017065&endDate=A2017065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a79db24c7a1219890dc38f8f8ee261bb75d290dd1adc75d84cb793bc3bb9fd72",
+"proc_date": "2021300072135",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2017073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2017073&endDate=A2017073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "8f67f177f129f0ff5b49c0ecd553f2ea38e47ecf2b5c5c04543ed58ab8d6a9e6",
+"proc_date": "2021300123142",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2018001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2018001&endDate=A2018001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "2a061bb6101ab4e91c215f06475155f7a217e7b097cfd0b3fce6a9d8208149b4",
+"proc_date": "2021361180759",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2018009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2018009&endDate=A2018009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "37b7bc8b228545ca791234f43440b502fbe9274c966814c4479ec85e924153f8",
+"proc_date": "2021361201904",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2018017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2018017&endDate=A2018017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "b519aa47ff9aef635382a182010ee3f079e6788b6e44d22926ca46133c2f35d3",
+"proc_date": "2021361221744",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2018025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2018025&endDate=A2018025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "de0924db65969ae6cb37adbc3a757752de1504704f5b7ded15efd071393b8fde",
+"proc_date": "2021362010411",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2018033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2018033&endDate=A2018033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "1fb341699f862af8629bd3d41a6b0c76c9c7b08959bf8a961811cefebceecf0e",
+"proc_date": "2021362032355",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2018041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2018041&endDate=A2018041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "e86d97e22e593c58d07cea213087f3fef3c5726c7dc8920f382466551558d734",
+"proc_date": "2021362045156",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2018049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2018049&endDate=A2018049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "7c42c2b49e4506e6f150de32382d3436a9f5a736f4accb69895e2961d90f28ab",
+"proc_date": "2021362063049",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2018057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2018057&endDate=A2018057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "269bf188ecd0580583e8577ee7603a8cf499d9a69eae4c1e60a48fb736ae496c",
+"proc_date": "2021362075858",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2018065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2018065&endDate=A2018065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "7cb8e8acc8c0a477be7efb8d9cab8814facada68b4646b597130fb03b10ac581",
+"proc_date": "2021362104247",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2018073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2018073&endDate=A2018073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "87c31f7a4705b86bd729002410c5a82f99b982a9c8da2dbefb18f1d903eae392",
+"proc_date": "2021362125444",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2019001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2019001&endDate=A2019001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "51eff006556ba24ae1af65884a0bd0381ee4a2d638152b6d6f42117e2669509b",
+"proc_date": "2020364195607",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2019009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2019009&endDate=A2019009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ff1fcc818b7e2d18a5c7ef2c08cd03ccc1b77aa6bd4195f0f36aad161582ae29",
+"proc_date": "2020365030601",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2019017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2019017&endDate=A2019017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "59584f4f46f788c41ed4263ff5c67a125d3208013ea6d84558d3cc4d281afe01",
+"proc_date": "2020365093217",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2019025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2019025&endDate=A2019025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "fa6af72fc925b680040c1c63529f02347370e93e6856aaddad768595812e5d4e",
+"proc_date": "2020365151404",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2019033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2019033&endDate=A2019033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "f7dba9a127f12b064c4f413f6e014ebc3ffb3359fd2348cbaacc0abf95410c10",
+"proc_date": "2020365182347",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2019041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2019041&endDate=A2019041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "7dec460685cda650d66504f3058b1f59a4e6bfff854238ae3ffd8717068dbe05",
+"proc_date": "2020365215145",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2019049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2019049&endDate=A2019049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "3a85d90f485d668a773e2e2e2e32dba495229bef0c02b66f3d9fc728241ad0c2",
+"proc_date": "2020366004433",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2019057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2019057&endDate=A2019057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "02df7f38fbb1b368928ccac647643e6bf9cd8ed2e0d0bfe0657bacc5c7434427",
+"proc_date": "2020366044309",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2019065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2019065&endDate=A2019065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "977f2ee970a44e786eeae6fb448beff7837e779eb24ade227af7fb3d2b4b22ea",
+"proc_date": "2020366130427",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2019073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2019073&endDate=A2019073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "504f3c6fdabc6681de66c083c487c524d81b12f22f284583f56f70f761abd552",
+"proc_date": "2020366145107",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2020001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2020001&endDate=A2020001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "0daa174a07973a9f78cf2d9f45de1031a7bdbc2a266cd92ef85be6737868d5e4",
+"proc_date": "2021019082326",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2020009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2020009&endDate=A2020009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "2c4727c77e53ffc6e2b66d548367d8ab2b216500dc18e307291602ed525baa16",
+"proc_date": "2021019121404",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2020017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2020017&endDate=A2020017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "f6d8725fd9461cfcb2d8e6dba16eff5c9114863e7933205ca7da1ca598a30c94",
+"proc_date": "2021019154653",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2020025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2020025&endDate=A2020025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "7dfd9cb1b660171f6e3e42c354ea320efd42a4bba05879a6d3167558f86e6d1e",
+"proc_date": "2021019183006",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2020033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2020033&endDate=A2020033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ce00ceaf35dd05eb764cb1ba6af495d75cf1c1a5a272cff77658d005ce189526",
+"proc_date": "2021019220346",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2020041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2020041&endDate=A2020041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "7cb2b06a00d9aef2700b6cf1b2e39458c039ad2bfd02d367e316b95d8420580d",
+"proc_date": "2021020011829",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2020049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2020049&endDate=A2020049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "92bc8fddfe3427ea8a55eaef0fdbb1e4a5533a83be86c843b424401b1a379173",
+"proc_date": "2021020034156",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2020057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2020057&endDate=A2020057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "de69fe3cd1d9f603469d31b857879a6bb984e1482f50eeee61aaa3ba47b34d84",
+"proc_date": "2021020053454",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2020065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2020065&endDate=A2020065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "929b26a381841b40ce861f8c82f6d82cdb66b87e8ebe129f4d6209986d596bc8",
+"proc_date": "2021020074339",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2020073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2020073&endDate=A2020073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "5f41dced9bde35ca89ef75b1bb8fef51e05720f3502fa58082d76324cbda61ba",
+"proc_date": "2021020095718",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2021001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2021001&endDate=A2021001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "2ad52c8d821512964325ce68e29f56b76f15799eee553c9fd7690727febc2275",
+"proc_date": "2022014183937",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2021009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2021009&endDate=A2021009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "85451c7366f399fcfa5b4ab05c4c89f2883fdd9d1e6334e06b68032ae0315ae0",
+"proc_date": "2022014212810",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2021017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2021017&endDate=A2021017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c4d43da3ada7d135a4eda9d9b2fd206bf2527e0d0fa2b3cbd861f7363381d88b",
+"proc_date": "2022015020710",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2021025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2021025&endDate=A2021025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c87d90c8d810ba618f60124f571d1e89b4f82a2321eff874f964039801d36a39",
+"proc_date": "2022015103340",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2021033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2021033&endDate=A2021033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c036b134a10e12dbd4894cc72df34ec788fb5d82ec5d3d2c905cb2fdb4f927c2",
+"proc_date": "2022015210147",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2021041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2021041&endDate=A2021041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "bbbd966aff1a35bbcfc73be959308bb3e1fdb2a61110ce7d42a2d12c82947798",
+"proc_date": "2022016055829",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2021049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2021049&endDate=A2021049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "de26e6de61071ec0c6a611e25b2a90219132b6f2ca83d03ccf2c26af09d83b89",
+"proc_date": "2022016101856",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2021057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2021057&endDate=A2021057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "57335beaf1eb8595b40f69e84b615a01fd6ccceb74991776b04db020f243f194",
+"proc_date": "2022016180931",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2021065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2021065&endDate=A2021065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "23f66b131e5c5432469797f823d51a18c2aa5bbe0e0ef289a1a042cf9ea5f1f4",
+"proc_date": "2022016233629",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2021073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2021073&endDate=A2021073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "cf2fd43050b8d5ca6719ee21e078ca0b9e22ca7a56e2c731120110d5259bff30",
+"proc_date": "2022017030802",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2022001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2022001&endDate=A2022001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ba4056a92975dc848cd69cf741679b1e378d7863c88888308d350785545857f4",
+"proc_date": "2023021044254",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2022009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2022009&endDate=A2022009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "7b53500f45143d7c696a5d4d31751a848c40a7a30d9a0e79776fcee1bcc6584e",
+"proc_date": "2023021074251",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2022017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2022017&endDate=A2022017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a3fd2a4e4d150b137db12b792f9c34ef2810d0d57c390e50b89f5fe73e1e1c94",
+"proc_date": "2023021105154",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2022025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2022025&endDate=A2022025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "78ea4abcea180a39f421c870bc5ee3b5cf985a468be940e0a1a551fddbaff09b",
+"proc_date": "2023021135624",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2022033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2022033&endDate=A2022033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "f3147359bb41944ee4c9a28857e604d78e5e1abfcf7d7a6d20cf9b24266825ee",
+"proc_date": "2023021163314",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2022041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2022041&endDate=A2022041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "9ce0d30317993e5077301e91a9db54d15e5cda2e6b0ea92fa0699a0466dec50f",
+"proc_date": "2023021191321",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2022049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2022049&endDate=A2022049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "be3dd3d6bc34b24ffe3d00b4e845f64c3b2a28b304ad7a5a7ceae299e12b868d",
+"proc_date": "2023021213935",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2022057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2022057&endDate=A2022057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "6c271ee6f0bdefa775ef56c6d4cc45eeba350a73c536971f8d36766538e0a875",
+"proc_date": "2023022023620",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2022065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2022065&endDate=A2022065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "22e91dc7e087d341fac625dd57de2eecc15fbe23489eabc3090a630e59ae6ff4",
+"proc_date": "2023022055752",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2022073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2022073&endDate=A2022073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "adc589c5fb939aed6ebda72264e4d2e3ab44b8b5c5c4e9521a3116b5d8ac5015",
+"proc_date": "2023022084726",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2023001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2023001&endDate=A2023001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "3ea8ea2993881e3f90fddc89358f3ef24ee4f14193b2d6f6bf37936bd3a2fb54",
+"proc_date": "2024024024154",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2023009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2023009&endDate=A2023009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "86ee7f4ecf9fafbe30a67b929ddaedb39480578f3e295779eea00f16d0a346f7",
+"proc_date": "2024024091118",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2023017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2023017&endDate=A2023017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "6f82b8f926878933c5c5f1b70fbb239e2fc33625b487ab302849cdfd14f87731",
+"proc_date": "2024025010806",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2023025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2023025&endDate=A2023025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a7034da5fe4a3bbdc28bfe22314f6753137bda60380dd1212cc10a5d907c02d5",
+"proc_date": "2024025203452",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2023033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2023033&endDate=A2023033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "c82f8c4daaeed534780204f151de377d1119e8a2ab08096e38b02573c8878a44",
+"proc_date": "2024026013225",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2023041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2023041&endDate=A2023041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "1ea48700890f283d9c83ece064645ff924034e4f65b9bc09990bab0d3c334aba",
+"proc_date": "2024029235808",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2023049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2023049&endDate=A2023049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "717345fe3380d9b9459bcb67857b0294cf8e7eeb53f19e1bd29c42e2f7a3a6a7",
+"proc_date": "2024030045247",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2023057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2023057&endDate=A2023057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "4097dd8396f9654caa758c04de407f350e4301377e33fa7b343ada3006534238",
+"proc_date": "2024030064910",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2023065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2023065&endDate=A2023065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "fbbe9888b95877540ac85668ec97e798899af605051415aeb37c96781e97d260",
+"proc_date": "2024030093651",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2023073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2023073&endDate=A2023073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "fef92e27cd4d0ce46aa74c30635c7e1084bf5a1696b6cd5832b6b47664fede2b",
+"proc_date": "2024030165459",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2024001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2024001&endDate=A2024001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "26caa30e0814a16be9db2d00c8e672ea5e65b6c87d0214fb270f4d78db13b3ad",
+"proc_date": "2025012153423",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2024009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2024009&endDate=A2024009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "41907a5af910f9c62106f6110b43214fe8514c119bde83d3f0df20545197a77d",
+"proc_date": "2025012202549",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2024017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2024017&endDate=A2024017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "4dd9c40915bc6824140bc98aa6491e99985888ce22d4be825a41ec73546ddc86",
+"proc_date": "2025013014033",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2024025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2024025&endDate=A2024025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "2063774efc97844b5f8ba289253ec5c95d585651b99603e574ba77b0d958c61b",
+"proc_date": "2025013081959",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2024033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2024033&endDate=A2024033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "3804d74c3ce54e64fa550d80b23cf5e2b3cd5ccd86faccc73ba27b3c2ec59c2f",
+"proc_date": "2025013165542",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2024041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2024041&endDate=A2024041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "278c1e33607285f2d608bbbc3b622f3c85499c776462368957379d22989dd2a3",
+"proc_date": "2025014095613",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2024049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2024049&endDate=A2024049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ee300918e353a8b93692585c460098cc51782b7e37b3b625e2bf0a0b2e733501",
+"proc_date": "2025014223252",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2024057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2024057&endDate=A2024057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "0f709c7cb8b5f0db8568b96d434ba7cb52affcb71d3dd9ea5ac58cd269d9f4fb",
+"proc_date": "2025015025644",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2024065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2024065&endDate=A2024065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "5b67dcf7c3fe689b69b5c5e49d772e0211d4f0ce86f412756ea16abc520fd675",
+"proc_date": "2025015045130",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2024073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2024073&endDate=A2024073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "19dbefba2c2bb228917a9f004580849d449844d03d93c84faee4af87bfb38724",
+"proc_date": "2025015062633",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2025001": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2025001&endDate=A2025001&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "81568bcba75fa6dc0b47d5edf01b7fe50b91b3728cd45fb4786445b2f4032fb9",
+"proc_date": "2026032143127",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2025009": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2025009&endDate=A2025009&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "f43f6d41d1cc6a239146b8dd7cbf9990cda624e8599640fc1db6ae273493c340",
+"proc_date": "2026032160426",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2025017": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2025017&endDate=A2025017&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "5cb918edccd7bf04a48d694438c46b546a6f4299eed119124087f509e41e7334",
+"proc_date": "2026032173355",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2025025": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2025025&endDate=A2025025&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "6b558c01f9d41ea95bc49daecebad12b1fa78969fd8b9b1161c803a1b9007837",
+"proc_date": "2026032190157",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2025033": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2025033&endDate=A2025033&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "0738d31d4e1589430dbafa7a69f2544ca66c481fd433828808c5593975721b15",
+"proc_date": "2026032203517",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2025041": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2025041&endDate=A2025041&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "4a1c515722a18264a754f2ae7db0fca391c8847819fd0dcc7da6f899adc5ea19",
+"proc_date": "2026032221452",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2025049": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2025049&endDate=A2025049&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "ca0753ae6734c5bbb57e5fa2bb0872a2e208feabb69a49c3061ca78cee35e82f",
+"proc_date": "2026032235508",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2025057": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2025057&endDate=A2025057&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "a031310bc986a9ca3624d8b8817fd86f4bdc53ec60ef8e460b0484712d907ea0",
+"proc_date": "2026033013116",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2025065": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2025065&endDate=A2025065&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "78d66beebe393eae36f3ed4d6bd3ca2070de13fd9a38eaf18a334c2a60792693",
+"proc_date": "2026033031256",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+},
+"2025073": {
+"url": "https://modis.ornl.gov/rst/api/v1/MOD16A2GF/subset?latitude=25.55&longitude=-103.5&band=ET_500m&startDate=A2025073&endDate=A2025073&kmAboveBelow=50&kmLeftRight=65",
+"sha256": "99c4e027b3d54780638535a03dbf10527ba93654c0a46995b9133b10e97d92fa",
+"proc_date": "2026033043908",
+"tile": "h08v06",
+"xll": -10443531.93,
+"yll": 2794239.03,
+"cellsize": 463.312716528,
+"shape": [
+201,
+261
+]
+}
+}
