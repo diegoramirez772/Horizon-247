@@ -15,6 +15,9 @@ import type { Where } from "@/core/genui/places";
 import type { Lang } from "@/core/i18n/texts";
 import { landMask } from "@/core/map/world";
 import { BUNDLES } from "../useBundles";
+import { type Aurora, type KpReading, type SpaceDoc, cadDate, fetchAurora, fetchKp, loadSpace } from "@/core/live/space";
+import { zoneFromFireball } from "@/core/terrain/events";
+import type { ZoneTarget } from "@/core/state/store";
 
 // ---------------------------------------------------------------- ISS
 
@@ -250,5 +253,112 @@ export function JointMap({ lang, hint, onLook }: { lang: Lang; hint: string | nu
         {es ? "Que dos cambios ocurran en el mismo lugar no dice que uno provoque el otro." : "Two changes at the same place do not say that one drives the other."}
       </p>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------- near space (JPL + NOAA)
+
+const G_NAME = {
+  es: ["sin tormenta geomagnética", "tormenta menor (G1)", "tormenta moderada (G2)", "tormenta fuerte (G3)", "tormenta severa (G4)", "tormenta extrema (G5)"],
+  en: ["no geomagnetic storm", "minor storm (G1)", "moderate storm (G2)", "strong storm (G3)", "severe storm (G4)", "extreme storm (G5)"],
+};
+
+/**
+ * «Espacio cercano»: what near space is doing to and around the Earth — geomagnetic activity (Kp, NOAA's G scale and
+ * HORI's anomaly detector), where the aurora can be seen, the closest asteroid approaches, Sentry's impact monitoring
+ * (said honestly) and the latest fireball (with its burst in «Vista 3D real»).
+ */
+export function SpaceCard({ lang, onZone, onLook }: { lang: Lang; onZone?: (z: ZoneTarget) => void; onLook?: (lat: number, lon: number) => void }) {
+  const es = lang === "es";
+  const [doc, setDoc] = useState<SpaceDoc | null>(null);
+  const [kp, setKp] = useState<KpReading | null>(null);
+  const [aur, setAur] = useState<Aurora | null>(null);
+  const [err, setErr] = useState(false);
+  useEffect(() => {
+    let live = true;
+    loadSpace().then((d) => live && setDoc(d)).catch(() => live && setErr(true));
+    fetchKp().then((k) => live && setKp(k)).catch(() => {});
+    fetchAurora().then((a) => live && setAur(a)).catch(() => {});
+    return () => { live = false; };
+  }, []);
+  const lowest = (north: boolean) => { const c = (aur?.cells ?? []).filter(([, la]) => (north ? la > 0 : la < 0)); return c.length ? Math.min(...c.map(([, la]) => Math.abs(la))) : null; };
+  const n = lowest(true), sLat = lowest(false);
+  const last = doc?.fireballs[0] ?? null;
+  const km = (x: number) => x.toLocaleString(lang, { maximumFractionDigits: 0 });
+  const recent = kp ? kp.values.slice(-24) : [];
+  return (
+    <figure className="space-y-3 rounded-2xl border border-border bg-surface p-3 text-sm">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-3">{es ? "Actividad geomagnética" : "Geomagnetic activity"}</p>
+        {kp ? (
+          <>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="tabular text-2xl font-semibold">Kp {kp.now.toLocaleString(lang, { maximumFractionDigits: 1 })}</span>
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${kp.g ? "bg-accent text-on-accent" : "bg-surface-2 text-text-2"}`}>{G_NAME[lang][kp.g]}</span>
+              <span className="ml-auto text-[11px] text-text-3">{kp.at} UTC</span>
+            </div>
+            <div className="mt-1.5 flex h-8 items-end gap-[2px]" aria-hidden="true">
+              {recent.map((v, i) => <span key={i} className={`flex-1 rounded-sm ${v >= 5 ? "bg-[#d92d20]" : v >= 4 ? "bg-[#f5a524]" : "bg-text-3/40"}`} style={{ height: `${Math.max(6, (v / 9) * 100)}%` }} />)}
+            </div>
+            <p className="mt-1 text-xs text-text-2">
+              {kp.hori === null ? (es ? "HORI: muy pocos días para juzgar." : "HORI: too few days to judge.")
+                : kp.hori.unusual ? (es ? `HORI: actividad fuera de lo común desde ${kp.hori.since} UTC${kp.hori.z ? ` (z ${kp.hori.z.toFixed(1)})` : ""}.` : `HORI: unusual activity since ${kp.hori.since} UTC${kp.hori.z ? ` (z ${kp.hori.z.toFixed(1)})` : ""}.`)
+                : (es ? "HORI: sin desviaciones frente a los días anteriores." : "HORI: no departures from the previous days.")}
+              {" "}{es ? "Últimos 3 días, cada 3 h. Escala G de NOAA." : "Last 3 days, every 3 h. NOAA G scale."}
+            </p>
+          </>
+        ) : <p className="animate-pulse text-xs text-text-3">{es ? "Consultando a NOAA…" : "Asking NOAA…"}</p>}
+        {aur ? (
+          <p className="mt-1 text-xs text-text-2">
+            {es ? "Auroras (≥ 10 % de probabilidad): " : "Aurora (≥ 10 % chance): "}
+            {n !== null ? (es ? `hasta ${n}° N` : `down to ${n}° N`) : (es ? "ninguna al norte" : "none in the north")} · {sLat !== null ? (es ? `hasta ${sLat}° S` : `down to ${sLat}° S`) : (es ? "ninguna al sur" : "none in the south")}
+            {" "}<span className="text-text-3">({es ? "en el globo, capa Espacio" : "on the globe, Space layer"})</span>
+          </p>
+        ) : null}
+      </div>
+
+      {doc ? (
+        <>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-3">{es ? "Asteroides que pasan cerca" : "Close asteroid approaches"}</p>
+            <p className="mt-1 text-xs text-text-2">{es ? `${doc.approaches.length} pasarán a menos de 0.05 UA (~19 distancias lunares) en los próximos 60 días.` : `${doc.approaches.length} will pass within 0.05 au (~19 lunar distances) in the next 60 days.`}</p>
+            <ul className="mt-1 space-y-1">
+              {doc.approaches.slice(0, 3).map((a) => (
+                <li key={a.des} className="flex flex-wrap items-baseline gap-x-2 text-xs">
+                  <span className="font-medium">{a.name}</span>
+                  <span className="text-text-2">{cadDate(a.date, lang)}</span>
+                  <span className="tabular">{a.dist_ld.toLocaleString(lang)} {es ? "dist. lunares" : "lunar dist."} ({km(a.dist_km)} km)</span>
+                  <span className="text-text-3">{a.v_kms} km/s{a.diameter_m ? ` · ${a.diameter_m[0]}–${a.diameter_m[1]} m` : ""}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-3">{es ? "Vigilancia de impacto (Sentry)" : "Impact monitoring (Sentry)"}</p>
+            <p className="mt-1 text-xs text-text-2">
+              {es
+                ? `${km(doc.sentry.count)} objetos vigilados. Escala de Torino máxima: ${doc.sentry.max_torino}. El de mayor valor en la escala de Palermo es ${doc.sentry.top[0]?.name ?? "—"} (${doc.sentry.top[0]?.range ?? "—"}), con ${doc.sentry.top[0]?.ps_cum ?? "—"}: un valor negativo está por debajo del nivel de fondo de todos los objetos aún no descubiertos.`
+                : `${km(doc.sentry.count)} objects monitored. Maximum Torino scale: ${doc.sentry.max_torino}. The highest Palermo value is ${doc.sentry.top[0]?.name ?? "—"} (${doc.sentry.top[0]?.range ?? "—"}), at ${doc.sentry.top[0]?.ps_cum ?? "—"}: a negative value is below the background level of all objects not yet discovered.`}
+            </p>
+          </div>
+          {last ? (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-3">{es ? "Último bólido registrado" : "Latest recorded fireball"}</p>
+              <p className="mt-1 text-xs text-text-2">
+                {last.date.slice(0, 16)} UTC · {last.lat.toFixed(1)}°, {last.lon.toFixed(1)}°
+                {last.alt_km !== null ? ` · ${Math.round(last.alt_km)} km ${es ? "de altura" : "high"}` : ""}{last.v_kms !== null ? ` · ${last.v_kms} km/s` : ""}{last.energy_kt !== null ? ` · ${last.energy_kt} kt` : ""}
+              </p>
+              <div className="mt-1.5 flex gap-2">
+                {onZone ? <button type="button" onClick={() => onZone(zoneFromFireball(last, lang))} className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-on-accent">{es ? "Verlo en 3D real" : "See it in real 3D"}</button> : null}
+                {onLook ? <button type="button" onClick={() => onLook(last.lat, last.lon)} className="rounded-full border border-border px-3 py-1 text-xs font-semibold">{es ? "En el globo" : "On the globe"}</button> : null}
+              </div>
+            </div>
+          ) : null}
+        </>
+      ) : err ? <p className="text-xs text-text-2">{es ? "No pude leer los datos de JPL." : "Could not read the JPL data."}</p> : <p className="animate-pulse text-xs text-text-3">…</p>}
+      <figcaption className="text-[11px] text-text-3">
+        {es ? `NASA/JPL CNEOS (acercamientos, Sentry, bólidos; datos del ${doc?.built.slice(0, 10) ?? "—"}) · NOAA SWPC (Kp y auroras, en vivo).` : `NASA/JPL CNEOS (approaches, Sentry, fireballs; data of ${doc?.built.slice(0, 10) ?? "—"}) · NOAA SWPC (Kp and aurora, live).`}
+      </figcaption>
+    </figure>
   );
 }

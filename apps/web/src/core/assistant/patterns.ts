@@ -60,6 +60,7 @@ export const P = {
   events: has(["incendio", "tormenta", "huracan", "ciclon", "volcan", "evento", "desastre", "que esta pasando en el mundo", "iceberg",
     "wildfire", "fire", "storm", "hurricane", "cyclone", "volcano", "event", "disaster"]),
   infrared: has(["infrarroj", "nubes", "satelite", "en vivo", "tiempo real", "infrared", "clouds", "satellite", "live", "real time"]),
+  space: has(["asteroide", "meteorit", "\\bmeteoros?\\b", "bolido", "aurora", "tormenta solar", "tormenta geomagnetica", "clima espacial", "viento solar", "llamarada", "indice kp", "\\bkp\\b", "sentry", "impacto de asteroide", "objetos cercanos", "asteroid", "\\bmeteors?\\b", "fireball", "bolide", "solar storm", "geomagnetic", "space weather", "solar flare", "near earth"]),
   cameras: has(["camara", "video en vivo", "en vivo desde", "transmision", "webcam", "camera", "live feed", "live video", "stream", "como se ve el cielo", "el cielo ahora", "cielo en vivo", "foto del satelite", "imagen del satelite", "sky now", "satellite image", "satellite photo"]),
   joint: has(["cambio conjunto", "cambian? juntos?", "cambia junto", "cambian a la vez", "al mismo tiempo", "dos variables", "mas calor y menos", "mas calor y mas", "joint change", "change together", "changing together", "warmer and less", "warmer and more"]),
   alerts: has(["alerta", "anomal", "algo raro", "algo extrano", "pasa algo", "hay algo", "algo fuera de lo comun", "alert", "anything unusual", "anything wrong", "unusual"]),
@@ -74,7 +75,7 @@ export const P = {
   mars: has(["marte", "mars"]),
   person: has(["persona", "astronauta", "person", "astronaut"]),
   earth: has(["tierra", "earth"]),
-  undo: has(["no era eso", "eso no", "deshacer", "regresa", "atras", "not that", "undo", "go back"]),
+  undo: has(["no era eso", "eso no", "deshacer", "regresa", "atras", "not that", "\\bundo\\b", "go back"]), // «undo» bounded: it is inside «mundo»
   clear: has(["borrar (la )?conversacion", "limpiar", "empezar de nuevo", "reinicia", "clear", "start over", "reset"]),
   // «muéstrame solo …»: highlight one kind of verdict on the map.
   only: has(["solo", "solamente", "unicamente", "nada mas", "only", "just"]),

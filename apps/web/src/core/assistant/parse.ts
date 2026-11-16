@@ -8,6 +8,7 @@ import { findPlace, type Where } from "@/core/genui/places";
 import { P, isObservation, normalize } from "./patterns";
 import { worldRequest } from "@/core/scene/worlds";
 import { type HowKey, howtoOf, speedOf } from "./howto";
+import { type Municipio, findMunicipio, municipioLabel } from "@/core/genui/municipios";
 
 /** «abre / muestra / revisa …» + a section of the product: open it directly. */
 const OPEN_PANEL = /\b(abre|abrir|open)\b/;
@@ -82,10 +83,12 @@ export type Intent =
   /** Timeline speed: an absolute factor or one step slower / faster. */
   | { t: "speed"; v: number | "+" | "-" }
   | { t: "gestures"; on: boolean }
+  /** A municipality name shared by several states («Benito Juárez»): ask which one, then run `then` there. */
+  | { t: "pickPlace"; options: Where[]; then: Intent }
   | { t: "unknown" };
 
 /** What the answer is about when it brings its own components (clima, ganado, astronauta, Marte, planetas, eventos). */
-export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos" | "red" | "alertas" | "fauna" | "camaras" | "conjunto" | "ficha";
+export type Topic = "clima" | "ganado" | "astronauta" | "marte" | "planetas" | "eventos" | "red" | "alertas" | "fauna" | "camaras" | "conjunto" | "ficha" | "espacio";
 
 /** What a command may carry besides its intent: a place to look at first. */
 export type Place = { kind: "region"; id: string } | { kind: "coord"; lat: number; lon: number } | null;
@@ -125,8 +128,15 @@ function filterOf(text: string): number[] | null {
 /** A place for a live question: a named city, else the coordinates typed, else none (the caller picks a default). */
 /** The state named in the command being parsed (regions.json), so «alertas en Guanajuato» lands at its centre. */
 let regionWhere: Where | null = null;
+/** The municipality named in the command being parsed (core/genui/municipios.ts). */
+let munWhere: Where | null = null;
+
+export function municipioWhere(m: Municipio): Where {
+  return { name: municipioLabel(m), lat: m.lat, lon: m.lon, box: m.box, inegi: { cvegeo: m.cvegeo, pop: m.pop } };
+}
 
 export function whereOf(raw: string, place: Place): Where | null {
+  if (munWhere) return munWhere;
   const named = findPlace(raw);
   if (named) return named;
   if (place?.kind === "region" && regionWhere) return regionWhere;
@@ -135,10 +145,16 @@ export function whereOf(raw: string, place: Place): Where | null {
 
 export function parse(raw: string, regions: Region[]): Command {
   const text = normalize(raw);
-  const regionId = findRegion(text, regions);
+  // A municipality first («Lerdo, Durango», «Gómez Palacio»), unless the old gazetteer names something longer
+  // («Santiago de Chile» is not Santiago, Nuevo León). A bare state name stays the state (municipios.ts rule 3).
+  const mun = findMunicipio(raw);
+  const early = findPlace(raw);
+  const useMun = !!mun && (!early || normalize(early.name).split(" ").length <= mun.said.split(" ").length);
+  munWhere = useMun && mun!.hit ? municipioWhere(mun!.hit) : null;
+  const regionId = munWhere || (useMun && !mun!.hit) ? null : findRegion(text, regions);
   // Regions from the bundle first; then coordinates; then the gazetteer of known places (Chihuahua, Torreón…).
-  const named = regionId ? null : findPlace(raw);
-  const coord = regionId ? null : findCoord(text) ?? (named ? { lat: named.lat, lon: named.lon } : null);
+  const named = regionId || munWhere ? null : findPlace(raw);
+  const coord = regionId ? null : munWhere ? { lat: munWhere.lat, lon: munWhere.lon } : findCoord(text) ?? (named ? { lat: named.lat, lon: named.lon } : null);
   const place: Place = regionId ? { kind: "region", id: regionId } : coord ? { kind: "coord", ...coord } : null;
   const rg = regionId ? (regions.find((r) => r.id === regionId) as (Region & { bbox?: [number, number, number, number] }) | undefined) : undefined;
   regionWhere = rg?.bbox ? { name: rg.name.es, lat: (rg.bbox[1] + rg.bbox[3]) / 2, lon: (rg.bbox[0] + rg.bbox[2]) / 2 } : null;
@@ -170,6 +186,8 @@ export function parse(raw: string, regions: Region[]): Command {
     : P.alerts.test(text) ? { t: "topic", topic: "alertas", where: whereOf(raw, place) }
     // The six questions of HORI and «analiza Durango»: the file of the place, opened at the step the question asks for
     : fichaFocus(text) !== undefined ? { t: "topic", topic: "ficha", where: whereOf(raw, place), hint: fichaFocus(text) ?? undefined }
+    // «¿qué asteroides pasan cerca?», «auroras», «tormenta solar», «bólidos»: near space
+    : P.space.test(text) ? { t: "topic", topic: "espacio", where: null }
     // «cámara de la ISS», «¿cómo se ve el cielo ahora?»: the live views
     : P.cameras.test(text) ? { t: "topic", topic: "camaras", where: whereOf(raw, place), hint: text }
     // «¿qué cambia junto?», «más calor y menos nieve»: HORI's joint change
@@ -223,6 +241,11 @@ export function parse(raw: string, regions: Region[]): Command {
     : lenient ? { t: "howto", key: lenient }
     : { t: "unknown" };
 
+  // «Benito Juárez» is in seven states: ask which one, keeping what was asked.
+  if (useMun && !mun!.hit && mun!.options.length > 1) {
+    const then: Intent = intent.t === "summary" || intent.t === "unknown" || intent.t === "world" || intent.t === "greet" ? { t: "area" } : intent;
+    return { intent: { t: "pickPlace", options: mun!.options.slice(0, 8).map(municipioWhere), then }, place: null, where: null };
+  }
   // «¿Qué cambió en Durango?» is about the place, not the whole map.
   const where = whereOf(raw, place);
   if (intent.t === "summary" && place) return { intent: { t: "area" }, place, where };

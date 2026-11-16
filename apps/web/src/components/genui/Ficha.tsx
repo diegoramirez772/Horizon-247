@@ -12,7 +12,7 @@ import { GROUPS, type FaunaGroup, boxAround, watchFauna } from "@/core/live/faun
 import { type LiveDetection, subscribeWeather } from "@/core/map/weather";
 import {
   type FaunaHit, type JointHit, type Place, type Priority, RULES, STEPS, type StepKey, type Timeline, type VarReading,
-  eventsNear, explain, fmtNum, layersFor, prioritize, readJoint, readTimeline, readVariable, stormsNear, trendLine, verifyVariable,
+  boxKm, eventsNear, explain, fmtNum, layersFor, prioritize, readJoint, readTimeline, readVariable, stormsNear, trendLine, verifyVariable,
 } from "@/core/hori/ficha";
 import type { NaturalEvent } from "@/core/live/eonet";
 import { faunaLine } from "../FaunaPanel";
@@ -148,8 +148,8 @@ export function FichaHori({ place, lang, focus, onLook }: { place: Place; lang: 
 
   const summary: Record<StepKey, string> = {
     identifica: s.vars.length
-      ? (es ? `${place.name} (${fmtNum(place.lat, lang)}°, ${fmtNum(place.lon, lang)}°) · lugar real · ${s.vars.length} variables NASA · ${nVerified}/${s.vars.length} huellas verificadas`
-        : `${place.name} (${fmtNum(place.lat, lang)}°, ${fmtNum(place.lon, lang)}°) · real place · ${s.vars.length} NASA variables · ${nVerified}/${s.vars.length} fingerprints verified`)
+      ? (es ? `${place.name}${place.inegi ? ` · municipio INEGI ${place.inegi.cvegeo} · ${Math.round(place.inegi.pop / 1000).toLocaleString("es-MX")} mil hab.` : ` (${fmtNum(place.lat, lang)}°, ${fmtNum(place.lon, lang)}°)`} · lugar real · ${s.vars.length} variables NASA · ${nVerified}/${s.vars.length} huellas verificadas`
+        : `${place.name}${place.inegi ? ` · INEGI municipality ${place.inegi.cvegeo} · ${Math.round(place.inegi.pop / 1000).toLocaleString("en-US")}k people` : ` (${fmtNum(place.lat, lang)}°, ${fmtNum(place.lon, lang)}°)`} · real place · ${s.vars.length} NASA variables · ${nVerified}/${s.vars.length} fingerprints verified`)
       : (es ? "Buscando los datos de este lugar…" : "Finding this place's data…"),
     observa: s.vars.length
       ? (es ? `${s.vars.map((v) => `${v.name.es.split(" (")[0]} ${v.nvalid}/${v.window.n} años`).join(" · ")}` : `${s.vars.map((v) => `${v.name.en.split(" (")[0]} ${v.nvalid}/${v.window.n} years`).join(" · ")}`)
@@ -203,6 +203,7 @@ export function FichaHori({ place, lang, focus, onLook }: { place: Place; lang: 
       case "identifica":
         return (
           <div className="space-y-1.5">
+            {place.inegi && place.box ? <p>{es ? `Municipio ${place.name}, clave INEGI ${place.inegi.cvegeo}, ${place.inegi.pop.toLocaleString("es-MX")} habitantes (Censo 2020), ${boxKm(place.box).join(" × ")} km. Límites e identidad: INEGI, Marco Geoestadístico.` : `Municipality ${place.name}, INEGI code ${place.inegi.cvegeo}, ${place.inegi.pop.toLocaleString("en-US")} people (2020 census), ${boxKm(place.box).join(" × ")} km. Boundaries and identity: INEGI, Marco Geoestadístico.`}</p> : null}
             <p>{es ? `Entidad: un lugar real de la Tierra, no simulado. Cada variable se lee en la celda que cubre ${fmtNum(place.lat, lang)}°, ${fmtNum(place.lon, lang)}° (de ~${Math.round(s.vars[0]?.cellKm ?? 0)} km a ~${Math.round(Math.max(...s.vars.map((v) => v.cellKm), 0))} km de lado).` : `Entity: a real place on Earth, not simulated. Each variable is read at the cell covering ${fmtNum(place.lat, lang)}°, ${fmtNum(place.lon, lang)}° (~${Math.round(s.vars[0]?.cellKm ?? 0)} to ~${Math.round(Math.max(...s.vars.map((v) => v.cellKm), 0))} km across).`}</p>
             <ul className="space-y-1">
               {s.vars.map((v) => {
@@ -283,6 +284,12 @@ export function FichaHori({ place, lang, focus, onLook }: { place: Place; lang: 
           <ul className="space-y-1">
             {unknown.map((v) => <li key={v.id}><span className="font-medium">{v.name[lang]}</span>: {trendLine(v, lang)}</li>)}
             {s.fauna?.filter((f) => !f.level && /pocas|few/i.test(f.text)).map((f) => <li key={f.group}><span className="font-medium">{f.name}</span>: {f.text}</li>)}
+            {place.box ? (() => {
+              const [w, h] = boxKm(place.box), cell = Math.round(s.vars[0]?.cellKm ?? 55);
+              return <li className="font-medium">{w < cell || h < cell
+                ? (es ? `${place.name.split(",")[0]} mide ${w} × ${h} km y la celda más fina de HORI mide ~${cell} km: lo que se lee aquí describe la zona que lo contiene, no solo el municipio.` : `${place.name.split(",")[0]} is ${w} × ${h} km and HORI's finest cell is ~${cell} km: what is read here describes the area around it, not only the municipality.`)
+                : (es ? `${place.name.split(",")[0]} mide ${w} × ${h} km: lo cubren varias celdas; se lee la de su centro.` : `${place.name.split(",")[0]} is ${w} × ${h} km: several cells cover it; the one at its centre is read.`)}</li>;
+            })() : null}
             <li className="text-text-2">{es ? `Escala: cada celda mide de ~${Math.round(s.vars[0]?.cellKm ?? 0)} km a ~${Math.round(Math.max(...s.vars.map((v) => v.cellKm), 0))} km; no describe una calle ni un rancho.` : `Scale: each cell spans ~${Math.round(s.vars[0]?.cellKm ?? 0)} to ~${Math.round(Math.max(...s.vars.map((v) => v.cellKm), 0))} km; it does not describe a street or a ranch.`}</li>
             <li className="text-text-2">{es ? "Varias variables son reanálisis (modelo + observaciones), no mediciones directas del lugar." : "Several variables are reanalysis (model + observations), not direct measurements of the place."}</li>
             <li className="text-text-2">{es ? "HORI dice dónde, cuánto y desde cuándo; no dice por qué." : "HORI says where, how much and since when; it does not say why."}</li>

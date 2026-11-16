@@ -12,7 +12,17 @@ import type { LiveDetection } from "@/core/map/weather";
 export type StepKey = "identifica" | "observa" | "detecta" | "supervisa" | "prioriza" | "nosabe" | "explica";
 export const STEPS: StepKey[] = ["identifica", "observa", "detecta", "supervisa", "prioriza", "nosabe", "explica"];
 
-export interface Place { name: string; lat: number; lon: number }
+export interface Place {
+  name: string; lat: number; lon: number;
+  /** A municipality: its extent and INEGI identity (core/genui/municipios.ts). */
+  box?: [number, number, number, number]; inegi?: { cvegeo: string; pop: number };
+}
+
+/** Width × height of a box in km. */
+export function boxKm(b: [number, number, number, number]): [number, number] {
+  const lat = (b[1] + b[3]) / 2;
+  return [Math.round((b[2] - b[0]) * 111.32 * Math.cos((lat * Math.PI) / 180)), Math.round((b[3] - b[1]) * 110.574)];
+}
 
 interface IndexItem {
   id: string; kind?: string; path: string; profile?: string; cells?: number;

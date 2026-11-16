@@ -43,3 +43,9 @@ Data and services (fetched at run time or shipped as derived bundles)
   - NSIDC Sea Ice Index (G02135) v4 — used to validate the sea-ice processing.
   - OpenStreetMap contributors (via Nominatim) — bounding boxes of the 32 Mexican states in
       apps/web/public/bundles/regions.json; © OpenStreetMap contributors, ODbL 1.0.
+  - INEGI, Marco Geoestadístico (diciembre 2025) y Censo de Población y Vivienda 2020 — names, codes, population,
+      centres and extents of the 2,478 municipalities in apps/web/public/bundles/municipios.json
+      (scripts/build_municipios.py); Términos de Libre Uso de la Información del INEGI. Fuente: INEGI.
+  - NASA/JPL CNEOS APIs (Close Approach Data, Sentry, Fireball) — public US Government data;
+      apps/web/public/bundles/space.json (scripts/build_space.py).
+  - NOAA Space Weather Prediction Center — planetary Kp index and OVATION aurora forecast (live, public domain).

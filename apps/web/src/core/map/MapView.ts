@@ -73,7 +73,7 @@ export class MapView {
   private aborts: Record<"base" | "img" | "patch", AbortController | null> = { base: null, img: null, patch: null };
   /** Called with a short line saying what picture is under the data (for the caption). */
   onImagery: (label: string) => void = () => {};
-  onCellClick: (index: number) => void = () => {};
+  onCellClick: (index: number, at?: { lat: number; lon: number }) => void = () => {};
   onHover: (index: number, x: number, y: number) => void = () => {};
 
   constructor(parent: HTMLElement, theme: MapTheme, label: string) {

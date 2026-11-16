@@ -23,7 +23,8 @@ export type Widget =
   | { w: "iss" } // NASA's live camera on the International Space Station
   | { w: "sky"; near: Where | null } // the sky over a region in true colour (GOES GeoColor, every 10 min)
   | { w: "joint"; hint: string | null } // HORI's joint change: two variables changing together
-  | { w: "ficha"; where: Where | null; focus: string | null }; // HORI's seven capacities on one place, step by step
+  | { w: "ficha"; where: Where | null; focus: string | null } // HORI's seven capacities on one place, step by step
+  | { w: "space" }; // near space: Kp and aurora (NOAA), close asteroids, Sentry, fireballs (NASA/JPL)
 
 export interface TopicAnswer {
   widgets: Widget[];
@@ -126,6 +127,15 @@ export function topicAnswer(topic: Topic, where: Where | null, draft: string | n
         origin: "zon",
       };
     }
+    case "espacio":
+      return {
+        widgets: [{ w: "space" }],
+        action: L("Espacio cercano", "Near space"),
+        text: L(
+          "Lo que pasa en el espacio cercano y llega a la Tierra: la actividad geomagnética de ahora (NOAA, también revisada por el detector de HORI), dónde se ven auroras, los asteroides que pasan cerca, la vigilancia de impacto de la NASA y el último bólido registrado.",
+          "What near space is doing that reaches the Earth: geomagnetic activity now (NOAA, also checked by HORI's detector), where the aurora can be seen, the asteroids passing close, NASA's impact monitoring and the latest recorded fireball."),
+        origin: "zon",
+      };
     case "ficha":
       return {
         widgets: [{ w: "ficha", where, focus: draft }],

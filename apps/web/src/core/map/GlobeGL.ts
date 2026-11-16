@@ -25,12 +25,14 @@ import { CAT_LABEL } from "@/core/live/eonet";
 export interface GlobeLayers {
   trend: boolean; clouds: boolean; ir: boolean; rain: boolean; daynight: boolean;
   storms: boolean; events: boolean; animals: boolean; sats: boolean;
+  /** Near space touching the Earth: fireballs where they burst and the live aurora (NOAA). */
+  space: boolean;
 }
-export const DEFAULT_LAYERS: GlobeLayers = { trend: false, clouds: true, ir: false, rain: true, daynight: true, storms: true, events: true, animals: false, sats: true };
+export const DEFAULT_LAYERS: GlobeLayers = { trend: false, clouds: true, ir: false, rain: true, daynight: true, storms: true, events: true, animals: false, sats: true, space: true };
 
 /** Something tapped on the globe (a satellite, a live storm, a NASA event, an animal observation). */
 export interface MarkerInfo {
-  kind: "sat" | "storm" | "event" | "animal";
+  kind: "sat" | "storm" | "event" | "animal" | "fireball";
   key: string;
   title: string;
   lines: string[];
@@ -39,9 +41,14 @@ export interface MarkerInfo {
   satId?: number;
   /** The International Space Station: its card can open NASA's live camera. */
   iss?: boolean;
+  /** A live anomaly: its card opens it in «Vista 3D real» with the generated effect. */
+  zone?: ZoneTarget;
 }
 type Marker = { x: number; y: number; r: number; info: () => MarkerInfo };
 import type { PrismLayer } from "@/core/detect/prisms";
+import { zoneFromEvent, zoneFromFireball, zoneFromStorm } from "@/core/terrain/events";
+import { type Aurora, type Fireball, fetchAurora, loadSpace } from "@/core/live/space";
+import type { ZoneTarget } from "@/core/state/store";
 
 const RAD = Math.PI / 180;
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
@@ -206,6 +213,8 @@ export class GlobeGL {
   private world: WorldLive | null = null;
   private unWorld: (() => void) | null = null;
   private markers: Marker[] = [];
+  private space: { fireballs: Fireball[]; aurora: Aurora | null } | null = null;
+  private spaceAsked = false;
   private pickedSat: Sat | null = null;
   private following = false;
   private loop = 0;
@@ -238,7 +247,7 @@ export class GlobeGL {
   private lost = false;
   private status = { base: "", day: "", patch: "" };
   lastTiming: Timing = { buildMs: 0, drawMs: 0 };
-  onCellClick: (index: number) => void = () => {};
+  onCellClick: (index: number, at?: { lat: number; lon: number }) => void = () => {};
   onHover: (index: number, x: number, y: number) => void = () => {};
   /** Corner label: what picture is on screen (kind · source · date · resolution). */
   onImagery: (label: string) => void = () => {};
@@ -386,6 +395,7 @@ export class GlobeGL {
   /** Turn filters on or off (clouds, infrared, rain, day and night, storms, events, animals, satellites, trend). */
   setLayers(l: GlobeLayers): void {
     this.layers = { ...l };
+    if (l.space) this.loadSpaceLayer();
     if (!l.sats && this.pickedSat) { this.pickedSat = null; this.following = false; }
     this.requestDraw();
     this.scheduleLoop();
@@ -840,9 +850,51 @@ export class GlobeGL {
     return sx < -40 || sy < -40 || sx > this.w + 40 || sy > this.h + 40 ? null : [sx, sy];
   }
 
+  /** Fireballs (JPL) and the aurora (NOAA, refreshed every 30 min), once, when the «Espacio» layer is on. */
+  private loadSpaceLayer(): void {
+    if (this.spaceAsked || this.body !== "earth") return;
+    this.spaceAsked = true;
+    const since = new Date(Date.now() - 5 * 365.25 * 864e5).toISOString().slice(0, 10);
+    void Promise.all([loadSpace().catch(() => null), fetchAurora().catch(() => null)]).then(([d, a]) => {
+      this.space = { fireballs: (d?.fireballs ?? []).filter((f) => f.date >= since), aurora: a };
+      this.requestOverlay();
+    });
+    const id = window.setInterval(() => { if (!document.hidden && this.layers.space) void fetchAurora().then((a) => { if (this.space) { this.space.aurora = a; this.requestOverlay(); } }).catch(() => {}); }, 30 * 60e3);
+    this.cleanup.push(() => window.clearInterval(id));
+  }
+
   /** Everything alive on the Earth, flight-tracker style: events, animals, live storms, satellites (picked one last). */
   private drawWorld(): void {
     const g = this.o2d, L = this.layers, w = this.world, R = this.R(), lang = document.documentElement.lang === "en" ? "en" : "es";
+    if (L.space && this.space) {
+      // the aurora: soft green where NOAA gives ≥ 10 % chance of seeing it (2° cells)
+      const cell = Math.max(2, (2 * Math.PI * R) / 180);
+      for (const [lo, la, p] of this.space.aurora?.cells ?? []) {
+        const pt = this.project(la, lo);
+        if (!pt) continue;
+        g.globalAlpha = Math.min(0.75, p / 100 + 0.1);
+        g.fillStyle = p >= 50 ? "#7dffb0" : "#3bd27a";
+        g.fillRect(pt[0] - cell / 2, pt[1] - cell / 2, cell, cell);
+      }
+      g.globalAlpha = 1;
+      for (const f of this.space.fireballs) {
+        const pt = this.project(f.lat, f.lon);
+        if (!pt) continue;
+        const r = 3 + Math.min(7, Math.log10(1 + (f.energy_kt ?? 0.05) * 20) * 3);
+        g.strokeStyle = "rgba(255,190,90,0.95)"; g.lineWidth = 1.4;
+        g.beginPath(); g.moveTo(pt[0] - r * 1.6, pt[1] - r * 1.6); g.lineTo(pt[0], pt[1]); g.stroke(); // the trail, falling from the NW
+        g.beginPath(); g.arc(pt[0], pt[1], r * 0.55, 0, Math.PI * 2); g.fillStyle = "#fff4d6"; g.fill();
+        this.markers.push({ x: pt[0], y: pt[1], r: r + 4, info: () => ({
+          kind: "fireball", key: `fb${f.date}`, title: lang === "es" ? `Bólido · ${f.date.slice(0, 16)} UTC` : `Fireball · ${f.date.slice(0, 16)} UTC`,
+          lines: [
+            [f.alt_km !== null ? `${Math.round(f.alt_km)} km ${lang === "es" ? "de altura" : "high"}` : null, f.v_kms !== null ? `${f.v_kms} km/s` : null, f.energy_kt !== null ? `${f.energy_kt} kt` : null].filter(Boolean).join(" · "),
+            `${f.lat.toFixed(1)}°, ${f.lon.toFixed(1)}° · NASA/JPL CNEOS`,
+            lang === "es" ? "Un meteoro que estalló en la atmósfera; la energía es la estimada de impacto." : "A meteor that burst in the atmosphere; the energy is the estimated impact energy.",
+          ],
+          url: "https://cneos.jpl.nasa.gov/fireballs/", zone: zoneFromFireball(f, lang),
+        }) });
+      }
+    }
     const dot = (x: number, y: number, r: number, fill: string, ring = "rgba(0,0,0,0.55)") => {
       g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = fill; g.fill(); g.lineWidth = 1; g.strokeStyle = ring; g.stroke();
     };
@@ -858,7 +910,7 @@ export class GlobeGL {
         this.markers.push({ x: pt[0], y: pt[1], r: 11, info: () => ({
           kind: "event", key: `e${e.id}`, title: e.title,
           lines: [`${lab[lang]} · ${e.date.slice(0, 10)}`, ...(e.magnitude ? [e.magnitude] : []), `${e.lat.toFixed(2)}°, ${e.lon.toFixed(2)}° · NASA EONET`],
-          url: e.source ?? undefined,
+          url: e.source ?? undefined, zone: zoneFromEvent(e, lang),
         }) });
       }
     }
@@ -894,6 +946,7 @@ export class GlobeGL {
         this.markers.push({ x: pt[0], y: pt[1], r: Math.max(10, rad), info: () => ({
           kind: "storm", key: `s${d.id}`, title: KIND[d.kind][lang],
           lines: [`${TR[d.trend][lang]} · ≈${Math.round(d.areaKm2 / 1000).toLocaleString(lang)} mil km²${d.movedKm ? ` · ${d.movedKm} km` : ""}`, `${d.lat.toFixed(1)}°, ${d.lon.toFixed(1)}°`, lang === "es" ? "Detectado en GOES/Himawari e IMERG; es lo que se ve, no un pronóstico" : "Detected in GOES/Himawari and IMERG; what is seen, not a forecast"],
+          zone: zoneFromStorm(d, lang),
         }) });
       }
     }
@@ -992,10 +1045,16 @@ export class GlobeGL {
   }
 
   private drawRegion(): void {
+    // a municipality draws its real outline; anything else, its box
+    if (this.regionShape?.length) { for (const ring of this.regionShape) this.outline(ring, 2.2, 1); return; }
     if (!this.region) return;
     const [x0, y0, x1, y1] = this.region;
     this.outline(this.box(x0, y0, x1, y1), 2.5, 1);
   }
+
+  private regionShape: [number, number][][] | null = null;
+  /** The real outline of the place on screen (rings of lon/lat), drawn instead of its box. */
+  setRegionShape(rings: [number, number][][] | null): void { this.regionShape = rings; this.requestOverlay(); }
 
   /** Screen point and depth (cos of the angle to the view centre; < 0 = behind) of a lat/lon on the sphere. */
   private projectZ(lat: number, lon: number): [number, number, number] {
@@ -1191,7 +1250,7 @@ export class GlobeGL {
           this.onMarker(null);
           const ll = this.invert(e.offsetX, e.offsetY);
           const i = ll ? this.cellOf(ll.lat, ll.lon) : -1;
-          if (i >= 0) this.onCellClick(i);
+          if (i >= 0) this.onCellClick(i, ll ?? undefined);
         }
       }
       down = null;

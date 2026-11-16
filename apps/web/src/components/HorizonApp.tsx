@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { compose, hoverText, type Card, type Ctx } from "@/core/assistant/compose";
 import { Conversation, type Via } from "@/core/assistant/conversation";
 import type { Command, Intent } from "@/core/assistant/parse";
-import { parse } from "@/core/assistant/parse";
+import { municipioWhere, parse } from "@/core/assistant/parse";
 import { followUp } from "@/core/assistant/context";
 import { flushPending, run, type Deps } from "@/core/assistant/run";
 import { siblings } from "@/core/contract/extra";
@@ -24,6 +24,8 @@ import { LoginDialog } from "./LoginDialog";
 import { Sidebar } from "./Sidebar";
 import { useHome, useIndex, useLayer, useMapData, useSeries } from "./useBundles";
 import { OfflineBanner } from "./OfflineBanner";
+import { loadMunicipios, municipioAt, municipioAtNow, municipioLabel, municipioShape, placeAtOSM, whenMunicipios } from "@/core/genui/municipios";
+import type { Where } from "@/core/genui/places";
 
 const C = {
   es: { back: "Regresar", backLong: "Regresar al inicio", map: "Monitoreo", theme: "Cambiar tema", skip: "Ir a la caja de preguntas", empty: "Aún no hay capas de datos." },
@@ -139,7 +141,7 @@ export function HorizonApp() {
   useEffect(() => { onCommandRef.current = onCommand; }, [onCommand]);
   const [hub] = useState(() => new Hub({
     lang: () => ctxRef.current.state.lang,
-    ask: (text, via, label) => onCommandRef.current(parse(text, ctxRef.current.regions), via, label),
+    ask: (text, via, label) => { void whenMunicipios().then(() => onCommandRef.current(parse(text, ctxRef.current.regions), via, label)); },
     answer: (card) => { setHome(false); conv.answer(card); },
     here: () => hereOf(ctxRef.current),
     openMap: () => setPanel((p) => p ?? "map"),
@@ -168,15 +170,48 @@ export function HorizonApp() {
     look: (lat: number, lon: number) => {
       const l = ctxRef.current.layer;
       const i = l ? cellIndexAt(l.manifest, lat, lon) : -1;
-      store.set({ selection: i >= 0 ? { kind: "cell", index: i } : null, camera: store.get().camera + 1 });
+      // looking inside the municipality on screen keeps it (its box and name); anywhere else lets it go
+      const ar = store.get().area, inside = !!ar && lon >= ar.box[0] && lon <= ar.box[2] && lat >= ar.box[1] && lat <= ar.box[3];
+      store.set({ selection: i >= 0 ? { kind: "cell", index: i } : null, area: inside ? ar : null, camera: store.get().camera + 1 });
       setPanel("map");
     },
     imagery: (id: string) => { store.set({ imagery: id }); setPanel("map"); },
+    zone: (z: ZoneTarget) => { store.set({ zone: z }); setPanel("zone"); },
   }), [store]);
 
-  const pick = useCallback((i: number) => {
-    store.set({ selection: { kind: "cell", index: i } });
-    conv.answer(compose("area", { ...ctxRef.current, state: store.get() }, "map"));
+  // The 2,478 municipalities (INEGI): loaded once the first screen is up, so the assistant can find them by name.
+  useEffect(() => { const t = window.setTimeout(() => void loadMunicipios(), 1200); return () => window.clearTimeout(t); }, []);
+
+  // A tap on the map: the cell's reading, named after the place that contains the exact point tapped —
+  // the municipality (INEGI outline) in Mexico, OpenStreetMap elsewhere — with its file one tap away.
+  const pick = useCallback((i: number, at?: { lat: number; lon: number }) => {
+    store.set({ selection: { kind: "cell", index: i }, area: null });
+    const l = ctxRef.current.layer;
+    const p = at ?? (l ? cellLatLon(l.manifest, i) : null);
+    const still = () => { const s = store.get().selection; return s?.kind === "cell" && s.index === i; };
+    const answer = (w: Where | null) => {
+      const card = compose("area", { ...ctxRef.current, state: store.get() }, "map");
+      if (w) card.chips = [{ label: { es: `Ficha de ${w.name.split(",")[0]}`, en: `${w.name.split(",")[0]} file` }, cmd: { intent: { t: "topic", topic: "ficha", where: w }, place: { kind: "coord", lat: w.lat, lon: w.lon }, where: w } }, ...card.chips];
+      conv.answer(card);
+    };
+    if (!p) { answer(null); return; }
+    const lang = store.get().lang;
+    void Promise.race([
+      (async (): Promise<Where | null> => {
+        const m = await municipioAt(p.lat, p.lon);
+        if (m) return { ...municipioWhere(m), shape: (await municipioShape(m.cvegeo)) ?? undefined } as Where & { shape?: [number, number][][] };
+        const o = await placeAtOSM(p.lat, p.lon, lang);
+        return o ? { name: o.name, lat: p.lat, lon: p.lon, box: o.box } : null;
+      })().catch(() => null),
+      new Promise<null>((ok) => setTimeout(() => ok(null), 4500)),
+    ]).then((w) => {
+      if (!still()) return;
+      if (w) {
+        const box = w.box ?? [p.lon - 0.25, p.lat - 0.25, p.lon + 0.25, p.lat + 0.25] as [number, number, number, number];
+        store.set({ area: { name: w.name, box, shape: (w as Where & { shape?: [number, number][][] }).shape } });
+      }
+      answer(w);
+    });
   }, [store, conv]);
 
   const setFilter = useCallback((f: number[] | null) => {
@@ -224,18 +259,23 @@ export function HorizonApp() {
       const b = regions.find((r) => r.id === sel.id)?.bbox;
       return b ? { key, kind: "box", bbox: b } : null;
     }
+    if (sel?.kind === "cell" && s.area) return { key, kind: "box", bbox: s.area.box };
     if (sel?.kind === "cell") {
       const { lat, lon } = cellLatLon(layer.manifest, sel.index);
       return { key, kind: "point", lat, lon, span: 70 };
     }
     return { key, kind: "world" };
-  }, [s.camera, s.selection, layer, regions]);
+  }, [s.camera, s.selection, s.area, layer, regions]);
 
   const sel = s.selection;
-  const regionBox = sel?.kind === "region" ? regions.find((r) => r.id === sel.id)?.bbox ?? null : null;
+  const regionBox = sel?.kind === "region" ? regions.find((r) => r.id === sel.id)?.bbox ?? null : sel?.kind === "cell" && s.area ? s.area.box : null;
   const describe = useCallback((i: number) => {
     const d = dataRef.current;
-    return hoverText(ctxRef.current, i, d ? { mode: d.mode ?? "verdict", verdict: d.verdict[i], effect: d.effect[i] } : undefined);
+    const t = hoverText(ctxRef.current, i, d ? { mode: d.mode ?? "verdict", verdict: d.verdict[i], effect: d.effect[i] } : undefined);
+    // the municipality under the pointer, when its state's outlines are already here (never waits)
+    const l = ctxRef.current.layer;
+    const m = t && l ? (() => { const p = cellLatLon(l.manifest, i); return municipioAtNow(p.lat, p.lon); })() : null;
+    return t && m ? { ...t, where: `${municipioLabel(m)} · ${t.where}` } : t;
   }, []);
 
   return (

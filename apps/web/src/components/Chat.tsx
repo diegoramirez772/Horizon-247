@@ -14,6 +14,7 @@ import { TrendChart } from "./charts";
 import { Widgets, type WidgetActions } from "./genui/Widgets";
 import { DeckCard, Emblem, Spark, VerdictGlyph } from "./ui";
 import { useHub, useHubState } from "./interaccion/context";
+import { whenMunicipios } from "@/core/genui/municipios";
 
 const T = {
   es: {
@@ -109,7 +110,7 @@ export function Chat({ conv, ctx, home, onHome, onCommand, onShow, onEvidence, h
   const lastId = msgs.at(-1)?.id;
   useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [msgs.length, lastId]);
 
-  const ask = (text: string, via: Via) => onCommand(parse(text, ctx.regions), via, text);
+  const ask = (text: string, via: Via) => { void whenMunicipios().then(() => onCommand(parse(text, ctx.regions), via, text)); };
 
   if (home || msgs.length === 0) {
     // Start screen: the question, the box, and a carousel of what HORIZON can do (each card can be tried).

@@ -4,9 +4,10 @@
 import { entryWindow, siblings, type IndexEntry } from "@/core/contract/extra";
 import { cellIndexAt, cellLatLon } from "@/core/contract/loader";
 import { stepRegister, type AppState, type Store } from "@/core/state/store";
-import { compose, topicCard, type CardKind, type Ctx, type Source } from "./compose";
+import { compose, topicCard, type CardKind, type Ctx, type Source, placeChoiceCard } from "./compose";
 import type { Conversation, Via } from "./conversation";
 import type { Command } from "./parse";
+import { municipioShape } from "@/core/genui/municipios";
 
 export interface Deps {
   store: Store;
@@ -84,6 +85,13 @@ export function run(cmd: Command, via: Via, label: string | null, d: Deps): void
   if (cmd.place?.kind === "coord" && ctx.layer) {
     const idx = cellIndexAt(ctx.layer.manifest, cmd.place.lat, cmd.place.lon);
     if (idx >= 0) patch.selection = { kind: "cell", index: idx };
+  }
+  // A municipality brings its extent: the map flies to it and the 3D shows all of it; any other place clears it.
+  if (cmd.place) patch.area = cmd.where?.box ? { name: cmd.where.name, box: cmd.where.box } : null;
+  // and its real outline, as soon as its state's outlines arrive (drawn instead of the box)
+  if (cmd.place && cmd.where?.inegi) {
+    const name = cmd.where.name;
+    void municipioShape(cmd.where.inegi.cvegeo).then((shape) => { const a = store.get().area; if (shape && a?.name === name) store.set({ area: { ...a, shape } }); });
   }
 
   const entry = ctx.entries.find((e) => e.id === before.layerId) ?? null;
@@ -165,6 +173,9 @@ export function run(cmd: Command, via: Via, label: string | null, d: Deps): void
       answerWhenReady(d, "speed", source, false, null);
       return;
     }
+    case "pickPlace":
+      conv.answer(placeChoiceCard(i.options, i.then, source));
+      return;
     case "open":
       store.set(i.tour ? { tourReq: { mode: i.tour, n: (before.tourReq?.n ?? 0) + 1 }, timeMode: "completa" } : {});
       answerWhenReady(d, `open:${i.panel}`, source, false, null);

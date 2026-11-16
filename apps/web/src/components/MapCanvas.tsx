@@ -11,6 +11,7 @@ import { MapView, type BBox, type MapData } from "@/core/map/MapView";
 import type { MapTheme } from "@/core/map/palette";
 import { UI, type Lang } from "@/core/i18n/texts";
 import type { PrismLayer } from "@/core/detect/prisms";
+import type { ZoneTarget } from "@/core/state/store";
 
 export type MapFocus =
   | { key: string; kind: "point"; lat: number; lon: number; span: number }
@@ -24,7 +25,7 @@ export interface HoverInfo { title: string; line: string; where: string }
 export type Projection = "globe" | "flat";
 
 export function MapCanvas({ data, theme, selected, filter, region, focus, label, lang, onPick, describe, onHoverCell, projection = "globe", minimal = false,
-  imageryId = null, onImagery, prisms = null }: {
+  imageryId = null, onImagery, prisms = null, regionShape = null, onZone }: {
   data: MapData | null;
   theme: MapTheme;
   selected: number;
@@ -33,7 +34,7 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
   focus: MapFocus | null;
   label: string;
   lang: Lang;
-  onPick: (index: number) => void;
+  onPick: (index: number, at?: { lat: number; lon: number }) => void;
   /** Words for the cell under the pointer (null = nothing to say). */
   describe: (index: number) => HoverInfo | null;
   /** Raw cell under the pointer (−1 = none), for the expert readout. */
@@ -45,6 +46,10 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
   /** NASA layer under the data (shared state, so the assistant and «En vivo» can change it); null = Blue Marble. */
   imageryId?: string | null;
   onImagery?: (id: string | null) => void;
+  /** Open a live anomaly in «Vista 3D real» (its card's button). */
+  onZone?: (z: ZoneTarget) => void;
+  /** The real outline of the selected municipality (GPU globe draws it instead of the box). */
+  regionShape?: [number, number][][] | null;
   /** Evidence prisms of the foci (GPU globe only; other views just fly there). */
   prisms?: PrismLayer | null;
 }) {
@@ -120,7 +125,7 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
     } else v = new GlobeView(host.current!, L.theme, L.label);
     setImageryLabel("");
     setIsGL(v instanceof GlobeGL || v instanceof MapView);
-    v.onCellClick = (i) => pick.current(i);
+    v.onCellClick = (i, at) => pick.current(i, at);
     v.onHover = (i, x, y) => {
       hoverCell.current?.(i);
       const info = i >= 0 ? say.current(i) : null;
@@ -159,6 +164,7 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
   useEffect(() => { view.current?.select(selected); }, [selected]);
   useEffect(() => { view.current?.setFilter(filter); }, [filter]);
   useEffect(() => { view.current?.setRegion(region); }, [region]);
+  useEffect(() => { const v = view.current; if (v instanceof GlobeGL) v.setRegionShape(regionShape); }, [regionShape, projection, gpuLost]);
   useEffect(() => { const v = view.current; if (v instanceof GlobeGL) v.setPrisms(prisms); }, [prisms]);
   useEffect(() => {
     const v = view.current;
@@ -203,6 +209,11 @@ export function MapCanvas({ data, theme, selected, filter, region, focus, label,
               <button type="button" onClick={() => setCam((v) => !v)} aria-pressed={cam}
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${cam ? "bg-accent text-on-accent" : "border border-border"}`}>
                 <span className="live-dot" aria-hidden="true" />{lang === "es" ? "Cámara en vivo" : "Live camera"}
+              </button>
+            ) : null}
+            {card.zone && onZone ? (
+              <button type="button" onClick={() => onZone(card.zone!)} className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-on-accent">
+                {lang === "es" ? "Ver en 3D real" : "See in real 3D"}
               </button>
             ) : null}
             {card.url ? <a href={card.url} target="_blank" rel="noreferrer" className="rounded-full border border-border px-3 py-1 text-xs font-semibold">{lang === "es" ? "Fuente" : "Source"} ↗</a> : null}
@@ -279,6 +290,7 @@ const CHIPS: Record<keyof GlobeLayers, { es: string; en: string; icon: string }>
   events: { es: "Eventos NASA", en: "NASA events", icon: "🔥" },
   animals: { es: "Animales", en: "Animals", icon: "🐾" },
   sats: { es: "Satélites", en: "Satellites", icon: "🛰️" },
+  space: { es: "Espacio: bólidos y auroras", en: "Space: fireballs and aurora", icon: "☄️" },
   trend: { es: "Tendencia (azul/rojo)", en: "Trend (blue/red)", icon: "📈" },
 };
 

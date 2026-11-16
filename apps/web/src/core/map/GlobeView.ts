@@ -40,7 +40,7 @@ export class GlobeView {
   private settle = 0;
   private cleanup: (() => void)[] = [];
   lastTiming: Timing = { buildMs: 0, drawMs: 0 };
-  onCellClick: (index: number) => void = () => {};
+  onCellClick: (index: number, at?: { lat: number; lon: number }) => void = () => {};
   onHover: (index: number, x: number, y: number) => void = () => {};
 
   constructor(parent: HTMLElement, theme: MapTheme, label: string) {
@@ -430,7 +430,7 @@ export class GlobeView {
       if (down && !down.moved) {
         const ll = this.invert(e.offsetX, e.offsetY);
         const i = ll ? this.cellOf(ll.lat, ll.lon) : -1;
-        if (i >= 0) this.onCellClick(i);
+        if (i >= 0) this.onCellClick(i, ll ?? undefined);
       }
       down = null;
     });

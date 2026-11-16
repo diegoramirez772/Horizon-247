@@ -86,7 +86,7 @@ export interface PanelControls {
   /** Open the generated 3D scene of a place (from a zone on the map or the assistant). */
   scene: (t: SceneTarget) => void;
   /** Open the real place in 3D (relief + satellite); `box` = a focus's extent, shown with HORI's verdict draped on it. */
-  zone: (z: { name: string; lat: number; lon: number; box?: BBox; focus?: string }) => void;
+  zone: (z: ZoneTarget) => void;
 }
 
 /**
@@ -97,7 +97,7 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
   blueIsMore, seriesReady, controls, siblings, entry, onFilter, loading, error, onRetry, full, setFull, projection, setProjection }: {
   ctx: Ctx; tab: PanelTab; setTab: (t: PanelTab) => void; expanded: boolean; setExpanded: (e: boolean) => void; onClose: () => void;
   data: MapData | null; theme: MapTheme; focus: MapFocus | null; region: BBox | null; describe: (i: number) => HoverInfo | null;
-  onPick: (i: number) => void; blueIsMore: boolean; seriesReady: boolean; controls: PanelControls;
+  onPick: (i: number, at?: { lat: number; lon: number }) => void; blueIsMore: boolean; seriesReady: boolean; controls: PanelControls;
   siblings: IndexEntry[]; entry: IndexEntry | null; onFilter: (f: number[] | null) => void;
   loading: boolean; error: string | null; onRetry: () => void;
   full: boolean; setFull: (f: boolean) => void; projection: Projection; setProjection: (p: Projection) => void;
@@ -182,7 +182,7 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
               </div>
             ) : (
               <MapCanvas data={data} theme={theme} selected={sel?.kind === "cell" ? sel.index : -1}
-                filter={s.timeMode === "anual" ? null : s.filter} region={region} focus={mapFocus} lang={s.lang} prisms={prisms}
+                filter={s.timeMode === "anual" ? null : s.filter} region={region} onZone={controls.zone} regionShape={s.selection?.kind === "cell" ? s.area?.shape ?? null : null} focus={mapFocus} lang={s.lang} prisms={prisms}
                 label={T.mapLabel(m ? m.title[s.lang] : "")} onPick={onPick} describe={describe} onHoverCell={expert ? setHover : undefined} projection={projection}
                 imageryId={s.imagery} onImagery={controls.imagery} />
             )}
@@ -268,7 +268,7 @@ export function MapPanel({ ctx, tab, setTab, expanded, setExpanded, onClose, dat
       ) : tab === "person" ? (
         <PersonPanel lang={s.lang} />
       ) : tab === "live" ? (
-        <LivePanel lang={s.lang} imagery={s.imagery} onImagery={(id) => { controls.imagery(id); setTab("map"); }}
+        <LivePanel onZone={controls.zone} lang={s.lang} imagery={s.imagery} onImagery={(id) => { controls.imagery(id); setTab("map"); }}
           onLook={(lat, lon) => { controls.look(lat, lon); setTab("map"); }} />
       ) : (
         <div className="min-h-0 flex-1 overflow-y-auto p-5">
@@ -387,6 +387,8 @@ function SceneFrame({ ctx, foci }: { ctx: Ctx; foci: FocusSet | null }) {
 /** The place to show in 3D: the zone selected on the map (cell centre or region centre), else the last one opened. */
 function zoneOf(ctx: Ctx): ZoneTarget {
   const m = ctx.layer?.manifest, sel = ctx.state.selection;
+  const area = ctx.state.area;
+  if (m && sel?.kind === "cell" && area) return { name: area.name, lat: (area.box[1] + area.box[3]) / 2, lon: (area.box[0] + area.box[2]) / 2, box: area.box };
   if (m && sel?.kind === "cell") { const p = cellLatLon(m, sel.index); return { name: `${p.lat.toFixed(2)}°, ${p.lon.toFixed(2)}°`, ...p }; }
   if (sel?.kind === "region") {
     const r = ctx.regions.find((x) => x.id === sel.id) as (typeof ctx.regions[number] & { bbox?: BBox }) | undefined;

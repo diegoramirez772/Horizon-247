@@ -3,6 +3,7 @@
 // video can start from an exact state (web-diseno §4.1). The register preference is also remembered.
 
 import { REGISTERS, type Lang, type Register } from "@/core/i18n/texts";
+import type { ZoneEvent } from "@/core/terrain/effects";
 
 export type Profile = "earth" | "mars" | "person";
 export type Tab = "cambio" | "contraste" | "detectabilidad" | "evidencia";
@@ -60,10 +61,16 @@ export interface AppState {
   tourReq: { mode: "apoyado" | "no_se_sabe"; n: number } | null;
   /** The real place open in 3D (relief + satellite); null = none. */
   zone: ZoneTarget | null;
+  /** The municipality the selection stands for (name + extent): the map flies to its box and the 3D shows all of it. */
+  area: { name: string; box: [number, number, number, number]; /** Its real outline (INEGI, simplified), when known. */ shape?: [number, number][][] } | null;
 }
 
 /** A real place in 3D; `box` = a focus's extent (lon/lat), shown with HORI's verdict draped over the relief. */
-export interface ZoneTarget { name: string; lat: number; lon: number; box?: [number, number, number, number]; focus?: string }
+export interface ZoneTarget {
+  name: string; lat: number; lon: number; box?: [number, number, number, number]; focus?: string;
+  /** A live anomaly here: its effect is generated on the real relief (core/terrain/effects.ts). */
+  event?: ZoneEvent;
+}
 
 export interface SceneTarget {
   name: string; lat: number; lon: number; timeline: boolean;
@@ -94,6 +101,7 @@ export const DEFAULT_STATE: AppState = {
   evolution: false,
   scene: null,
   zone: null,
+  area: null,
   speed: 1,
   tourReq: null,
 };

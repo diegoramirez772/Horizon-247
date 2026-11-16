@@ -18,7 +18,7 @@ import { certaintyText } from "@/core/honesty/calibration";
 import { limitsFor, type Limit } from "@/core/honesty/limits";
 import { LEGEND, REGISTERS, UI, verdictName, verdictText, type Lang, type Register } from "@/core/i18n/texts";
 import type { AppState, Selection } from "@/core/state/store";
-import type { Command, Topic } from "./parse";
+import type { Command, Intent, Topic } from "./parse";
 
 /** «zon»: a record or an operation of the ZON runtime (monitors, alerts, reports), not a HORI calculation (H20). */
 export type Origin = "hori" | "sim" | "ui" | "zon";
@@ -158,6 +158,10 @@ export function readSelection(ctx: Ctx, sel: Selection = ctx.state.selection): R
     if (sel.index < 0 || sel.index >= layer.cells) return null;
     const f = cellFinding(layer, sel.index);
     const nv = layer.arrays.nvalid;
+    // a municipality the selection stands for keeps its name («Lerdo, Durango»), not the cell's coordinates
+    const cur = ctx.state.selection;
+    const area = cur?.kind === "cell" && cur.index === sel.index ? ctx.state.area : null;
+    if (area) return { finding: f, nvalid: nv ? nv[sel.index] : null, N: m.summary.cells_valid ?? NaN, selection: sel, nCells: 1, name: { es: area.name, en: area.name } };
     return {
       finding: f, nvalid: nv ? nv[sel.index] : null, N: m.summary.cells_valid ?? NaN, selection: sel, nCells: 1,
       name: { es: `la zona ${coord(f.lat, f.lon, "es")}`, en: `the area ${coord(f.lat, f.lon, "en")}` },
@@ -259,6 +263,10 @@ const TOPIC_CHIPS: Record<Topic, Chip[]> = {
     chip(L("¿Hay alertas aquí?", "Any alerts here?"), { t: "topic", topic: "alertas", where: null }),
     chip(L("Infrarrojo en vivo", "Live infrared"), { t: "imagery", layer: "GOES-East_ABI_Band13_Clean_Infrared" }),
   ],
+  espacio: [
+    chip(L("¿Hay alertas aquí?", "Any alerts here?"), { t: "topic", topic: "alertas", where: null }),
+    chip(L("Cámara de la ISS", "ISS camera"), { t: "topic", topic: "camaras", where: null, hint: "iss" }),
+  ],
   ficha: [
     chip(L("¿Hay alertas aquí?", "Any alerts here?"), { t: "topic", topic: "alertas", where: null }),
     chip(L("Ver lo significativo", "Show what is significant"), { t: "open", panel: "map", tour: "apoyado" }),
@@ -286,6 +294,23 @@ const TOPIC_CHIPS: Record<Topic, Chip[]> = {
  * An answer that builds its own interface (Plan de unión U3). For clima and ganado, when the layer on screen
  * covers the place, HORI's long-term reading is added to the text and the figure (the «now» and the «trend» together).
  */
+/**
+ * «Benito Juárez» is in seven states: one chip per municipality (most populated first). Each chip runs what was asked,
+ * there — the area, its file, its alerts — so choosing is one tap and nothing is lost.
+ */
+export function placeChoiceCard(options: Where[], then: Intent, source: Source): Card {
+  const pop = (w: Where, lang: Lang) => (w.inegi?.pop ? ` · ${Math.round(w.inegi.pop / 1000).toLocaleString(lang)} ${lang === "es" ? "mil hab." : "k people"}` : "");
+  const at = (w: Where): Intent => ("where" in then ? ({ ...then, where: w } as Intent) : then);
+  return {
+    id: nextId++, kind: "pickPlace", source, correctable: false, origin: "ui", evidence: null,
+    action: L("¿Cuál de ellos?", "Which one?"),
+    text: allRegs(L(
+      `Hay ${options.length} municipios con ese nombre (INEGI). Elige uno y sigo con lo que preguntaste.`,
+      `There are ${options.length} municipalities with that name (INEGI). Pick one and I will carry on with what you asked.`)),
+    chips: options.map((w) => ({ label: { es: `${w.name}${pop(w, "es")}`, en: `${w.name}${pop(w, "en")}` }, cmd: { intent: at(w), place: { kind: "coord", lat: w.lat, lon: w.lon }, where: w } })),
+  };
+}
+
 export function topicCard(topic: Topic, where: Where | null, ctx: Ctx, source: Source, draft: string | null = null, group: FaunaGroup | null = null): Card {
   const a = topicAnswer(topic, where, draft, group);
   const r = (topic === "clima" || topic === "ganado") && ctx.state.selection?.kind === "cell" ? readSelection(ctx) : null;
