@@ -19,6 +19,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from .config import Config
+from .evalue import ebh
 from .fdr import bh_adjust
 from .verdict import CANDIDATA, INSUFICIENTE, NO_CONCLUYENTE, PROBADO, decide
 
@@ -34,7 +35,7 @@ def window_verdicts(annual: np.ndarray, years: list, cfg: Config, batch: int = 2
     """One window: annual [n, cells] -> (verdict u8, effect, mde, years_more), one FDR family for all the cells."""
     from .api import cell_stats                                                  # late import: api re-exports this module
     time = [f"{int(y)}-01-01" for y in years]
-    keys = ("p_cons", "nsig", "effect", "mde", "delta", "years_more", "usable")
+    keys = ("p_cons", "nsig", "effect", "mde", "delta", "years_more", "usable", "e_cons")
     parts = {k: [] for k in keys}
     for a in range(0, annual.shape[1], batch):
         st = cell_stats(annual[:, a:a + batch, None], time, cfg)
@@ -42,7 +43,8 @@ def window_verdicts(annual: np.ndarray, years: list, cfg: Config, batch: int = 2
             parts[k].append(st[k])
     o = {k: np.concatenate(v) for k, v in parts.items()}
     with np.errstate(invalid="ignore"):
-        v = decide(o["usable"], bh_adjust(o["p_cons"]), o["nsig"], o["mde"], o["delta"], cfg.fdr_q, len(cfg.methods))
+        v = decide(o["usable"], bh_adjust(o["p_cons"]), o["nsig"], o["mde"], o["delta"], cfg.fdr_q, len(cfg.methods),
+                   ebh(o["e_cons"], cfg.fdr_q) if cfg.require_ebh else None)
     return v, o["effect"].astype(np.float32), o["mde"].astype(np.float32), o["years_more"].astype(np.float32)
 
 

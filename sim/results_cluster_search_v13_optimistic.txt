@@ -1,0 +1,7 @@
+stride=4 reps=12 optimista celdas=13104 sustitutos=200
+regla                            celdas falsas (media, peor)  celdas con señal cubiertas   regiones (falsas sin ninguna celda con señal)
+HORI 1.0 (celdas)                   5.2 %   19.9 %          68.0 %
+HORI 1.2 (celdas)                   1.0 %    7.6 %          53.8 %
+1.3 regiones z0=3.0                 1.1 %    8.2 %          46.6 %   144 (0)
+1.2 O regiones z0=3.0               1.6 %   11.2 %          57.2 %
+1.2 dentro de regiones z0=3.0       0.9 %    7.9 %          46.3 %

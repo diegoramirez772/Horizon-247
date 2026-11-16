@@ -172,7 +172,7 @@ export function narrateTrend(f: TrendFacts, lang: Lang, detail: boolean): string
     if (cmp) out.push(cmp);
     if (detail && Number.isFinite(f.lo) && Number.isFinite(f.hi)) {
       out.push(lang === "es"
-        ? `Lo más probable es que esté entre ${fmt(f.lo, lang)} y ${fmt(f.hi, lang)} ${f.unit} por década; coinciden tres métodos distintos.`
+        ? `Lo más probable es que esté entre ${fmt(f.lo, lang)} y ${fmt(f.hi, lang)} ${f.unit} por década; coinciden todos los métodos, que son distintos entre sí.`
         : `Most likely between ${fmt(f.lo, lang)} and ${fmt(f.hi, lang)} ${f.unit} per decade; three different tests agree.`);
     } else {
       out.push(lang === "es" ? pick(seed + "c", ["Es muy poco probable que sea casualidad.", "No parece casualidad: el cambio es claro."]) : "It is very unlikely to be chance.");

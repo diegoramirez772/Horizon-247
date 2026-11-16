@@ -54,14 +54,14 @@ const SENCILLO: Record<Lang, Templates> = {
 // SPEC §8.5b (normal register): the chart-and-comparison reading, without p/q on screen.
 const NORMAL: Record<Lang, Templates> = {
   es: {
-    1: "{variable} {sube/baja} {efecto} {unidad} por década (entre {lo} y {hi}). Los tres métodos lo ven. Se mantiene al revisar {N} zonas a la vez.",
+    1: "{variable} {sube/baja} {efecto} {unidad} por década (entre {lo} y {hi}). Todos los métodos lo ven. Se mantiene al revisar {N} zonas a la vez.",
     2: "Hay una señal de {efecto} {unidad} por década, pero no pasa todos los filtros ({k} de 3 métodos la ven). Puede ser real o casualidad.",
     3: "Con {n} años de datos solo se distinguen cambios de {mde} o más por década, y lo que buscamos es {δ}. Con ~{años} años más se podría saber.",
     4: "No aparece un cambio de {δ} o más por década. Con estos datos, uno así se habría visto en la gran mayoría de los casos.",
     0: "Solo hay {n} años con datos válidos en esta zona; no alcanzan para este análisis.",
   },
   en: {
-    1: "{variable} is {rising/falling} {effect} {unit} per decade (between {lo} and {hi}). All three methods see it. It holds when {N} areas are checked at once.",
+    1: "{variable} is {rising/falling} {effect} {unit} per decade (between {lo} and {hi}). All the methods see it. It holds when {N} areas are checked at once.",
     2: "There is a signal of {effect} {unit} per decade, but it does not pass every check ({k} of 3 methods see it). It may be real or chance.",
     3: "With {n} years of data only changes of {mde} or more per decade stand out, and we are looking for {δ}. About {years} more years would tell.",
     4: "No change of {δ} or more per decade shows up. With these data, one like that would have been seen in most cases.",

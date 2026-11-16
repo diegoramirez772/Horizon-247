@@ -34,7 +34,7 @@ It never forecasts, never gives advice and never presents a simulation as an obs
 | 📣 **A swarm of people** | Signed-in people report what they see; reports stay *unverified* until the team reviews them. |
 | 🎙️ **Hands-free** | Voice, camera gestures, numbered targets, keyboard and gamepad. Installable as an app (PWA), works offline with what you already saw. |
 
-> **A real example.** Durango, Mexico, air temperature 2001–2024: in **66 of 72** zones the warming is a confirmed
+> **A real example.** Durango, Mexico, air temperature 2001–2024: in **58 of 72** zones the warming is a confirmed
 > change, around **+0.5 °C per decade**. In the rest, the record is still too short to tell — and HORIZON says how many
 > more years it would take.
 

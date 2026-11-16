@@ -17,6 +17,15 @@ class Config:
     tfpw_ws_iterations: int = 6
     mde_power: float = 0.80
     coarse_resolution_deg: float = 2.0   # cells at least this coarse get the `resolucion_gruesa` flag
-    memory_hurst: float = 0.7            # «robust to long memory» check: Mann-Kendall variance under fGn(H) (see longmemory.py)
+    memory_hurst: float = 0.7            # Hurst exponent of the MK-LM voter: Mann-Kendall variance under fGn(H) (see longmemory.py)
     seed: int = 247
-    methods: tuple = ("MK-VC", "TFPW-WS", "OLS-AR1")   # which tests vote; PROBADO needs all of them (calibrated: all 3)
+    # which tests vote; PROBADO needs all of them. "MK-LM" (Mann-Kendall under long memory, see longmemory.py) can be
+    # added as a fourth voter; measured on the planet's own noise it is dominated by the e-BH requirement below.
+    methods: tuple = ("MK-VC", "TFPW-WS", "OLS-AR1")
+    # HORI 1.2: a PROBADO must also be discovered by e-BH (false discovery control under ANY dependence between cells
+    # and tests). Measured on the planet's own noise: FDR of PROBADO 6-23 % -> below the nominal 10 % in both noise
+    # models (1.0 % and 6.9 %; sim/null_planet.py, sim/rule_search_v12.py). False (with ci_hurst=None) reproduces HORI 1.0 exactly.
+    require_ebh: bool = True
+    # HORI 1.2: the 95 % interval of the effect is never narrower than the one of long-memory noise fGn(ci_hurst).
+    # Measured on the planet's own noise (sim/ci_coverage_v12.py): coverage 78-95 % -> 90-99.7 %. None = the AR(1) interval of 1.0.
+    ci_hurst: float | None = 0.8

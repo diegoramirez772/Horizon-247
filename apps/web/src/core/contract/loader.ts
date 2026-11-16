@@ -161,7 +161,7 @@ export function cellFinding(layer: Layer, index: number): CellFinding {
     yearsMore: Number.isNaN(ym) ? null : ym,
     verdict: (a.verdict ? a.verdict[index] : 0) as Verdict,
     flags: a.flags ? a.flags[index] : 0,
-    nSig: (a.nsig_methods ? Math.min(3, a.nsig_methods[index]) : 0) as 0 | 1 | 2 | 3,
+    nSig: (a.nsig_methods ? Math.min(4, a.nsig_methods[index]) : 0) as 0 | 1 | 2 | 3 | 4,
     naiveSig: a.naive_sig ? a.naive_sig[index] === 1 : false,
     series,
   };

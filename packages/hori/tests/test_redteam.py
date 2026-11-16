@@ -59,7 +59,7 @@ class TestRedTeam(unittest.TestCase):
         a[:, 12:] += 3.0
         _, _, n_p, warned = run(a.T, ANNUAL)
         print(f"\n[red team] 3-sigma step: false PROBADO {n_p}/{M}, with a warning flag {warned} ({warned / max(n_p, 1):.0%})")
-        self.assertGreater(warned / max(n_p, 1), 0.40)
+        self.assertLess(n_p, 0.15 * M)          # HORI 1.2 (e-BH required): 38/400; the three tests alone gave 216/400
 
     def test_LIMIT_random_walk_is_partly_read_as_trend_but_mostly_flagged(self):
         a = np.cumsum(self.rng.standard_normal((M, N)), axis=1)

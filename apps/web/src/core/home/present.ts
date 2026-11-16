@@ -106,7 +106,7 @@ export function presentMonitor(mon: HomeMonitor, reg: Register, lang: Lang, sour
     ["β (Sen)", `${signed(f.effect ?? NaN, lang, 3)} ${mon.variable.unit_per_decade}`],
     ["IC 95 %", `${signed(f.ci[0] ?? NaN, lang, 3)} … ${signed(f.ci[1] ?? NaN, lang, 3)}`],
     ["p · q", `${n(f.p, 4)} · ${n(f.q, 4)} (${mon.method.family})`],
-    [lang === "es" ? "Métodos" : "Methods", `${f.n_sig}/3 · ${mon.method.methods.join(", ")}`],
+    [lang === "es" ? "Métodos" : "Methods", `${f.n_sig}/${mon.method.methods.length} · ${mon.method.methods.join(", ")}`],
     ["e · e-BH", `${f.e_value !== null && f.e_value >= 1e4 ? f.e_value.toExponential(1) : n(f.e_value, 2)} · ${f.ebh === null ? "—" : f.ebh ? (lang === "es" ? "sí" : "yes") : "no"}`],
     ["MDE · δ", `${n(f.mde)} · ${n(f.delta)} (${f.delta_source ?? "—"})`],
     ["σ · r̂₁ · n", `${n(f.sigma)} · ${n(f.r1, 2)} · ${f.n}`],

@@ -37,6 +37,12 @@ class TestKnownAnswers(unittest.TestCase):
         z = mk_z(np.arange(10, dtype=float)[None, :])[0]
         self.assertAlmostEqual(z, (45 - 1) / math.sqrt(10 * 9 * 25 / 18), places=9)
 
+    def test_mann_kendall_corrects_its_variance_for_ties(self):
+        y = np.array([1, 2, 2, 3, 3, 3, 4, 5, 5, 6], dtype=float)          # tie groups of 2, 3 and 2
+        var = (10 * 9 * 25 - (2 * 1 * 9 + 3 * 2 * 11 + 2 * 1 * 9)) / 18.0   # Kendall (1975)
+        self.assertAlmostEqual(mk_z(y[None, :])[0], (40 - 1) / math.sqrt(var), places=9)
+        self.assertEqual(mk_z(np.zeros((1, 10)))[0], 0.0)                   # a constant series: nothing to test, no NaN
+
     def test_sen_slope_recovers_a_line(self):
         t = np.arange(12)
         self.assertAlmostEqual(sen_slope((2.0 * t + 1)[None, :])[0], 2.0)
@@ -57,6 +63,8 @@ class TestKnownAnswers(unittest.TestCase):
         self.assertAlmostEqual(float(mde_factor(40, np.array([0.5]))[0]), 1.22)
         self.assertAlmostEqual(float(mde_factor(10, np.array([0.9]))[0]), 1.73)     # clamped to n=15, phi=0.5
         self.assertGreater(float(mde_factor(30, np.array([0.2]))[0]), 1.1)
+        self.assertAlmostEqual(float(mde_factor(45, np.array([0.3]), "lm")[0]), 1.24)   # table with the MK-LM vote
+        self.assertGreater(float(mde_factor(23, np.array([0.0]), "ebh")[0]), float(mde_factor(23, np.array([0.0]))[0]))
 
     def test_mde_matches_the_measured_example(self):
         # n=23, phi=0.3: ideal MDE 1.20 sigma/decade * factor 1.27 = 1.53 (measured 1.53)

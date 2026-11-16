@@ -77,7 +77,7 @@ export function EvidenceDetails({ ctx, selection, seriesReady }: { ctx: Ctx; sel
           ) : null}
           {expert && selection.kind === "cell" ? (
             <>
-              <Row k={T.methods} v={`${f.nSig} / 3 · ${m.methods.join(", ")}`} />
+              <Row k={T.methods} v={`${f.nSig} / ${m.methods.length} · ${m.methods.join(", ")}`} />
               <Row k="r̂₁" v={num(f.r1, s.lang)} />
             </>
           ) : null}

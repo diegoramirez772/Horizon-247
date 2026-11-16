@@ -23,7 +23,8 @@ ENTITY_STATUS = ("real", "simulada", "no_verificada")
 BODIES = ("earth", "mars", "human")
 MODES = ("trend", "sequential")
 TREND_METHODS = ("MK-VC", "TFPW-WS", "OLS-AR1")
-PROFILES_VERSION = "auto-1"
+ALLOWED_METHODS = TREND_METHODS + ("MK-LM",)
+PROFILES_VERSION = "auto-2"
 
 
 class IdentityError(ValueError):
@@ -95,8 +96,8 @@ class Profile:
         _need(len(self.variables) > 0, f"profile {self.id}: needs at least one variable")
         _need(self.delta_per_decade is None or self.delta_per_decade > 0, f"profile {self.id}: delta must be > 0")
         if self.mode == "trend":
-            _need(set(self.methods) <= set(TREND_METHODS) and len(self.methods) >= 2,
-                  f"profile {self.id}: trend mode needs >= 2 of {TREND_METHODS}")
+            _need(set(self.methods) <= set(ALLOWED_METHODS) and len(self.methods) >= 2,
+                  f"profile {self.id}: trend mode needs >= 2 of {ALLOWED_METHODS}")
 
     def accepts(self, variable: str) -> bool:
         return variable in self.variables
@@ -227,7 +228,8 @@ def infer_profile(var: dict, values: np.ndarray | None = None, time=None, body: 
             methods = ("MK-VC", "TFPW-WS")
             flags.append("CEROS_FRECUENTES")
             decisions.append("Más de 10 % de años con media cero: OLS deja de votar (residuos lejos de normales) y quedan "
-                             "MK-VC + TFPW-WS. Esta combinación NO está calibrada por simulación.")
+                             "MK-VC + TFPW-WS (por rangos, con corrección de empates). "
+                             "Esta combinación NO está calibrada por simulación.")
         if at_bounds > 0.05:
             flags.append("ACOTADA")
             decisions.append("Más de 5 % de valores en el límite válido: variable acotada; v1 no transforma (logit pendiente), "

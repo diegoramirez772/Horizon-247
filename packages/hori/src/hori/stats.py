@@ -1,10 +1,14 @@
 """Trend statistics. Ported from the calibration study in sim/ (same rule, same numbers). NumPy only.
 
-Rule (the team method spec section 2, step 4): a trend is "detected" only when THREE reasonable methods agree —
-Mann-Kendall with variance correction (MK-VC), iterative trend-free prewhitening (TFPW-WS) and
-regression with AR(1) variance (OLS-AR1). Plain prewhitening is NOT used: it loses power on strong trends.
+Rule (the team method spec section 2, step 4): a trend is "detected" only when ALL the voting methods agree —
+Mann-Kendall with variance correction (MK-VC), iterative trend-free prewhitening (TFPW-WS) and regression with AR(1)
+variance (OLS-AR1). Mann-Kendall under long memory (MK-LM, see longmemory.py) is computed too: a marker by default,
+a fourth voter when Config.methods names it.
+Plain prewhitening is NOT used: it loses power on strong trends.
 
-Limitation: Mann-Kendall here has no tie correction (fine for continuous data).
+Mann-Kendall carries the tie correction of its variance (Kendall 1975): bounded or quantized variables (snow or ice
+fraction stuck at 0 or 1, precipitation in dry cells) repeat values, and the classical variance would be too large
+there. With no ties the numbers are exactly the classical ones.
 """
 from __future__ import annotations
 
@@ -22,13 +26,29 @@ def p_two(z: np.ndarray) -> np.ndarray:
     return out.reshape(z.shape)
 
 
+def mk_var_ratio(Y: np.ndarray) -> np.ndarray:
+    """Var(S) with ties / Var(S) without ties, per row: 1 - sum_g t_g (t_g - 1)(2 t_g + 5) / (n (n - 1)(2n + 5)).
+
+    1.0 for a row with no repeated values; 0.0 for a constant row (S = 0 and nothing can be tested).
+    """
+    m, n = Y.shape
+    out = np.ones(m)
+    srt = np.sort(Y, axis=1)
+    for c in np.where((srt[:, 1:] == srt[:, :-1]).any(axis=1))[0]:      # ties are rare: only those rows pay the loop
+        t = np.unique(srt[c], return_counts=True)[1].astype(float)
+        out[c] = 1.0 - float((t * (t - 1) * (2 * t + 5)).sum()) / (n * (n - 1) * (2 * n + 5))
+    return out
+
+
 def mk_z(Y: np.ndarray) -> np.ndarray:
-    """Mann-Kendall z for each row of Y [cells, n] (continuity-corrected)."""
+    """Mann-Kendall z for each row of Y [cells, n] (continuity-corrected, variance corrected for ties)."""
     m, n = Y.shape
     S = np.zeros(m)
     for i in range(n - 1):
         S += np.sign(Y[:, i + 1:] - Y[:, [i]]).sum(axis=1)
-    return (S - np.sign(S)) / math.sqrt(n * (n - 1) * (2 * n + 5) / 18)
+    var = n * (n - 1) * (2 * n + 5) / 18 * mk_var_ratio(Y)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return np.where(var > 0, (S - np.sign(S)) / np.sqrt(var), 0.0)
 
 
 def sen_slope(Y: np.ndarray, t: np.ndarray | None = None) -> np.ndarray:
@@ -49,7 +69,7 @@ def bias_corrected(r: np.ndarray, n: int) -> np.ndarray:
     return np.clip(r + (1 + 3 * r) / n, 0.0, 0.95)
 
 
-def analyze(Y: np.ndarray, tfpw_iterations: int = 6) -> dict:
+def analyze(Y: np.ndarray, tfpw_iterations: int = 6, memory_hurst: float | None = None) -> dict:
     """All per-cell statistics. Y has shape [cells, n] with NO missing values (interior gaps already filled)."""
     Y = np.asarray(Y, dtype=float)
     m, n = Y.shape
@@ -77,5 +97,9 @@ def analyze(Y: np.ndarray, tfpw_iterations: int = 6) -> dict:
     s2 = (res ** 2).sum(axis=1) / (n - 2)
     se = np.sqrt(s2 / Sxx * (1 + ro) / (1 - ro))
     z_ols = b_ols / se
-    return {"sen": b, "r1": r, "sigma": np.sqrt(s2), "se_ols": se, "z_naive": z_naive,
-            "z_vc": z_vc, "z_ws": z_ws, "z_ols": z_ols}
+    out = {"sen": b, "r1": r, "sigma": np.sqrt(s2), "se_ols": se, "z_naive": z_naive,
+           "z_vc": z_vc, "z_ws": z_ws, "z_ols": z_ols}
+    if memory_hurst is not None:                               # MK-LM: same S, variance of fGn(H) instead of white noise
+        from .longmemory import memory_scale
+        out["z_lm"] = z_naive * memory_scale(n, memory_hurst)
+    return out

@@ -11,8 +11,8 @@ from hori.api import Cube, run_layer, write_bundle
 
 ROOT = Path(__file__).resolve().parents[3] / "contract" / "examples"
 DGO = {"name": {"es": "Durango", "en": "Durango"}, "source": {"name": "caja aproximada (golden)"}}
-CASES = [("power_T2M_monthly_2001-2024.npz", 0.3, "power_t2m_dgo_2001-2024", (66, 1, 5)),
-         ("power_PRECTOTCORR_monthly_2001-2024.npz", 0.2, "power_prectotcorr_dgo_2001-2024", (2, 23, 47))]
+CASES = [("power_T2M_monthly_2001-2024.npz", 0.3, "power_t2m_dgo_2001-2024", (58, 9, 5)),
+         ("power_PRECTOTCORR_monthly_2001-2024.npz", 0.2, "power_prectotcorr_dgo_2001-2024", (0, 25, 47))]
 
 
 @unittest.skipUnless((ROOT / "cubes").is_dir(), "golden cubes not present")
