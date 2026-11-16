@@ -108,7 +108,7 @@ A plain regression on a map of 200,000 places marks thousands of them by chance 
 
 - **Three different trend tests agree** (Mann–Kendall with variance correction, trend-free pre-whitening, and regression with autocorrelated noise), so no single method's weakness decides the result.
 - **The claim survives a false-discovery check over the whole map**, because thousands of places are tested at once.
-- **A second, independent check agrees** (e-BH, built on e-values), whose guarantee holds however neighbouring places and tests depend on each other. On the planet's own noise it cut the share of false "detected" from 5.6 % to 1.0 %, and from 23.1 % to 6.9 % when slow natural wander is kept ([HORI 1.3](docs/hori.md)).
+- **A second, independent check agrees** (e-BH, built on e-values), whose guarantee holds however neighbouring places and tests depend on each other. On the planet's own noise it cut the share of false "detected" from 5.6 % to 1.0 %, and from 23.1 % to 6.9 % when slow natural wander is kept (since [HORI 1.2](docs/hori.md)).
 - **The record could have shown it.** For every place HORI computes the smallest change that record can reveal. That is what separates "no large change" from "not knowable yet".
 
 The same input always gives the same output. Error rates were measured on simulated data before the method was
