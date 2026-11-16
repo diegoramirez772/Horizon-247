@@ -8,6 +8,7 @@
     python -m zon earthdata search --short-name MOD13C2 --version 061 --start 2024-01-01 --end 2024-12-31
     python -m zon earthdata cube --recipe ndvi --out data/earthdata          # NASA Earthdata -> cubo mensual + evidencia
     python -m zon earthdata reproduce --evidence data/earthdata/ndvi/evidence.json --k 5
+    python -m zon riego --lat 25.55 --lon -103.5 --name "La Laguna" --out data/riego/laguna --state Durango   # riego que no se apaga en sequía (MODIS 250 m) + HORI
 """
 import argparse
 import sys
@@ -71,6 +72,22 @@ def main() -> None:
     dp.add_argument("--project", default=None, help="Supabase project ref (default: horizon-247)")
     dp.add_argument("--sql", default=None, help="only write the SQL to this file; send nothing")
     dp.add_argument("--cell-limit", type=int, default=500, help="cell findings only for regional boxes up to this many cells")
+    rg = sub.add_parser("riego", help="irrigation that does not switch off in a drought: green before the canals open (MODIS 250 m) + HORI")
+    rg.add_argument("--lat", type=float, required=True)
+    rg.add_argument("--lon", type=float, required=True)
+    rg.add_argument("--km-ns", type=int, default=50)
+    rg.add_argument("--km-ew", type=int, default=65)
+    rg.add_argument("--start", type=int, default=2001)
+    rg.add_argument("--end", type=int, default=2025)
+    rg.add_argument("--name", default="")
+    rg.add_argument("--out", required=True, help="work folder: composites, evidence.json, finding.json")
+    rg.add_argument("--thr", type=float, default=0.40)
+    rg.add_argument("--excess", type=float, default=0.20, help="NDVI above the year's scene median (removes rain-fed greening)")
+    rg.add_argument("--depth", action="append", default=[], metavar="LABEL=METRES", help="irrigation depth for the water bracket (repeatable)")
+    rg.add_argument("--state", help="also report inside this Natural Earth admin-1 region (e.g. Durango)")
+    rg.add_argument("--places-dir", default="data/places")
+    rg.add_argument("--copy-to", help="also write the finding here (e.g. apps/web/public/bundles/riego/laguna.json)")
+    rg.add_argument("--offline", action="store_true", help="use the composites already in --out")
     ed = sub.add_parser("earthdata", help="any NASA Earthdata mission: search, monthly cube + evidence, reproduce")
     ed.add_argument("action", choices=["search", "cube", "reproduce", "recipes"])
     ed.add_argument("--short-name")
@@ -93,6 +110,29 @@ def main() -> None:
         import json
         from .multivar import run as run_mv
         print(json.dumps(run_mv(args.vars, args.window[0], args.window[1], args.root, args.bundles), indent=1, ensure_ascii=False))
+        return
+    if args.cmd == "riego":
+        import json
+        from pathlib import Path
+        from . import places, riego
+        rings = None
+        if args.state:
+            shp = args.places_dir.rstrip("/") + "/ne_10m_admin_1_states_provinces"
+            recs, geoms = places.read_dbf(shp + ".dbf"), places.read_shp(shp + ".shp")
+            hit = [i for i, r in enumerate(recs) if places.norm(str(r.get("name") or "")) == places.norm(args.state)]
+            if not hit:
+                sys.exit(f"no admin-1 region named {args.state!r}")
+            rings = geoms[hit[0]]
+        depths = {k: float(v) for k, v in (d.split("=", 1) for d in args.depth)} or None
+        doc = riego.run(args.lat, args.lon, args.km_ns, args.km_ew, args.start, args.end, args.out, name=args.name,
+                        thr=args.thr, excess=args.excess, depths_m=depths, region_rings=rings, region_name=args.state or "",
+                        offline=args.offline, progress=lambda i, n, d: print(f"\r  {i}/{n} A{d}", end="", file=sys.stderr))
+        if args.copy_to:
+            Path(args.copy_to).parent.mkdir(parents=True, exist_ok=True)
+            Path(args.copy_to).write_text(json.dumps(doc, indent=1, ensure_ascii=False), encoding="utf-8")
+        a = doc["all"]
+        print(f"{doc['name'] or doc['id']}: piso {a['floor_ha']} ha ({a['floor_year']}), mediana {a['median_ha']} ha, "
+              f"nuevo {a['new_ha']} ha, perdido {a['lost_ha']} ha, HORI sube {a['hori']['supported_up_ha']} ha / baja {a['hori']['supported_down_ha']} ha")
         return
     if args.cmd == "earthdata":
         from .earthdata_cli import run
