@@ -17,19 +17,34 @@ _PHIS = np.array([0.0, 0.3, 0.5])
 _FACTOR = np.array([[1.49, 1.49, 1.73],         # n = 15
                     [1.31, 1.27, 1.41],         # n = 23
                     [1.22, 1.19, 1.22]])        # n = 40
+# Same measurement for the rule with a fourth voter (the three tests above + MK-LM), extended to n = 45 (sim/mde_consensus_mklm.py).
+# The long-memory vote costs most when the noise is white (it assumes more memory than there is).
+_NS_LM = np.array([15.0, 23.0, 40.0, 45.0])
+_FACTOR_LM = np.array([[1.65, 1.56, 1.74],      # n = 15
+                       [1.55, 1.33, 1.39],      # n = 23
+                       [1.52, 1.23, 1.20],      # n = 40
+                       [1.58, 1.24, 1.22]])     # n = 45
+# HORI 1.2 rule (three tests + e-BH at the reference bar e >= 50; sim/mde_consensus_v12.py).
+_FACTOR_EBH = np.array([[1.82, 1.65, 1.77],
+                        [1.74, 1.63, 1.63],
+                        [1.68, 1.59, 1.60],
+                        [1.64, 1.58, 1.58]])     # n = 15, 23, 40, 45
 YEARS_CAP = 255.0                               # sentinel: "more than 60 years"
 
 
-def mde_factor(n: int, r: np.ndarray) -> np.ndarray:
-    """Measured MDE inflation factor, interpolated linearly in n and in r (edges are clamped)."""
-    n = float(np.clip(n, _NS[0], _NS[-1]))
-    row = np.array([np.interp(n, _NS, _FACTOR[:, k]) for k in range(len(_PHIS))])
+def mde_factor(n: int, r: np.ndarray, rule: str = "v10") -> np.ndarray:
+    """Measured MDE inflation factor, interpolated linearly in n and in r (edges are clamped).
+
+    rule: "v10" three tests (HORI 1.0) · "ebh" three tests + e-BH (HORI 1.2, the default verdict) · "lm" with the MK-LM vote."""
+    ns, table = {"v10": (_NS, _FACTOR), "lm": (_NS_LM, _FACTOR_LM), "ebh": (_NS_LM, _FACTOR_EBH)}[rule]
+    n = float(np.clip(n, ns[0], ns[-1]))
+    row = np.array([np.interp(n, ns, table[:, k]) for k in range(len(_PHIS))])
     return np.interp(np.clip(r, 0.0, 0.5), _PHIS, row)
 
 
-def mde_per_decade(sigma: np.ndarray, r: np.ndarray, n: int) -> np.ndarray:
+def mde_per_decade(sigma: np.ndarray, r: np.ndarray, n: int, rule: str = "v10") -> np.ndarray:
     se = sigma * np.sqrt(12.0 / (n * (n * n - 1.0)) * (1 + r) / (1 - r))
-    return 10.0 * K80 * se * mde_factor(n, r)
+    return 10.0 * K80 * se * mde_factor(n, r, rule)
 
 
 def years_more(mde: np.ndarray, delta: np.ndarray, n: int) -> np.ndarray:

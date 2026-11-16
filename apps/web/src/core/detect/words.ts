@@ -55,6 +55,7 @@ export function focusWords(f: Focus, m: Manifest, lang: Lang): FocusWords {
         `δ ${num(f.delta, lang, 2)}`,
         `q ${es ? "mediano" : "median"} ${q(f.qMedian, lang)}`,
         f.ebhShare === null ? "" : `e-BH ${es ? "coincide en" : "agrees on"} ${num(f.ebhShare * 100, lang, 0)} %`,
+        f.regionShare === null ? "" : `${num(f.regionShare * 100, lang, 0)} % ${es ? "dentro de una región que cambia junta" : "inside a region changing together"}`,
         cells,
         flags ? `${es ? "Avisos" : "Flags"}: ${flags}` : "",
       ].filter(Boolean).join(" · "),

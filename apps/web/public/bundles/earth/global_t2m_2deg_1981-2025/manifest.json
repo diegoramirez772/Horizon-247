@@ -11,36 +11,7 @@
     "kind": "region_cell",
     "body": "earth",
     "count": 12960,
-    "valid": 12960,
-    "id": "earth-bbox-88-75s-179-062w-89-25n-178-438e",
-    "type": "region",
-    "name": {
-      "es": "Recuadro [-88.75, -179.0625, 89.25, 178.4375]",
-      "en": "Box [-88.75, -179.0625, 89.25, 178.4375]"
-    },
-    "status": "real",
-    "version": "1",
-    "source": {
-      "place": {
-        "name": "recuadro de la consulta"
-      },
-      "dataset": "NASA POWER ARD (MERRA-2), Zarr on AWS",
-      "dataset_url": "https://nasa-power.s3.us-west-2.amazonaws.com/merra2/temporal/power_merra2_monthly_temporal_lst.zarr",
-      "dataset_version": "",
-      "variable": "T2M",
-      "input_sha256": "fd2f2615723d0d975aed8feb0118af532902426131a6c86cc38a24c822a1c716",
-      "card_sha256": "6981875d2b3ee3b970f903dc9915e1d58cc1650c9567777da4e125d48f31229b"
-    },
-    "geometry": {
-      "type": "bbox",
-      "bbox": [
-        -88.75,
-        -179.0625,
-        89.25,
-        178.4375
-      ]
-    },
-    "relations": []
+    "valid": 12960
   },
   "grid": {
     "type": "latlon",
@@ -73,17 +44,19 @@
     "delta_per_decade": 0.3,
     "delta_source": "profile",
     "memory_hurst": 0.7,
+    "require_ebh": true,
+    "ci_hurst": 0.8,
     "min_valid_years": 10,
     "min_months": 9
   },
   "detectability": {
     "cells": 12960,
     "n_years": 45,
-    "share_detectable_now": 0.5735,
-    "share_needs_more_than_60_years": 0.0016,
-    "years_more_p50": 13.0,
-    "years_more_p90": 29.0,
-    "not_yet_knowable": 1670,
+    "share_detectable_now": 0.4387,
+    "share_needs_more_than_60_years": 0.0073,
+    "years_more_p50": 19.0,
+    "years_more_p90": 40.0,
+    "not_yet_knowable": 2244,
     "note": "MDE <= delta: a change of size delta would have been detected with >= 80 % power (noise model)."
   },
   "methods": [
@@ -112,17 +85,17 @@
     "cells_valid": 12960,
     "naive_marked": 9633,
     "ebh_discoveries": 5584,
-    "probado_robusto_memoria": 7007,
+    "probado_robusto_memoria": 5520,
     "bh_discoveries": 8459,
     "quiebre_posible": 1429,
     "insuficiente": 0,
-    "probado": 8118,
-    "candidata": 1081,
-    "no_concluyente": 1670,
-    "sin_cambio_mayor_que_delta": 2091
+    "probado": 5584,
+    "candidata": 3615,
+    "no_concluyente": 2244,
+    "sin_cambio_mayor_que_delta": 1517
   },
   "calibration": {
-    "note": "Measured by simulation (AR(1) Gaussian noise, n=23): false alarms 5.2% (phi=0.3) and 6.8% (phi=0.5); power 92% / 78% at 2 sigma per decade. Illustrates, does not prove, behaviour on real data. See sim/."
+    "note": "HORI 1.2: three tests (MK-VC, TFPW-WS, OLS-AR1) + BH + e-BH. Measured on the planet's own noise (phase-randomized T2M 1981-2025, 52,128 cells, sim/null_planet.py): false discovery rate of PROBADO 1.0% to 6.9% (nominal 10%; without e-BH: 5.6% to 23.1%), power 59% / 51% at delta. Illustrates, does not prove, behaviour on other data. See sim/."
   },
   "honesty": {
     "data_real": true,
@@ -132,54 +105,58 @@
   },
   "warnings": [],
   "build": {
-    "hori": "0.0.1",
+    "hori": "1.3.0",
     "python": "3.14.8",
     "numpy": "2.5.4",
     "seed": 247,
-    "input_sha256": "fd2f2615723d0d975aed8feb0118af532902426131a6c86cc38a24c822a1c716",
-    "created_at": "2026-11-15T08:40:50Z"
+    "input_sha256": "444128d06be96a8048cf29e69e4502193c868e5a99539d4c8438ab1f2aa01206",
+    "created_at": "2026-11-16T04:30:22Z"
   },
-  "profile_spec": {
-    "id": "auto.temperatura.t2m",
-    "version": "auto-1",
-    "body": "earth",
-    "mode": "trend",
-    "variables": [
-      "T2M"
-    ],
-    "unit": "C",
-    "aggregation": {
-      "step": "annual",
-      "method": "mean_monthly_anomaly",
-      "min_months": 9
+  "regions": {
+    "count": 3,
+    "cells": 6009,
+    "candidates": 40,
+    "params": {
+      "z0": 3.0,
+      "alpha": 0.05,
+      "surrogates": 200,
+      "seed": 247,
+      "wrap": true,
+      "connectivity": 4,
+      "null": "same-phase Fourier surrogates of the line residuals",
+      "error": "family-wise over regions"
     },
-    "delta_per_decade": 0.3,
-    "delta_rationale": "0.3 °C/década: algo más que el calentamiento global reciente (~0.2 °C/década en superficie), para que lo que se marque sea un cambio regional notable. Valor de trabajo del equipo, no de la literatura.",
-    "review": "automatico",
-    "methods": [
-      "MK-VC",
-      "TFPW-WS",
-      "OLS-AR1"
+    "threshold_mass": 166.057,
+    "items": [
+      {
+        "id": 1,
+        "sign": 1,
+        "cells": 5292,
+        "mass": 11459.031,
+        "p": 0.00498,
+        "z_mean": 5.165,
+        "cells_probado": 4758
+      },
+      {
+        "id": 2,
+        "sign": 1,
+        "cells": 491,
+        "mass": 557.107,
+        "p": 0.00498,
+        "z_mean": 4.135,
+        "cells_probado": 470
+      },
+      {
+        "id": -3,
+        "sign": -1,
+        "cells": 226,
+        "mass": 204.949,
+        "p": 0.0398,
+        "z_mean": -3.907,
+        "cells_probado": 142
+      }
     ],
-    "name": {
-      "es": "Temperature at 2 Meters",
-      "en": "Temperature at 2 Meters"
-    },
-    "physical_class": "temperatura",
-    "decisions": [
-      "Clase física «Temperatura» porque units = 'C' y el nombre dice 'temperat'; δ = 0.3 C/década (tabla curada).",
-      "Agregación anual = media de anomalías mensuales (≥ 9 de 12 meses), coherente con cell_methods = 'time: mean'.",
-      "Medido en los datos: 0.0% de meses en cero, 0.0% en los límites válidos, 0.0% de años con media cero.",
-      "Tras correr: σ interanual mediana 0.5054, φ̂ mediana 0.2239, MDE mediano 0.2601 C/década frente a δ 0.3."
-    ],
-    "flags": [],
-    "measured": {
-      "sigma_median": 0.5054,
-      "r1_median": 0.2239,
-      "mde_median": 0.2601,
-      "delta_used_median": 0.3
-    },
-    "catalog_version": "auto-1"
+    "claim": "The region as a whole is changing (family-wise error over the map). Not every cell inside is PROBADO."
   },
   "title": {
     "es": "Temperatura del aire (2 m) · año por año",
@@ -258,6 +235,10 @@
       "file": "robust_mem.u8",
       "dtype": "u8"
     },
+    "region": {
+      "file": "region.u8",
+      "dtype": "u8"
+    },
     "break_year": {
       "file": "break_year.f32",
       "dtype": "f32"
@@ -317,5 +298,47 @@
       2024,
       2025
     ]
+  },
+  "profile_spec": {
+    "id": "auto.temperatura.t2m",
+    "version": "auto-1",
+    "body": "earth",
+    "mode": "trend",
+    "variables": [
+      "T2M"
+    ],
+    "unit": "C",
+    "aggregation": {
+      "step": "annual",
+      "method": "mean_monthly_anomaly",
+      "min_months": 9
+    },
+    "delta_per_decade": 0.3,
+    "delta_rationale": "0.3 °C/década: algo más que el calentamiento global reciente (~0.2 °C/década en superficie), para que lo que se marque sea un cambio regional notable. Valor de trabajo del equipo, no de la literatura.",
+    "review": "automatico",
+    "methods": [
+      "MK-VC",
+      "TFPW-WS",
+      "OLS-AR1"
+    ],
+    "name": {
+      "es": "Temperature at 2 Meters",
+      "en": "Temperature at 2 Meters"
+    },
+    "physical_class": "temperatura",
+    "decisions": [
+      "Clase física «Temperatura» porque units = 'C' y el nombre dice 'temperat'; δ = 0.3 C/década (tabla curada).",
+      "Agregación anual = media de anomalías mensuales (≥ 9 de 12 meses), coherente con cell_methods = 'time: mean'.",
+      "Medido en los datos: 0.0% de meses en cero, 0.0% en los límites válidos, 0.0% de años con media cero.",
+      "Tras correr: σ interanual mediana 0.5054, φ̂ mediana 0.2239, MDE mediano 0.2601 C/década frente a δ 0.3."
+    ],
+    "flags": [],
+    "measured": {
+      "sigma_median": 0.5054,
+      "r1_median": 0.2239,
+      "mde_median": 0.2601,
+      "delta_used_median": 0.3
+    },
+    "catalog_version": "auto-1"
   }
 }

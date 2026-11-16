@@ -29,4 +29,5 @@ class LayerResult:
     e_cons: np.ndarray | None = None       # [cells] mean e-value of the voting tests (parallel evidence, H6)
     ebh_sig: np.ndarray | None = None      # [cells] 1 if discovered by e-BH at fdr_q (valid under any dependence)
     robust_mem: np.ndarray | None = None   # [cells] 1 if PROBADO and still significant with the variance of fGn(Config.memory_hurst)
+    region: np.ndarray | None = None       # [cells] u8, HORI 1.3: 0 = in no significant region, 1 = rising region, 2 = falling region
     delta: np.ndarray | None = None   # [cells] the delta each cell was judged against (D2: always visible)

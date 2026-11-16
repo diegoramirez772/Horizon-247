@@ -12,7 +12,7 @@
     "body": "earth",
     "count": 72,
     "valid": 72,
-    "id": "mx-dgo",
+    "id": "earth-durango",
     "type": "region",
     "name": {
       "es": "Durango",
@@ -21,24 +21,26 @@
     "status": "real",
     "version": "1",
     "source": {
-      "name": "equipo AETHRA",
-      "note": "caja aproximada del estado, NO el polígono oficial"
+      "place": {
+        "name": "caja aproximada (golden)"
+      },
+      "dataset": "NASA POWER (MERRA2)",
+      "dataset_url": "https://power.larc.nasa.gov/api/temporal",
+      "dataset_version": "v2.10.0",
+      "variable": "T2M",
+      "input_sha256": "faf27af98789ba5be2eb82e2dbb7df33c196fffed258ab540fb0ea57b4b6e2a5",
+      "card_sha256": "a6b57972a2ac27458f84e028b735a03bd0cb5d5c3e1da57fd9c3b65188d306cc"
     },
     "geometry": {
       "type": "bbox",
       "bbox": [
-        22.3,
-        -107.2,
-        26.8,
+        22.5,
+        -106.875,
+        26.5,
         -102.5
       ]
     },
-    "relations": [
-      {
-        "rel": "part_of",
-        "target": "mx"
-      }
-    ]
+    "relations": []
   },
   "grid": {
     "type": "latlon",
@@ -73,8 +75,21 @@
     "delta_sigma_per_decade": 2.0,
     "delta_per_decade": 0.3,
     "delta_source": "profile",
+    "memory_hurst": 0.7,
+    "require_ebh": true,
+    "ci_hurst": 0.8,
     "min_valid_years": 10,
     "min_months": 9
+  },
+  "detectability": {
+    "cells": 72,
+    "n_years": 24,
+    "share_detectable_now": 0.0,
+    "share_needs_more_than_60_years": 0.0,
+    "years_more_p50": 19.0,
+    "years_more_p90": 24.0,
+    "not_yet_knowable": 5,
+    "note": "MDE <= delta: a change of size delta would have been detected with >= 80 % power (noise model)."
   },
   "methods": [
     "MK-VC",
@@ -95,19 +110,24 @@
     "8": "resolucion_gruesa",
     "16": "reconstruccion",
     "32": "simulado",
-    "64": "autocorrelacion_alta"
+    "64": "autocorrelacion_alta",
+    "128": "quiebre_posible"
   },
   "summary": {
     "cells_valid": 72,
     "naive_marked": 72,
+    "ebh_discoveries": 58,
+    "probado_robusto_memoria": 58,
+    "bh_discoveries": 67,
+    "quiebre_posible": 0,
     "insuficiente": 0,
-    "probado": 66,
-    "candidata": 1,
+    "probado": 58,
+    "candidata": 9,
     "no_concluyente": 5,
     "sin_cambio_mayor_que_delta": 0
   },
   "calibration": {
-    "note": "Measured by simulation (AR(1) Gaussian noise, n=23): false alarms 5.2% (phi=0.3) and 6.8% (phi=0.5); power 92% / 78% at 2 sigma per decade. Illustrates, does not prove, behaviour on real data. See sim/."
+    "note": "HORI 1.2: three tests (MK-VC, TFPW-WS, OLS-AR1) + BH + e-BH. Measured on the planet's own noise (phase-randomized T2M 1981-2025, 52,128 cells, sim/null_planet.py): false discovery rate of PROBADO 1.0% to 6.9% (nominal 10%; without e-BH: 5.6% to 23.1%), power 59% / 51% at delta. Illustrates, does not prove, behaviour on other data. See sim/."
   },
   "honesty": {
     "data_real": true,
@@ -117,50 +137,58 @@
   },
   "warnings": [],
   "build": {
-    "hori": "0.0.1",
+    "hori": "1.2.0",
     "python": "3.14.8",
     "numpy": "2.5.4",
     "seed": 247,
     "input_sha256": "faf27af98789ba5be2eb82e2dbb7df33c196fffed258ab540fb0ea57b4b6e2a5",
-    "created_at": "2026-11-14T23:46:40Z"
+    "created_at": "2026-11-16T03:53:02Z"
   },
   "profile_spec": {
-    "id": "tierra.temperatura",
-    "version": "1",
+    "id": "auto.temperatura.t2m",
+    "version": "auto-2",
     "body": "earth",
     "mode": "trend",
     "variables": [
-      "T2M",
-      "tempanomaly"
+      "T2M"
     ],
-    "unit": "°C",
+    "unit": "C",
     "aggregation": {
       "step": "annual",
       "method": "mean_monthly_anomaly",
       "min_months": 9
     },
     "delta_per_decade": 0.3,
-    "delta_rationale": "Del orden del calentamiento global reciente (~0.2 °C/década en superficie); 0.3 hace visible un cambio regional mayor que el global. Valor de trabajo del equipo, no de la literatura.",
-    "review": "propuesto",
+    "delta_rationale": "0.3 °C/década: algo más que el calentamiento global reciente (~0.2 °C/década en superficie), para que lo que se marque sea un cambio regional notable. Valor de trabajo del equipo, no de la literatura.",
+    "review": "automatico",
     "methods": [
       "MK-VC",
       "TFPW-WS",
       "OLS-AR1"
     ],
     "name": {
-      "es": "Temperatura del aire",
-      "en": "Air temperature"
+      "es": "Temperature at 2 Meters",
+      "en": "Temperature at 2 Meters"
     },
-    "catalog_version": "1"
-  },
-  "layer": "mx-dgo.t2m.power",
-  "registry": {
-    "catalog_version": "2026-11-14.1",
-    "catalog_sha256": "c8ec2a1c93248a85b6e741922bbbc683d0d53df6fed044f6b55b1d2a6796c7ab"
+    "physical_class": "temperatura",
+    "decisions": [
+      "Clase física «Temperatura» porque units = 'C' y el nombre dice 'temperat'; δ = 0.3 C/década (tabla curada).",
+      "Agregación anual = media de anomalías mensuales (≥ 9 de 12 meses); la fuente no declara cell_methods = mean, se asume que los meses son medias.",
+      "Medido en los datos: 0.0% de meses en cero, 0.0% en los límites válidos, 0.0% de años con media cero.",
+      "Tras correr: σ interanual mediana 0.4439, φ̂ mediana 0.1329, MDE mediano 0.7085 C/década frente a δ 0.3."
+    ],
+    "flags": [],
+    "measured": {
+      "sigma_median": 0.4439,
+      "r1_median": 0.1329,
+      "mde_median": 0.7085,
+      "delta_used_median": 0.3
+    },
+    "catalog_version": "auto-2"
   },
   "title": {
-    "es": "Temperatura del aire a 2 m · Durango (caja aproximada)",
-    "en": "Air temperature at 2 m · Durango (approximate box)"
+    "es": "T2M",
+    "en": "T2M"
   },
   "arrays": {
     "effect": {
@@ -218,6 +246,26 @@
     "naive_sig": {
       "file": "naive_sig.u8",
       "dtype": "u8"
+    },
+    "delta": {
+      "file": "delta.f32",
+      "dtype": "f32"
+    },
+    "e_cons": {
+      "file": "e_cons.f32",
+      "dtype": "f32"
+    },
+    "ebh_sig": {
+      "file": "ebh_sig.u8",
+      "dtype": "u8"
+    },
+    "robust_mem": {
+      "file": "robust_mem.u8",
+      "dtype": "u8"
+    },
+    "break_year": {
+      "file": "break_year.f32",
+      "dtype": "f32"
     }
   },
   "series": {
@@ -253,5 +301,10 @@
       2023,
       2024
     ]
-  }
+  },
+  "registry": {
+    "catalog_version": "2026-11-14.1",
+    "catalog_sha256": "c8ec2a1c93248a85b6e741922bbbc683d0d53df6fed044f6b55b1d2a6796c7ab"
+  },
+  "layer": "mx-dgo.t2m.power"
 }

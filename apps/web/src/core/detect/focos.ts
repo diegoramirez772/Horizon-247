@@ -48,6 +48,8 @@ export interface Focus {
   qMedian: number;
   /** Share of cells that the e-value procedure (e-BH) also flags; null when the bundle has no e-BH. */
   ebhShare: number | null;
+  /** Share of cells inside a significant region of HORI 1.3 (`region.u8`); null when the bundle has none. */
+  regionShare: number | null;
   /** Quality flags carried by at least 30 % of the cells. */
   flags: FlagName[];
   /** «no se sabe» zones: median years still needed (null = no estimate; 255 = more than 60) and share of candidates. */
@@ -200,6 +202,8 @@ function describe(m: Manifest, a: Arrays, cells: number[], kind: FocusKind, sign
   const qMedian = median(cells.map((i) => a.q_cons?.[i] ?? NaN));
   const ebh = a.ebh_sig;
   const ebhShare = ebh ? cells.filter((i) => ebh[i] === 1).length / cells.length : null;
+  const reg = a.region;
+  const regionShare = reg ? cells.filter((i) => reg[i] > 0).length / cells.length : null;
   const ym = a.years_more;
   // years_more: 255 = «more than 60» (SPEC §2); keep it as such in the median, it is an order, not a value.
   const yearsMore = ym ? median(cells.map((i) => ym[i])) : NaN;
@@ -216,7 +220,7 @@ function describe(m: Manifest, a: Arrays, cells: number[], kind: FocusKind, sign
   return {
     kind, cells, areaKm2: area, sign, ...geometry(m, cells, w),
     effect, ciLo: wmean(a.ci_lo), ciHi: wmean(a.ci_hi), ciMin: Number.isFinite(lo) ? lo : NaN, ciMax: Number.isFinite(hi) ? hi : NaN,
-    delta, qMedian, ebhShare,
+    delta, qMedian, ebhShare, regionShare,
     flags: flagsOf(a, cells),
     yearsMore: Number.isFinite(yearsMore) ? (yearsMore >= YEARS_MORE_OVER_60 ? YEARS_MORE_OVER_60 : yearsMore) : null,
     candidateShare: candidates / cells.length,

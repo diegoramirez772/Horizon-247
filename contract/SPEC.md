@@ -175,7 +175,7 @@ El selector **[Técnico | Sencillo]** cambia solo el texto; los números y la ev
 Tres niveles sobre los mismos números: **Simple** = §8.5 · **Normal** = esta tabla · **Experto** = §5. Normal muestra gráfica, comparación, «desde cuándo se sabe» e intervalo, **sin** p/q a la vista. En URL: `reg=sencillo|normal|experto`.
 | Veredicto | Español (normal) | English (normal) |
 |---|---|---|
-| PROBADO | «{Variable} {sube/baja} {efecto} {unidad} por década (entre {lo} y {hi}). El cambio aparece con los tres métodos y se mantiene al revisar {N} zonas a la vez.» | "{Variable} is {rising/falling} {effect} {unit} per decade (between {lo} and {hi}). All three methods see it, and it holds when {N} areas are checked at once." |
+| PROBADO | «{Variable} {sube/baja} {efecto} {unidad} por década (entre {lo} y {hi}). El cambio aparece con todos los métodos y se mantiene al revisar {N} zonas a la vez.» | "{Variable} is {rising/falling} {effect} {unit} per decade (between {lo} and {hi}). All the methods see it, and it holds when {N} areas are checked at once." |
 | CANDIDATA | «Hay una señal de {efecto} {unidad} por década, pero no pasa todos los filtros ({k} de 3 métodos la ven). Puede ser real o casualidad.» | "There is a signal of {effect} {unit} per decade, but it does not pass every check ({k} of 3 methods see it). It may be real or chance." |
 | NO_CONCLUYENTE | «Con {n} años de datos solo se distinguen cambios de {mde} o más por década, y lo que buscamos es {δ}. Con ~{años} años más se podría saber.» | "With {n} years of data only changes of {mde} or more per decade stand out, and we are looking for {δ}. About {years} more years would tell." |
 | SIN_CAMBIO | «No aparece un cambio de {δ} o más por década. Con estos datos, uno así se habría visto en la gran mayoría de los casos.» | "No change of {δ} or more per decade shows up. With these data, one like that would have been seen in most cases." |
@@ -277,6 +277,7 @@ Carpeta `earth/timeline_<var>_<inicio>-<fin>/` con `timeline.json` + arreglos po
 - Arreglo `delta.f32` (el δ con el que se juzgó cada celda) y `manifest.detectability` (qué parte del mapa ya podría ver un cambio δ y cuántos años faltan en el resto).
 
 ### 10.7 Memoria larga (L2b) — «PROBADO robusto»
+- Arreglo `region.u8` (HORI 1.3, opcional): 0 = la celda no está en ninguna región significativa, 1 = dentro de una región que sube, 2 = dentro de una que baja. `manifest.regions` trae `count`, `cells`, `params` (z0, alpha, sustitutos, semilla) e `items` (id, sign, cells, mass, p, cells_probado). La afirmación es sobre la región entera (error por familia en el mapa), **no cambia el veredicto** de cada celda. Desde HORI 1.2, `params.require_ebh = true` significa que PROBADO exige además `ebh_sig = 1`, y `params.ci_hurst` es el H del intervalo.
 - Arreglo `robust_mem.u8` (1 = PROBADO **y** sigue significativo a `alpha` con la varianza de Mann-Kendall de ruido fGn(H), H = `params.memory_hurst`, 0.7 por defecto; 0 = no). **No cambia el veredicto**: es una afirmación más fuerte que se muestra al lado. `manifest.summary.probado_robusto_memoria` cuenta las celdas.
 - No se estima H por celda: con 24–45 años la estimación sale sesgada hacia abajo (medido) y tendencia y memoria larga no se separan. Detalle y cifras en `docs/MODEL_CARD.md`.
 

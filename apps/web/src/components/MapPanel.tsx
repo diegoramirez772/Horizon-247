@@ -494,7 +494,7 @@ function Readout({ ctx, index, hint }: { ctx: Ctx; index: number; hint: string }
       `${n(lat, 2)}°, ${n(lon, 2)}°`, `#${index}`, CODE[f.verdict],
       `β ${n(f.effect)} [${n(f.ci[0])}, ${n(f.ci[1])}] ${m.variable.unit_per_decade}`,
       `p ${n(f.p, 3)}`, `q ${n(f.q, 3)}`, `MDE ${n(f.mde)}`, `σ ${n(f.sigma)}`, `r̂₁ ${n(f.r1)}`,
-      `${f.nSig}/3`, f.yearsMore === null ? "" : f.yearsMore === 255 ? "+60 a" : `+${Math.round(f.yearsMore)} a`,
+      `${f.nSig}/${m.methods.length}`, f.yearsMore === null ? "" : f.yearsMore === 255 ? "+60 a" : `+${Math.round(f.yearsMore)} a`,
     ].filter(Boolean).join("  ·  ");
   }
   return (

@@ -22,6 +22,7 @@ from .config import Config
 from .anomaly import AnomalyResult, accumulated_z, z_last
 from .anomaly import detect as detect_anomalies
 from .anomaly import events as anomaly_events
+from .clusters import Regions, significant_regions
 from .cube import Cube
 from .state import entity_state, explain
 from .joint import LEVELS as JOINT_LEVELS, RULES as JOINT_RULES, Rule as JointRule, apply_rule as joint_rule, explain_cell as joint_explain, run_joint
@@ -39,13 +40,16 @@ from .stats import Z_CRIT, analyze, p_two
 from .verdict import (CODES, PROBADO, FLAG_BITS, F_QUIEBRE_POSIBLE, NO_CONCLUYENTE, F_AUTOCORR_ALTA, F_COBERTURA_BAJA, F_DEPENDE_METODO, F_RECONSTRUCCION,
                       F_RESOLUCION_GRUESA, F_SIMULADO, decide)
 
-__all__ = ["JOINT_LEVELS", "JOINT_RULES", "JointRule", "joint_rule", "joint_explain", "run_joint", "z_last", "physical_class", "accumulated_z", "entity_state", "explain", "classify_report", "swarm_signals", "AnomalyResult", "anomaly_events", "detect_anomalies", "Config", "Cube", "Entity", "IdentityError", "LayerResult", "Profile", "cell_stats", "infer_profile", "auto_entity", "run_grid",
+__all__ = ["Regions", "significant_regions", "add_regions", "JOINT_LEVELS", "JOINT_RULES", "JointRule", "joint_rule", "joint_explain", "run_joint", "z_last", "physical_class", "accumulated_z", "entity_state", "explain", "classify_report", "swarm_signals", "AnomalyResult", "anomaly_events", "detect_anomalies", "Config", "Cube", "Entity", "IdentityError", "LayerResult", "Profile", "cell_stats", "infer_profile", "auto_entity", "run_grid",
            "run_timeline", "summarize", "to_annual", "Timeline", "EVENT_CODES", "TIER_CODES",
            "run_layer", "write_bundle"]
 CONTRACT = "0.4"
 METHODS = ["MK-VC", "TFPW-WS", "OLS-AR1"]
-CALIBRATION_NOTE = ("Measured by simulation (AR(1) Gaussian noise, n=23): false alarms 5.2% (phi=0.3) and 6.8% (phi=0.5); "
-                    "power 92% / 78% at 2 sigma per decade. Illustrates, does not prove, behaviour on real data. See sim/.")
+CALIBRATION_NOTE = ("HORI 1.2: three tests (MK-VC, TFPW-WS, OLS-AR1) + BH + e-BH. Measured on the planet's own noise (phase-randomized "
+                    "T2M 1981-2025, 52,128 cells, sim/null_planet.py): false discovery rate of PROBADO 1.0% to 6.9% (nominal 10%; "
+                    "without e-BH: 5.6% to 23.1%), power 59% / 51% at delta. Illustrates, does not prove, behaviour on other data. See sim/.")
+CALIBRATION_NOTE_V10 = ("Measured by simulation (AR(1) Gaussian noise, n=23): false alarms 5.2% (phi=0.3) and 6.8% (phi=0.5); "
+                        "power 92% / 78% at 2 sigma per decade. Illustrates, does not prove, behaviour on real data. See sim/.")
 
 
 def physical_class(variable: dict) -> str | None:
@@ -111,24 +115,26 @@ def cell_stats(values: np.ndarray, time, cfg: Config) -> dict:
               filled=filled, nvalid=nvalid, series=series, years=years, anomaly=anomaly,
               break_flag=np.zeros(cells, dtype=bool), break_year=nan())
     if usable.any():
-        s = analyze(series[usable], cfg.tfpw_ws_iterations)
-        ps = {"MK-VC": p_two(s["z_vc"]), "TFPW-WS": p_two(s["z_ws"]), "OLS-AR1": p_two(s["z_ols"])}
+        s = analyze(series[usable], cfg.tfpw_ws_iterations, cfg.memory_hurst)
+        zs = {"MK-VC": s["z_vc"], "TFPW-WS": s["z_ws"], "OLS-AR1": s["z_ols"], "MK-LM": s["z_lm"]}
+        ps = {m: p_two(z) for m, z in zs.items()}
         used = [ps[m] for m in cfg.methods]
         eff = s["sen"] * 10.0
         half = Z_CRIT * s["se_ols"] * 10.0
+        if cfg.ci_hurst is not None:                                        # never narrower than under fGn(ci_hurst) noise
+            half = half * np.maximum(1.0, (1.0 / memory_scale(n, cfg.ci_hurst)) / np.sqrt((1 + s["r1"]) / (1 - s["r1"])))
         st["effect"][usable], st["ci_lo"][usable], st["ci_hi"][usable] = eff, eff - half, eff + half
         st["sigma"][usable], st["r1"][usable] = s["sigma"], s["r1"]
         st["p_cons"][usable] = np.maximum.reduce(used)
         st["nsig"][usable] = sum((p <= cfg.alpha).astype(int) for p in used).astype(np.uint8)
         st["naive"][usable] = (np.abs(s["z_naive"]) > Z_CRIT).astype(np.uint8)
-        st["mde"][usable] = mde_per_decade(s["sigma"], s["r1"], n)
+        st["mde"][usable] = mde_per_decade(s["sigma"], s["r1"], n, "lm" if "MK-LM" in cfg.methods else "ebh" if cfg.require_ebh else "v10")
         st["delta"][usable] = cfg.delta_per_decade if cfg.delta_per_decade is not None else cfg.delta_sigma_per_decade * s["sigma"]
         st["years_more"][usable] = years_more(st["mde"][usable], st["delta"][usable], n)
-        zs = {"MK-VC": s["z_vc"], "TFPW-WS": s["z_ws"], "OLS-AR1": s["z_ols"]}
         with np.errstate(divide="ignore", invalid="ignore"):
             tau = st["delta"][usable] / (10.0 * s["se_ols"])                # delta in z units, fixed before the effect
         st["e_cons"][usable] = combine_mean([mixture_e(zs[m], tau) for m in cfg.methods])   # parallel; does not decide
-        st["p_mem"][usable] = p_two(s["z_naive"] * memory_scale(n, cfg.memory_hurst))   # sensitivity: Mann-Kendall under fGn(H)
+        st["p_mem"][usable] = ps["MK-LM"]                                # Mann-Kendall under fGn(H); the «robust to long memory» marker; votes only if "MK-LM" is in Config.methods
         bflag, where, _ = detect_breaks(series[usable])                   # L1: possible step (flag only, verdict untouched)
         st["break_flag"][usable] = bflag
         st["break_year"][usable] = np.where(where >= 0, np.asarray(years, dtype=float)[np.clip(where, 0, n - 1)], np.nan)
@@ -141,8 +147,10 @@ def _finish(st: dict, meta: dict, cfg: Config, delta_source: str, entity, profil
     usable, nsig, r1 = st["usable"], st["nsig"], st["r1"]
     years, n, cells = st["years"], len(st["years"]), usable.shape[0]
     q = bh_adjust(st["p_cons"])
+    ebh_sig = ebh(st["e_cons"], cfg.fdr_q)
     with np.errstate(invalid="ignore"):
-        verdict = decide(usable, q, nsig, st["mde"], st["delta"], cfg.fdr_q, len(cfg.methods))
+        verdict = decide(usable, q, nsig, st["mde"], st["delta"], cfg.fdr_q, len(cfg.methods),
+                         ebh_sig if cfg.require_ebh else None)
     flags = np.zeros(cells, dtype=np.uint8)
     flags[usable & (nsig >= 1) & (nsig < len(cfg.methods))] |= F_DEPENDE_METODO
     flags[st["filled"]] |= F_COBERTURA_BAJA
@@ -159,7 +167,6 @@ def _finish(st: dict, meta: dict, cfg: Config, delta_source: str, entity, profil
 
     simulated = ds.get("kind") == "simulated"
     var = meta.get("variable", {})
-    ebh_sig = ebh(st["e_cons"], cfg.fdr_q)
     with np.errstate(invalid="ignore"):
         robust_mem = ((verdict == PROBADO) & (st["p_mem"] <= cfg.alpha)).astype(np.uint8)   # PROBADO that survives fGn(H) noise
     summary = {"cells_valid": int(usable.sum()), "naive_marked": int(st["naive"].sum()),
@@ -177,13 +184,14 @@ def _finish(st: dict, meta: dict, cfg: Config, delta_source: str, entity, profil
         "window": {"start": years[0], "end": years[-1], "n": n, "step": "annual",
                    "aggregation": f"mean of monthly anomalies; >= {cfg.min_months}/12 months per year" if st["anomaly"] else "annual input"},
         "params": {"alpha": cfg.alpha, "fdr_q": cfg.fdr_q, "delta_sigma_per_decade": cfg.delta_sigma_per_decade,
-                   "delta_per_decade": cfg.delta_per_decade, "delta_source": delta_source, "memory_hurst": cfg.memory_hurst, "min_valid_years": cfg.min_years,
+                   "delta_per_decade": cfg.delta_per_decade, "delta_source": delta_source, "memory_hurst": cfg.memory_hurst, "require_ebh": cfg.require_ebh, "ci_hurst": cfg.ci_hurst, "min_valid_years": cfg.min_years,
                    "min_months": cfg.min_months},
         "detectability": detectability, **({"quality": quality} if quality else {}),
         "methods": list(cfg.methods), "verdict_codes": {str(k): v for k, v in CODES.items()},
         "flag_bits": {str(k): v for k, v in FLAG_BITS.items()}, "summary": summary,
         "calibration": {"note": ("NOT calibrated: the simulations cover n >= 15 years; with n = %d the MDE and the error rates are "
-                                 "optimistic, treat PROBADO as provisional." % n) if n < 15 else CALIBRATION_NOTE
+                                 "optimistic, treat PROBADO as provisional." % n) if n < 15 else
+                        (CALIBRATION_NOTE if cfg.require_ebh else CALIBRATION_NOTE_V10)
                         if tuple(cfg.methods) == tuple(METHODS) else
                         "NOT calibrated: this method set was not simulated; treat PROBADO as provisional."},
         "honesty": {"data_real": not simulated, "simulated": simulated,
@@ -343,6 +351,21 @@ def run_grid(blocks, lat, lon, time, meta: dict, config: Config | None = None, *
     return res
 
 
+def add_regions(result: LayerResult, series: np.ndarray, *, wrap: bool = False, **kw) -> Regions:
+    """Attach the significant regions of the map to a result (HORI 1.3). `series` [n, ny, nx] annual values, the same
+    the verdict used. Writes result.region (u8 per cell) and manifest["regions"]; the cell verdicts are NOT changed."""
+    usable = np.isfinite(result.p_cons).reshape(series.shape[1:])
+    R = significant_regions(series, usable, wrap=wrap, **kw)
+    result.region = np.where(R.labels > 0, 1, np.where(R.labels < 0, 2, 0)).astype(np.uint8).ravel()
+    v = result.verdict.reshape(R.labels.shape)
+    items = [{**r, "cells_probado": int(((R.labels == r["id"]) & (v == PROBADO)).sum())} for r in R.regions]
+    result.manifest["regions"] = {
+        "count": len(items), "cells": int((R.labels != 0).sum()), "candidates": R.candidates, "params": R.params,
+        "threshold_mass": None if not np.isfinite(R.threshold_mass) else round(R.threshold_mass, 3), "items": items[:50],
+        "claim": "The region as a whole is changing (family-wise error over the map). Not every cell inside is PROBADO."}
+    return R
+
+
 def write_bundle(result: LayerResult, out_dir: str, title_es: str | None = None, title_en: str | None = None) -> Path:
     """Write manifest.json + binary arrays (little-endian) following contract/SPEC.md."""
     out = Path(out_dir)
@@ -359,6 +382,8 @@ def write_bundle(result: LayerResult, out_dir: str, title_es: str | None = None,
         arrays["ebh_sig"] = ("u8", result.ebh_sig)
     if result.robust_mem is not None:                         # v0.4, additive (L2b): PROBADO that also holds under fGn(H) noise
         arrays["robust_mem"] = ("u8", result.robust_mem)
+    if result.region is not None:                             # HORI 1.3, additive: significant regions (clusters.py)
+        arrays["region"] = ("u8", result.region)
     if result.break_year is not None:                         # v0.4, additive (L1): year the possible new regime starts
         arrays["break_year"] = ("f32", result.break_year)
     listing = {}
