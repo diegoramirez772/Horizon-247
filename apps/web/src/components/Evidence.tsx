@@ -69,6 +69,9 @@ export function EvidenceDetails({ ctx, selection, seriesReady }: { ctx: Ctx; sel
           <Row k="δ" v={Number.isFinite(f.sigma)
             ? `${num(m.params.delta_sigma_per_decade * f.sigma, s.lang)} ${u} (${num(m.params.delta_sigma_per_decade, s.lang, 1)} σ)`
             : `${num(m.params.delta_sigma_per_decade, s.lang, 1)} σ`} />
+          {selection.kind === "cell" && f.region !== undefined ? (
+            <Row k={T.region} v={f.region === 1 ? T.regionUp : f.region === 2 ? T.regionDown : T.regionNo} />
+          ) : null}
           {expert ? (
             <>
               <Row k="p" v={num(f.p, s.lang, 4)} />

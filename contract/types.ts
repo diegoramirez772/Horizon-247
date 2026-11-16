@@ -31,6 +31,8 @@ export interface CellFinding {
   effect: number; ci: [number, number]; sigma: number; r1: number;
   p: number; q: number; mde: number; yearsMore: number | null;
   verdict: Verdict; flags: number; nSig: 0 | 1 | 2 | 3 | 4; naiveSig: boolean; series: number[];
+  /** HORI 1.3, optional: 0 = in no significant region, 1 = inside a rising region, 2 = inside a falling one. */
+  region?: 0 | 1 | 2;
 }
 
 // v0.2 (additive)

@@ -277,6 +277,7 @@ Carpeta `earth/timeline_<var>_<inicio>-<fin>/` con `timeline.json` + arreglos po
 - Arreglo `delta.f32` (el δ con el que se juzgó cada celda) y `manifest.detectability` (qué parte del mapa ya podría ver un cambio δ y cuántos años faltan en el resto).
 
 ### 10.7 Memoria larga (L2b) — «PROBADO robusto»
+- Arreglo `region.u8` (HORI 1.3, opcional): 0 = la celda no está en ninguna región significativa, 1 = dentro de una región que sube, 2 = dentro de una que baja. `manifest.regions` trae `count`, `cells`, `params` (z0, alpha, sustitutos, semilla) e `items` (id, sign, cells, mass, p, cells_probado). La afirmación es sobre la región entera (error por familia en el mapa), **no cambia el veredicto** de cada celda. Desde HORI 1.2, `params.require_ebh = true` significa que PROBADO exige además `ebh_sig = 1`, y `params.ci_hurst` es el H del intervalo.
 - Arreglo `robust_mem.u8` (1 = PROBADO **y** sigue significativo a `alpha` con la varianza de Mann-Kendall de ruido fGn(H), H = `params.memory_hurst`, 0.7 por defecto; 0 = no). **No cambia el veredicto**: es una afirmación más fuerte que se muestra al lado. `manifest.summary.probado_robusto_memoria` cuenta las celdas.
 - No se estima H por celda: con 24–45 años la estimación sale sesgada hacia abajo (medido) y tendencia y memoria larga no se separan. Detalle y cifras en `docs/MODEL_CARD.md`.
 

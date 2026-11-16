@@ -40,7 +40,7 @@ from .stats import Z_CRIT, analyze, p_two
 from .verdict import (CODES, PROBADO, FLAG_BITS, F_QUIEBRE_POSIBLE, NO_CONCLUYENTE, F_AUTOCORR_ALTA, F_COBERTURA_BAJA, F_DEPENDE_METODO, F_RECONSTRUCCION,
                       F_RESOLUCION_GRUESA, F_SIMULADO, decide)
 
-__all__ = ["Regions", "significant_regions", "JOINT_LEVELS", "JOINT_RULES", "JointRule", "joint_rule", "joint_explain", "run_joint", "z_last", "physical_class", "accumulated_z", "entity_state", "explain", "classify_report", "swarm_signals", "AnomalyResult", "anomaly_events", "detect_anomalies", "Config", "Cube", "Entity", "IdentityError", "LayerResult", "Profile", "cell_stats", "infer_profile", "auto_entity", "run_grid",
+__all__ = ["Regions", "significant_regions", "add_regions", "JOINT_LEVELS", "JOINT_RULES", "JointRule", "joint_rule", "joint_explain", "run_joint", "z_last", "physical_class", "accumulated_z", "entity_state", "explain", "classify_report", "swarm_signals", "AnomalyResult", "anomaly_events", "detect_anomalies", "Config", "Cube", "Entity", "IdentityError", "LayerResult", "Profile", "cell_stats", "infer_profile", "auto_entity", "run_grid",
            "run_timeline", "summarize", "to_annual", "Timeline", "EVENT_CODES", "TIER_CODES",
            "run_layer", "write_bundle"]
 CONTRACT = "0.4"
@@ -351,6 +351,21 @@ def run_grid(blocks, lat, lon, time, meta: dict, config: Config | None = None, *
     return res
 
 
+def add_regions(result: LayerResult, series: np.ndarray, *, wrap: bool = False, **kw) -> Regions:
+    """Attach the significant regions of the map to a result (HORI 1.3). `series` [n, ny, nx] annual values, the same
+    the verdict used. Writes result.region (u8 per cell) and manifest["regions"]; the cell verdicts are NOT changed."""
+    usable = np.isfinite(result.p_cons).reshape(series.shape[1:])
+    R = significant_regions(series, usable, wrap=wrap, **kw)
+    result.region = np.where(R.labels > 0, 1, np.where(R.labels < 0, 2, 0)).astype(np.uint8).ravel()
+    v = result.verdict.reshape(R.labels.shape)
+    items = [{**r, "cells_probado": int(((R.labels == r["id"]) & (v == PROBADO)).sum())} for r in R.regions]
+    result.manifest["regions"] = {
+        "count": len(items), "cells": int((R.labels != 0).sum()), "candidates": R.candidates, "params": R.params,
+        "threshold_mass": None if not np.isfinite(R.threshold_mass) else round(R.threshold_mass, 3), "items": items[:50],
+        "claim": "The region as a whole is changing (family-wise error over the map). Not every cell inside is PROBADO."}
+    return R
+
+
 def write_bundle(result: LayerResult, out_dir: str, title_es: str | None = None, title_en: str | None = None) -> Path:
     """Write manifest.json + binary arrays (little-endian) following contract/SPEC.md."""
     out = Path(out_dir)
@@ -367,6 +382,8 @@ def write_bundle(result: LayerResult, out_dir: str, title_es: str | None = None,
         arrays["ebh_sig"] = ("u8", result.ebh_sig)
     if result.robust_mem is not None:                         # v0.4, additive (L2b): PROBADO that also holds under fGn(H) noise
         arrays["robust_mem"] = ("u8", result.robust_mem)
+    if result.region is not None:                             # HORI 1.3, additive: significant regions (clusters.py)
+        arrays["region"] = ("u8", result.region)
     if result.break_year is not None:                         # v0.4, additive (L1): year the possible new regime starts
         arrays["break_year"] = ("f32", result.break_year)
     listing = {}

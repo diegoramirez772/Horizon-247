@@ -182,6 +182,7 @@ export const UI = {
     cell: "Zona",
     flags: "Banderas",
     methods: "Métodos que coinciden",
+    region: "Región que cambia junta", regionUp: "Sí: está dentro de una región que sube", regionDown: "Sí: está dentro de una región que baja", regionNo: "No está dentro de ninguna",
     provenance: "Procedencia",
     series: "Serie por año",
     trend: "Recta con la pendiente del bundle", // OWN
@@ -239,6 +240,7 @@ export const UI = {
     cell: "Area",
     flags: "Flags",
     methods: "Methods in agreement",
+    region: "Region changing together", regionUp: "Yes: inside a region that is rising", regionDown: "Yes: inside a region that is falling", regionNo: "Not inside any",
     provenance: "Provenance",
     series: "Series by year",
     trend: "Line with the bundle's slope",
