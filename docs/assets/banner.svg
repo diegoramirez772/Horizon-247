@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" fill="none" role="img" aria-label="HORIZON 247 — Is the Earth really changing here?">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0B0D12"/><stop offset="1" stop-color="#05060A"/></linearGradient>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#8FB8FF" stop-opacity="0.22"/><stop offset="1" stop-color="#8FB8FF" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sphere" cx="36%" cy="30%" r="78%"><stop offset="0" stop-color="#B9C3D3"/><stop offset="0.28" stop-color="#5B6577"/><stop offset="0.62" stop-color="#1A1E27"/><stop offset="1" stop-color="#05060A"/></radialGradient>
+    <radialGradient id="atmo" cx="50%" cy="50%" r="50%"><stop offset="0.78" stop-color="#8FB8FF" stop-opacity="0"/><stop offset="0.9" stop-color="#8FB8FF" stop-opacity="0.55"/><stop offset="1" stop-color="#8FB8FF" stop-opacity="0"/></radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.15"/><stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.95"/><stop offset="1" stop-color="#CFE0FF" stop-opacity="0.5"/></linearGradient>
+    <linearGradient id="horizon" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8FB8FF" stop-opacity="0"/><stop offset="0.5" stop-color="#CFE0FF" stop-opacity="0.7"/><stop offset="1" stop-color="#8FB8FF" stop-opacity="0"/></linearGradient>
+    <clipPath id="ball"><circle cx="32" cy="32" r="19"/></clipPath>
+    <clipPath id="front"><rect x="-10" y="32" width="84" height="40" transform="rotate(-16 32 32)"/></clipPath>
+    <clipPath id="card"><rect width="1280" height="360" rx="24"/></clipPath>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6"/></filter>
+  </defs>
+  <g clip-path="url(#card)">
+    <rect width="1280" height="360" fill="url(#bg)"/>
+    <g fill="#FFFFFF">
+      <circle cx="96" cy="58" r="1.2" opacity="0.5"/><circle cx="402" cy="44" r="1" opacity="0.35"/><circle cx="530" cy="96" r="1.3" opacity="0.4"/>
+      <circle cx="668" cy="38" r="0.9" opacity="0.45"/><circle cx="812" cy="74" r="1.2" opacity="0.3"/><circle cx="948" cy="42" r="1" opacity="0.5"/>
+      <circle cx="1090" cy="88" r="1.3" opacity="0.35"/><circle cx="1204" cy="52" r="1" opacity="0.45"/><circle cx="1150" cy="250" r="1.1" opacity="0.3"/>
+      <circle cx="1010" cy="300" r="0.9" opacity="0.35"/><circle cx="62" cy="290" r="1" opacity="0.3"/><circle cx="1236" cy="180" r="1.2" opacity="0.4"/>
+    </g>
+    <ellipse cx="640" cy="640" rx="1100" ry="330" stroke="url(#horizon)" stroke-width="1.5"/>
+    <circle cx="208" cy="180" r="170" fill="url(#halo)"/>
+    <g transform="translate(64 36) scale(4.5)">
+      <circle cx="32" cy="32" r="23.5" fill="url(#atmo)"/>
+      <ellipse cx="32" cy="32" rx="29" ry="9" transform="rotate(-16 32 32)" stroke="#9AA6BA" stroke-opacity="0.45" stroke-width="1.4"/>
+      <circle cx="32" cy="32" r="19" fill="url(#sphere)"/>
+      <g clip-path="url(#ball)" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="0.8">
+        <ellipse cx="32" cy="32" rx="19" ry="6"/><ellipse cx="32" cy="24" rx="16" ry="4.2"/><ellipse cx="32" cy="40" rx="16" ry="4.2"/><ellipse cx="32" cy="32" rx="7" ry="19"/><ellipse cx="32" cy="32" rx="14" ry="19"/>
+      </g>
+      <ellipse cx="25" cy="22" rx="6" ry="3.6" transform="rotate(-30 25 22)" fill="#FFFFFF" opacity="0.28" filter="url(#glow)"/>
+      <ellipse cx="32" cy="32" rx="29" ry="9" transform="rotate(-16 32 32)" stroke="url(#ring)" stroke-width="1.8" clip-path="url(#front)"/>
+      <circle cx="54.5" cy="31.2" r="4" fill="#CFE0FF" opacity="0.7" filter="url(#glow)"/>
+      <circle cx="54.5" cy="31.2" r="2.3" fill="#FFFFFF"/>
+    </g>
+    <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+      <text x="400" y="118" fill="#8FB8FF" font-size="17" font-weight="600" letter-spacing="4">AETHRA · NASA SPACE APPS CHALLENGE 2026</text>
+      <text x="396" y="196" fill="#FFFFFF" font-size="78" font-weight="700" letter-spacing="3">HORIZON 247</text>
+      <text x="400" y="246" fill="#C9D2E0" font-size="22" font-weight="400">Is the Earth really changing here — how much — and can we already know?</text>
+      <text x="400" y="290" fill="#7E8AA0" font-size="18" font-weight="400">Evidence of change from decades of NASA observations. No forecasts, no guesses, no LLM.</text>
+    </g>
+  </g>
+</svg>
